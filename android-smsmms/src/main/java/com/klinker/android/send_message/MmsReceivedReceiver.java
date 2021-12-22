@@ -140,7 +140,7 @@ public class MmsReceivedReceiver extends BroadcastReceiver {
 
     protected void onMessageReceived(Uri messageUri) {
         // Override this in a custom receiver, if you want access to the message, outside of the
-        // internal SMS/MMS database
+        // internal messenger/MMS database
     }
 
     protected void onError(String error) {

@@ -230,7 +230,7 @@ public class Utils {
     }
 
     /**
-     * Gets the number of pages in the SMS based on settings and the length of string
+     * Gets the number of pages in the messenger based on settings and the length of string
      *
      * @param settings is the settings object to check against
      * @param text     is the text from the message object to be sent
@@ -362,7 +362,7 @@ public class Utils {
     }
 
     /**
-     * Determines whether or not the app is the default SMS app on a device
+     * Determines whether or not the app is the default messenger app on a device
      * @param context
      * @return true if app is default
      */

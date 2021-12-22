@@ -1,0 +1,20 @@
+{
+  "version": 3,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "com.charles.messenger",
+  "variantName": "noAnalyticsRelease",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "attributes": [],
+      "versionCode": 2218,
+      "versionName": "3.9.4",
+      "outputFile": "messenger-v3.9.4-noAnalytics-release.apk"
+    }
+  ],
+  "elementType": "File"
+}

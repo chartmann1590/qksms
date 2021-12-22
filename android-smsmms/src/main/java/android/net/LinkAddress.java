@@ -66,18 +66,18 @@ public class LinkAddress implements Parcelable {
      * in {@code obj}. Two addresses are equal if their InetAddress and prefixLength
      * are equal
      *
-     * @param obj the object to be tested for equality.
+     //* @param obj the object to be tested for equality.
      * @return {@code true} if both objects are equal, {@code false} otherwise.
      */
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof LinkAddress)) {
-            return false;
-        }
-        LinkAddress linkAddress = (LinkAddress) obj;
-        return this.address.equals(linkAddress.address) &&
-                this.prefixLength == linkAddress.prefixLength;
-    }
+    //@Override
+   // public boolean equals(Object obj) {
+      //  if (!(obj instanceof LinkAddress)) {
+      //      return false;
+      //  }
+      //  LinkAddress linkAddress = (LinkAddress) obj;
+     //   return this.address.equals(linkAddress.address) &&
+        //        this.prefixLength == linkAddress.prefixLength;
+   // }
 
     @Override
     /*

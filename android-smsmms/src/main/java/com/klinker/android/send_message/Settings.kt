@@ -28,5 +28,5 @@ class Settings @JvmOverloads constructor(
         var userProfileUrl: String? = "",
         var uaProfTagName: String? = "",
 
-        // SMS options
+        // messenger options
         var stripUnicode: Boolean = false)

@@ -66,7 +66,7 @@ public class MmsConfig {
     // messages, with no checked limit on the number of segments.
     // If CONFIG_ENABLE_MULTIPART_SMS is false, then as soon as the user types a message longer
     // than a single segment (i.e. 140 chars), then the message will turn into and be sent
-    // as an mms message or separate, independent SMS messages
+    // as an mms message or separate, independent messenger messages
     // (which is dependent on CONFIG_SEND_MULTIPART_SMS_AS_SEPARATE_MESSAGES flag).
     // This feature exists for carriers that don't support multi-part sms's.
     public static final String CONFIG_ENABLE_MULTIPART_SMS = "enableMultipartSMS";
@@ -85,10 +85,10 @@ public class MmsConfig {
     // But Shem can not read it. Add here so that we can configure for different carriers.
     public static final String CONFIG_SUPPORT_MMS_CONTENT_DISPOSITION =
             "supportMmsContentDisposition";
-    // if true, show the cell broadcast (amber alert) in the SMS settings. Some carriers
+    // if true, show the cell broadcast (amber alert) in the messenger settings. Some carriers
     // don't want this shown.
     public static final String CONFIG_CELL_BROADCAST_APP_LINKS = "config_cellBroadcastAppLinks";
-    // If this is true, we will send multipart SMS as separate SMS messages
+    // If this is true, we will send multipart messenger as separate messenger messages
     public static final String CONFIG_SEND_MULTIPART_SMS_AS_SEPARATE_MESSAGES =
             "sendMultipartSmsAsSeparateMessages";
     // FLAG(ywen): the following two is not supported yet.
@@ -106,11 +106,11 @@ public class MmsConfig {
     public static final String CONFIG_ALIAS_MIN_CHARS = "aliasMinChars";
     public static final String CONFIG_ALIAS_MAX_CHARS = "aliasMaxChars";
     // If CONFIG_ENABLE_MULTIPART_SMS is true and CONFIG_SMS_TO_MMS_TEXT_THRESHOLD > 1,
-    // then multi-part SMS messages will be converted into a single mms message.
+    // then multi-part messenger messages will be converted into a single mms message.
     // For example, if the mms_config.xml file specifies <int name="smsToMmsTextThreshold">4</int>,
     // then on the 5th sms segment, the message will be converted to an mms.
     public static final String CONFIG_SMS_TO_MMS_TEXT_THRESHOLD = "smsToMmsTextThreshold";
-    // LGU+ temporarily requires any SMS message longer than 80 bytes to be sent as MMS
+    // LGU+ temporarily requires any messenger message longer than 80 bytes to be sent as MMS
     // see b/12122333
     public static final String CONFIG_SMS_TO_MMS_TEXT_LENGTH_THRESHOLD =
             "smsToMmsTextLengthThreshold";

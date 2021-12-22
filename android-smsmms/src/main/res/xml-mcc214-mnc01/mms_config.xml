@@ -21,6 +21,6 @@
 -->
 
 <mms_config version="2">
-    <!-- Disable SMS to MMS conversion for multiple recipient SMS -->
+    <!-- Disable messenger to MMS conversion for multiple recipient messenger -->
     <bool name="enableGroupMms">false</bool>
 </mms_config>

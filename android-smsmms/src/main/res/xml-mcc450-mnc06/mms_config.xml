@@ -31,7 +31,7 @@
     <!-- Maximum width for an attached image -->
     <int name="maxImageWidth">2592</int>
 
-    <!-- SMS text length threshold (in bytes) to turn into MMS -->
+    <!-- messenger text length threshold (in bytes) to turn into MMS -->
     <int name="smsToMmsTextLengthThreshold">80</int>
 
     <bool name="enableMMSReadReports">false</bool>

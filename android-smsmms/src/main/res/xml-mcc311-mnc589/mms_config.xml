@@ -45,7 +45,7 @@
 
     <!-- If true, The text message over 160 characters will be sent in multi part.
          If false, The text message over 160 characters will be sent
-         via multi media message or separate, independent SMS messages,
+         via multi media message or separate, independent messenger messages,
          dependent on sendMultipartSMSAsSeparateMessages value. -->
     <bool name="enableMultipartSMS">false</bool>
 

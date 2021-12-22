@@ -165,7 +165,7 @@ public interface TelephonyProperties {
     static final String PROPERTY_CALL_RING_DELAY = "ro.telephony.call_ring.delay";
 
     /**
-     * Track CDMA SMS message id numbers to ensure they increment
+     * Track CDMA messenger message id numbers to ensure they increment
      * monotonically, regardless of reboots.
      */
     static final String PROPERTY_CDMA_MSG_ID = "persist.radio.cdma.msgid";
@@ -182,13 +182,13 @@ public interface TelephonyProperties {
     static final String PROPERTY_RESET_ON_RADIO_TECH_CHANGE = "persist.radio.reset_on_switch";
 
     /**
-     * Set to false to disable SMS receiving, default is
+     * Set to false to disable messenger receiving, default is
      * the value of config_sms_capable
      */
     static final String PROPERTY_SMS_RECEIVE = "telephony.sms.receive";
 
     /**
-     * Set to false to disable SMS sending, default is
+     * Set to false to disable messenger sending, default is
      * the value of config_sms_capable
      */
     static final String PROPERTY_SMS_SEND = "telephony.sms.send";

@@ -1601,7 +1601,7 @@ public class PduPersister {
     }
 
     /**
-     * Check if read permissions for SMS have been granted
+     * Check if read permissions for messenger have been granted
      */
     private boolean checkReadSmsPermissions() {
         return Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||

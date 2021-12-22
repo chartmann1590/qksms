@@ -34,7 +34,7 @@
     <!-- Maximum width for an attached image -->
     <int name="maxImageWidth">4320</int>
 
-    <!-- Maximum number of SMS message to save per thread before auto-delete kicks in.
+    <!-- Maximum number of messenger message to save per thread before auto-delete kicks in.
          This is the default value. -->
     <int name="defaultSMSMessagesPerThread">500</int>
 
@@ -59,7 +59,7 @@
          via multi media message. -->
     <bool name="enableMultipartSMS">false</bool>
 
-    <!-- If enableMultipartSMS is true and smsToMmsTextThreshold > 1, then multi-part SMS messages
+    <!-- If enableMultipartSMS is true and smsToMmsTextThreshold > 1, then multi-part messenger messages
          will be converted into a single mms message. For example, if the mms_config.xml file
          specifies <int name="smsToMmsTextThreshold">7</int>, then on the 8th sms segment, the
          message will be converted to an mms. -->
@@ -83,7 +83,7 @@
     <!-- Hide the MMS read reports UI in settings -->
     <bool name="enableMMSReadReports">false</bool>
 
-    <!-- Flag indicating whether SMS Delivery Reports UI option should be shown -->
+    <!-- Flag indicating whether messenger Delivery Reports UI option should be shown -->
     <bool name="enableSMSDeliveryReports">false</bool>
 
     <!-- Flag indicating whether MMS Delivery Reports UI option should be shown -->

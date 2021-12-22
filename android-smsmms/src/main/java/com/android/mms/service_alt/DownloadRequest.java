@@ -248,7 +248,7 @@ public class DownloadRequest extends MmsRequest {
 //        for (int i = users.length - 1; i >= 0; i--) {
 //            UserHandle targetUser = new UserHandle(users[i]);
 //            if (users[i] != UserHandle.USER_OWNER) {
-//                // Is the user not allowed to use SMS?
+//                // Is the user not allowed to use messenger?
 //                if (userManager.hasUserRestriction(UserManager.DISALLOW_SMS, targetUser)) {
 //                    continue;
 //                }

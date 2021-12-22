@@ -37,7 +37,7 @@ public class MmsConfig {
     private static final int MAX_TEXT_LENGTH = 2000;
 
     /**
-     * Whether to hide MMS functionality from the user (i.e. SMS only).
+     * Whether to hide MMS functionality from the user (i.e. messenger only).
      */
     private static boolean mTransIdEnabled = false;
     private static boolean mMmsEnabled = true;                  // default to true
@@ -73,7 +73,7 @@ public class MmsConfig {
     // converting to mms if we reach the required number of segments.
     private static boolean mEnableSplitSMS = false;
 
-    // If mEnableMultipartSMS is true and mSmsToMmsTextThreshold > 1, then multi-part SMS messages
+    // If mEnableMultipartSMS is true and mSmsToMmsTextThreshold > 1, then multi-part messenger messages
     // will be converted into a single mms message. For example, if the mms_config.xml file
     // specifies <int name="smsToMmsTextThreshold">4</int>, then on the 5th sms segment, the
     // message will be converted to an mms.

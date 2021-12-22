@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Copyright (C) 2019 Moez Bhatti <moez.bhatti@gmail.com>
+  ~ Copyright (C) 2019 Moez Bhatti <charles.bhatti@gmail.com>
   ~
-  ~ This file is part of QKSMS.
+  ~ This file is part of messenger.
   ~
-  ~ QKSMS is free software: you can redistribute it and/or modify
+  ~ messenger is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
   ~ the Free Software Foundation, either version 3 of the License, or
   ~ (at your option) any later version.
   ~
-  ~ QKSMS is distributed in the hope that it will be useful,
+  ~ messenger is distributed in the hope that it will be useful,
   ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
   ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   ~ GNU General Public License for more details.
   ~
   ~ You should have received a copy of the GNU General Public License
-  ~ along with QKSMS.  If not, see <http://www.gnu.org/licenses/>.
+  ~ along with messenger.  If not, see <http://www.gnu.org/licenses/>.
   -->
 <androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -40,13 +40,13 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <com.moez.QKSMS.common.widget.QkTextView
+            <com.charles.messenger.common.widget.QkTextView
                 android:id="@+id/toolbarTitle"
                 style="@style/ToolbarText"
                 android:layout_marginStart="16dp"
                 android:visibility="gone" />
 
-            <com.moez.QKSMS.common.widget.QkEditText
+            <com.charles.messenger.common.widget.QkEditText
                 android:id="@+id/toolbarSearch"
                 style="@style/ToolbarText"
                 android:layout_marginTop="8dp"
@@ -65,7 +65,7 @@
 
         </androidx.appcompat.widget.Toolbar>
 
-        <com.moez.QKSMS.common.widget.QkTextView
+        <com.charles.messenger.common.widget.QkTextView
             android:id="@+id/empty"
             style="@style/TextSecondary"
             android:layout_width="match_parent"
@@ -101,10 +101,11 @@
             android:elevation="8dp"
             android:padding="16dp"
             android:src="@drawable/ic_add_black_24dp"
-            android:tint="@color/white"
+            app:tint="@color/white"
             app:layout_constraintBottom_toTopOf="@id/bottom"
             app:layout_constraintEnd_toEndOf="parent"
             tools:backgroundTint="@color/tools_theme" />
+
 
         <View
             android:layout_width="0dp"
@@ -136,6 +137,24 @@
             android:inflatedId="@id/syncing"
             android:layout="@layout/main_syncing"
             app:layout_constraintBottom_toBottomOf="parent" />
+
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <com.google.android.gms.ads.AdView
+            android:id="@+id/adView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_gravity="bottom"
+            app:adSize="BANNER"
+            app:adUnitId="ca-app-pub-8382831211800454/3415079404"
+            tools:layout_editor_absoluteX="425dp">
+        </com.google.android.gms.ads.AdView>
+
+        </RelativeLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
