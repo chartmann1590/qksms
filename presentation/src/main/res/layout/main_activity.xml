@@ -136,25 +136,18 @@
             android:layout_height="wrap_content"
             android:inflatedId="@id/syncing"
             android:layout="@layout/main_syncing"
-            app:layout_constraintBottom_toBottomOf="parent" />
-
-        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            app:layout_constraintBottom_toTopOf="@id/adView" />
 
         <com.google.android.gms.ads.AdView
             android:id="@+id/adView"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:layout_gravity="bottom"
+            android:layout_gravity="bottom|center_horizontal"
             app:adSize="BANNER"
-            app:adUnitId="ca-app-pub-8382831211800454/3415079404"
-            tools:layout_editor_absoluteX="425dp">
-        </com.google.android.gms.ads.AdView>
-
-        </RelativeLayout>
+            app:adUnitId="@string/admob_banner_id"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

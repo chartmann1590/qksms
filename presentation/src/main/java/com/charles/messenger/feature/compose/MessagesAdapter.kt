@@ -99,7 +99,7 @@ class MessagesAdapter @Inject constructor(
     val partClicks: Subject<Long> = PublishSubject.create()
     val cancelSending: Subject<Long> = PublishSubject.create()
 
-    var data: Pair<Conversation, RealmResults<Message>>? = null
+    var messagesData: Pair<Conversation, RealmResults<Message>>? = null
         set(value) {
             if (field === value) return
 
@@ -113,7 +113,7 @@ class MessagesAdapter @Inject constructor(
      * Safely return the conversation, if available
      */
     private val conversation: Conversation?
-        get() = data?.first?.takeIf { it.isValid }
+        get() = messagesData?.first?.takeIf { it.isValid }
 
     /**
      * Mark this message as highlighted

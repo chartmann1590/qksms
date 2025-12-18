@@ -21,14 +21,18 @@ apply plugin: 'realm-android' // Realm needs to be before Kotlin or the build wi
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'com.google.gms.google-services'
-apply plugin: 'com.google.firebase.crashlytics'
-apply plugin: 'com.google.firebase.firebase-perf'
+// Google services plugins are conditionally applied at the bottom of this file
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 33
     buildToolsVersion "29.0.3"
     flavorDimensions "analytics"
+
+    def localProperties = new Properties()
+    def localPropertiesFile = rootProject.file('local.properties')
+    if (localPropertiesFile.exists()) {
+        localProperties.load(new FileInputStream(localPropertiesFile))
+    }
 
     defaultConfig {
 
@@ -45,6 +49,10 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         setProperty("archivesBaseName", "messenger-v${versionName}")
+
+        buildConfigField "String", "ADMOB_INTERSTITIAL_ID", "\"" + localProperties['ADMOB_INTERSTITIAL_ID'] + "\""
+        resValue "string", "admob_banner_id", localProperties['ADMOB_BANNER_ID']
+        manifestPlaceholders = [ADMOB_APP_ID: localProperties['ADMOB_APP_ID']]
     }
 
     signingConfigs {
@@ -151,7 +159,7 @@ dependencies {
     })
 
     // realm
-    implementation("io.realm:android-adapters:$realm_adapters_version") { transitive = false }
+    // implementation("io.realm:android-adapters:$realm_adapters_version") { transitive = false }
     kapt "io.realm:realm-annotations:$realm_version"
     kapt "io.realm:realm-annotations-processor:$realm_version"
 
@@ -185,7 +193,7 @@ dependencies {
 
     implementation "com.github.chrisbanes:PhotoView:2.0.0"
     implementation "com.f2prateek.rx.preferences2:rx-preferences:$rx_preferences_version"
-    implementation "com.google.android:flexbox:0.3.1"
+    implementation "com.google.android.flexbox:flexbox:3.0.0"
     implementation "com.jakewharton.timber:timber:$timber_version"
     implementation "com.squareup.moshi:moshi-kotlin:$moshi_version"
     implementation "me.leolin:ShortcutBadger:1.1.22"
@@ -203,16 +211,17 @@ dependencies {
     withAnalyticsDebug project(path: ':data', configuration: 'withAnalyticsDebug')
     withAnalyticsRelease project(path: ':data', configuration: 'withAnalyticsRelease')
 
-    implementation platform('com.google.firebase:firebase-bom:29.0.3')
-    implementation 'com.google.firebase:firebase-analytics-ktx'
-    implementation 'com.google.firebase:firebase-crashlytics-ktx'
-    implementation 'com.google.firebase:firebase-perf-ktx'
-    implementation 'com.google.firebase:firebase-analytics-ktx:20.0.2'
+    withAnalyticsImplementation platform('com.google.firebase:firebase-bom:29.0.3')
+    withAnalyticsImplementation 'com.google.firebase:firebase-analytics-ktx'
+    withAnalyticsImplementation 'com.google.firebase:firebase-crashlytics-ktx'
+    withAnalyticsImplementation 'com.google.firebase:firebase-perf-ktx'
+    withAnalyticsImplementation 'com.google.firebase:firebase-analytics-ktx:20.0.2'
 
     implementation 'com.google.android.gms:play-services-ads:20.5.0'
 }
 
-if (getGradle().getStartParameter().getTaskRequests().toString().contains("WithAnalytics")) {
+if (getGradle().getStartParameter().getTaskRequests().toString().toLowerCase().contains("withanalytics")) {
     apply plugin: 'com.google.gms.google-services'
     apply plugin: 'com.google.firebase.crashlytics'
+    apply plugin: 'com.google.firebase.firebase-perf'
 }

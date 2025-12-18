@@ -156,7 +156,7 @@
         android:layout_marginBottom="12dp"
         android:background="@drawable/rounded_rectangle_22dp"
         android:backgroundTint="?attr/bubbleColor"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/adView"
         app:layout_constraintEnd_toStartOf="@id/send"
         app:layout_constraintStart_toEndOf="@id/attach"
         app:layout_constraintTop_toTopOf="@id/scheduledCancel" />
@@ -530,5 +530,15 @@
         app:layout_constraintStart_toStartOf="parent"
         tools:backgroundTint="@color/tools_theme"
         tools:tint="@color/textPrimaryDark" />
+
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        app:adSize="BANNER"
+        app:adUnitId="@string/admob_banner_id"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

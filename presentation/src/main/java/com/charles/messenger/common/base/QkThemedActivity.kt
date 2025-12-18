@@ -37,6 +37,9 @@ import com.charles.messenger.repository.ConversationRepository
 import com.charles.messenger.repository.MessageRepository
 import com.charles.messenger.util.PhoneNumberUtils
 import com.charles.messenger.util.Preferences
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
@@ -102,6 +105,9 @@ abstract class QkThemedActivity : QkActivity() {
         setTheme(getActivityThemeRes(prefs.black.get()))
         super.onCreate(savedInstanceState)
 
+        // Initialize AdMob
+        MobileAds.initialize(this) {}
+
         // When certain preferences change, we need to recreate the activity
         val triggers = listOf(prefs.nightMode, prefs.night, prefs.black, prefs.textSize, prefs.systemFont)
         Observable.merge(triggers.map { it.asObservable().skip(1) })
@@ -131,6 +137,17 @@ abstract class QkThemedActivity : QkActivity() {
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
+
+        // Initialize and load AdMob banner
+        try {
+            val adView = findViewById<AdView>(R.id.adView)
+            adView?.let {
+                val adRequest = AdRequest.Builder().build()
+                it.loadAd(adRequest)
+            }
+        } catch (e: Exception) {
+            // AdView not found in this activity layout, which is okay
+        }
 
         // Set the color for the overflow and navigation icon
         val textSecondary = resolveThemeColor(android.R.attr.textColorSecondary)

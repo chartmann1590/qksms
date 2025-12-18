@@ -46,4 +46,6 @@
         android:layout_height="1dp"
         android:background="?android:attr/divider" />
 
+    <include layout="@layout/admob_banner" />
+
 </LinearLayout>

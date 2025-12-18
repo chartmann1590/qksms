@@ -24,13 +24,19 @@ import com.charles.messenger.common.util.extensions.setVisible
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
 import io.realm.OrderedRealmCollection
+import io.realm.OrderedCollectionChangeSet
+import io.realm.RealmChangeListener
 import io.realm.RealmList
 import io.realm.RealmModel
-import io.realm.RealmRecyclerViewAdapter
 import io.realm.RealmResults
 import timber.log.Timber
 
-abstract class QkRealmAdapter<T : RealmModel> : RealmRecyclerViewAdapter<T, QkViewHolder>(null, true) {
+abstract class QkRealmAdapter<T : RealmModel> : RecyclerView.Adapter<QkViewHolder>() {
+
+    private var realmData: OrderedRealmCollection<T>? = null
+
+    // Public accessor for compatibility
+    val data: OrderedRealmCollection<T>? get() = realmData
 
     /**
      * This view can be set, and the adapter will automatically control the visibility of this view
@@ -41,11 +47,19 @@ abstract class QkRealmAdapter<T : RealmModel> : RealmRecyclerViewAdapter<T, QkVi
             if (field === value) return
 
             field = value
-            value?.setVisible(data?.isLoaded == true && data?.isEmpty() == true)
+            value?.setVisible(realmData?.isLoaded == true && realmData?.isEmpty() == true)
         }
 
-    private val emptyListener: (OrderedRealmCollection<T>) -> Unit = { data ->
+    @Suppress("UNCHECKED_CAST")
+    private val resultsListener = RealmChangeListener<RealmResults<T>> { data ->
         emptyView?.setVisible(data.isLoaded && data.isEmpty())
+        notifyDataSetChanged()
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private val listListener = RealmChangeListener<RealmList<T>> { data ->
+        emptyView?.setVisible(data.isLoaded && data.isEmpty())
+        notifyDataSetChanged()
     }
 
     val selectionChanges: Subject<List<Long>> = BehaviorSubject.create()
@@ -80,47 +94,55 @@ abstract class QkRealmAdapter<T : RealmModel> : RealmRecyclerViewAdapter<T, QkVi
         notifyDataSetChanged()
     }
 
-    override fun getItem(index: Int): T? {
-        if (index < 0) {
-            Timber.w("Only indexes >= 0 are allowed. Input was: $index")
+    open fun getItem(index: Int): T? {
+        if (index < 0 || realmData == null) {
             return null
         }
-
-        return super.getItem(index)
+        return realmData!![index]
     }
 
-    override fun updateData(data: OrderedRealmCollection<T>?) {
-        if (getData() === data) return
+    override fun getItemCount(): Int = realmData?.size ?: 0
 
-        removeListener(getData())
+    open fun updateData(data: OrderedRealmCollection<T>?) {
+        if (this.realmData === data) return
+
+        removeListener(this.realmData)
+        this.realmData = data
         addListener(data)
 
-        data?.run(emptyListener)
-
-        super.updateData(data)
+        if (data != null && data.isValid && data.isLoaded) {
+            emptyView?.setVisible(data.isEmpty())
+        }
+        notifyDataSetChanged()
     }
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
-        addListener(data)
+        addListener(realmData)
     }
 
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
         super.onDetachedFromRecyclerView(recyclerView)
-        removeListener(data)
+        removeListener(realmData)
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun addListener(data: OrderedRealmCollection<T>?) {
-        when (data) {
-            is RealmResults<T> -> data.addChangeListener(emptyListener)
-            is RealmList<T> -> data.addChangeListener(emptyListener)
+        if (data != null && data.isValid) {
+            when (data) {
+                is RealmResults<*> -> (data as RealmResults<T>).addChangeListener(resultsListener)
+                is RealmList<*> -> (data as RealmList<T>).addChangeListener(listListener)
+            }
         }
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun removeListener(data: OrderedRealmCollection<T>?) {
-        when (data) {
-            is RealmResults<T> -> data.removeChangeListener(emptyListener)
-            is RealmList<T> -> data.removeChangeListener(emptyListener)
+        if (data != null && data.isValid) {
+            when (data) {
+                is RealmResults<*> -> (data as RealmResults<T>).removeChangeListener(resultsListener)
+                is RealmList<*> -> (data as RealmList<T>).removeChangeListener(listListener)
+            }
         }
     }
 

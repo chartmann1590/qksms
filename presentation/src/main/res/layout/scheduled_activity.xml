@@ -159,4 +159,6 @@
         android:layout_gravity="bottom"
         android:background="?android:attr/divider" />
 
+    <include layout="@layout/admob_banner" android:layout_gravity="bottom" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

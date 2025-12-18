@@ -23,9 +23,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.ExoPlayerFactory
-import com.google.android.exoplayer2.source.ExtractorMediaSource
-import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
+import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
@@ -108,15 +106,16 @@ class GalleryPagerAdapter @Inject constructor(private val context: Context) : Qk
             }
 
             VIEW_TYPE_VIDEO -> {
-                val videoTrackSelectionFactory = AdaptiveTrackSelection.Factory(null)
-                val trackSelector = DefaultTrackSelector(videoTrackSelectionFactory)
-                val exoPlayer = ExoPlayerFactory.newSimpleInstance(context, trackSelector)
+                val trackSelector = DefaultTrackSelector(context)
+                val exoPlayer = ExoPlayer.Builder(context)
+                    .setTrackSelector(trackSelector)
+                    .build()
                 holder.video.player = exoPlayer
                 exoPlayers.add(exoPlayer)
 
-                val dataSourceFactory = DefaultDataSourceFactory(context, Util.getUserAgent(context, "SMS"))
-                val videoSource = ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(part.getUri())
-                exoPlayer?.prepare(videoSource)
+                val mediaItem = MediaItem.fromUri(part.getUri())
+                exoPlayer?.setMediaItem(mediaItem)
+                exoPlayer?.prepare()
             }
         }
     }

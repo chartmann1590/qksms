@@ -31,6 +31,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.jakewharton.rxbinding2.view.clicks
 import com.charles.messenger.R
 import com.charles.messenger.common.base.QkThemedActivity
+import com.charles.messenger.common.util.InterstitialAdManager
 import com.charles.messenger.common.util.extensions.autoScrollToStart
 import com.charles.messenger.common.util.extensions.resolveThemeColor
 import com.charles.messenger.common.util.extensions.setBackgroundTint
@@ -46,6 +47,7 @@ import javax.inject.Inject
 class QkReplyActivity : QkThemedActivity(), QkReplyView {
 
     @Inject lateinit var adapter: MessagesAdapter
+    @Inject lateinit var interstitialAdManager: InterstitialAdManager
     @Inject lateinit var viewModelFactory: ViewModelProvider.Factory
 
     override val menuItemIntent: Subject<Int> = PublishSubject.create()
@@ -66,6 +68,9 @@ class QkReplyActivity : QkThemedActivity(), QkReplyView {
         window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
         window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         viewModel.bindView(this)
+
+        // Preload interstitial ad
+        interstitialAdManager.loadAd(this)
 
         toolbar.clipToOutline = true
 
@@ -97,7 +102,7 @@ class QkReplyActivity : QkThemedActivity(), QkReplyView {
         toolbar.menu.findItem(R.id.expand)?.isVisible = !state.expanded
         toolbar.menu.findItem(R.id.collapse)?.isVisible = state.expanded
 
-        adapter.data = state.data
+        adapter.messagesData = state.data
 
         counter.text = state.remaining
         counter.setVisible(counter.text.isNotBlank())
@@ -127,6 +132,12 @@ class QkReplyActivity : QkThemedActivity(), QkReplyView {
     override fun getActivityThemeRes(black: Boolean) = when {
         black -> R.style.AppThemeDialog_Black
         else -> R.style.AppThemeDialog
+    }
+
+    override fun onDestroy() {
+        // Show interstitial ad when closing quick reply
+        interstitialAdManager.maybeShowAd(this)
+        super.onDestroy()
     }
 
 }

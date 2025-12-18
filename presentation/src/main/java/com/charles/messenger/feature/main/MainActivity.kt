@@ -57,12 +57,7 @@ import com.charles.messenger.feature.conversations.ConversationItemTouchCallback
 import com.charles.messenger.feature.conversations.ConversationsAdapter
 import com.charles.messenger.manager.ChangelogManager
 import com.charles.messenger.repository.SyncRepository
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdView
-import com.google.android.gms.ads.MobileAds
-import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.analytics.ktx.analytics
-import com.google.firebase.ktx.Firebase
+import com.charles.messenger.common.util.InterstitialAdManager
 import com.jakewharton.rxbinding2.widget.textChanges
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
@@ -78,8 +73,8 @@ import kotlinx.android.synthetic.main.main_syncing.*
 import javax.inject.Inject
 
 class MainActivity : QkThemedActivity(), MainView {
-    lateinit var mAdView : AdView
 
+    @Inject lateinit var interstitialAdManager: InterstitialAdManager
     @Inject lateinit var blockingDialog: BlockingDialog
     @Inject lateinit var disposables: CompositeDisposable
     @Inject lateinit var navigator: Navigator
@@ -88,8 +83,6 @@ class MainActivity : QkThemedActivity(), MainView {
     @Inject lateinit var searchAdapter: SearchAdapter
     @Inject lateinit var itemTouchCallback: ConversationItemTouchCallback
     @Inject lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private lateinit var firebaseAnalytics: FirebaseAnalytics
 
     override val onNewIntentIntent: Subject<Intent> = PublishSubject.create()
     override val activityResumedIntent: Subject<Boolean> = PublishSubject.create()
@@ -141,13 +134,8 @@ class MainActivity : QkThemedActivity(), MainView {
         viewModel.bindView(this)
         onNewIntentIntent.onNext(intent)
 
-        MobileAds.initialize(this) {}
-
-        mAdView = findViewById(R.id.adView)
-        val adRequest = AdRequest.Builder().build()
-        mAdView.loadAd(adRequest)
-
-        firebaseAnalytics = Firebase.analytics
+        // Preload interstitial ad
+        interstitialAdManager.loadAd(this)
 
         (snackbar as? ViewStub)?.setOnInflateListener { _, _ ->
             snackbarButton.clicks()
@@ -352,6 +340,9 @@ class MainActivity : QkThemedActivity(), MainView {
     override fun onPause() {
         super.onPause()
         activityResumedIntent.onNext(false)
+
+        // Show interstitial ad when leaving the main screen
+        interstitialAdManager.maybeShowAd(this)
     }
 
     override fun onDestroy() {

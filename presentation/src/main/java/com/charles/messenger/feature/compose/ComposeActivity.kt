@@ -45,6 +45,7 @@ import com.charles.messenger.R
 import com.charles.messenger.common.Navigator
 import com.charles.messenger.common.base.QkThemedActivity
 import com.charles.messenger.common.util.DateFormatter
+import com.charles.messenger.common.util.InterstitialAdManager
 import com.charles.messenger.common.util.extensions.*
 import com.charles.messenger.feature.compose.editing.ChipsAdapter
 import com.charles.messenger.feature.contacts.ContactsActivity
@@ -77,6 +78,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     @Inject lateinit var attachmentAdapter: AttachmentAdapter
     @Inject lateinit var chipsAdapter: ChipsAdapter
     @Inject lateinit var dateFormatter: DateFormatter
+    @Inject lateinit var interstitialAdManager: InterstitialAdManager
     @Inject lateinit var messageAdapter: MessagesAdapter
     @Inject lateinit var navigator: Navigator
     @Inject lateinit var viewModelFactory: ViewModelProvider.Factory
@@ -118,6 +120,9 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         setContentView(R.layout.compose_activity)
         showBackButton(true)
         viewModel.bindView(this)
+
+        // Preload interstitial ad
+        interstitialAdManager.loadAd(this)
 
         contentView.layoutTransition = LayoutTransition().apply {
             disableTransitionType(LayoutTransition.CHANGING)
@@ -162,6 +167,9 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     override fun onPause() {
         super.onPause()
         activityVisibleIntent.onNext(false)
+
+        // Show interstitial ad when leaving the compose screen
+        interstitialAdManager.maybeShowAd(this)
     }
 
     override fun render(state: ComposeState) {
@@ -210,7 +218,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         sendAsGroupSwitch.isChecked = state.sendAsGroup
 
         messageList.setVisible(!state.editingMode || state.sendAsGroup || state.selectedChips.size == 1)
-        messageAdapter.data = state.messages
+        messageAdapter.messagesData = state.messages
         messageAdapter.highlight = state.searchSelectionId
 
         scheduledGroup.isVisible = state.scheduled != 0L
@@ -327,7 +335,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     }
 
     override fun scrollToMessage(id: Long) {
-        messageAdapter.data?.second
+        messageAdapter.messagesData?.second
                 ?.indexOfLast { message -> message.id == id }
                 ?.takeIf { position -> position != -1 }
                 ?.let(messageList::scrollToPosition)
