@@ -144,9 +144,20 @@ abstract class QkThemedActivity : QkActivity() {
             adView?.let {
                 val adRequest = AdRequest.Builder().build()
                 it.loadAd(adRequest)
+                timber.log.Timber.d("Banner ad loading with unit ID: ${it.adUnitId}")
+
+                it.adListener = object : com.google.android.gms.ads.AdListener() {
+                    override fun onAdLoaded() {
+                        timber.log.Timber.d("Banner ad loaded successfully")
+                    }
+
+                    override fun onAdFailedToLoad(error: com.google.android.gms.ads.LoadAdError) {
+                        timber.log.Timber.e("Banner ad failed to load: ${error.message} (${error.code})")
+                    }
+                }
             }
         } catch (e: Exception) {
-            // AdView not found in this activity layout, which is okay
+            timber.log.Timber.e(e, "Error loading banner ad")
         }
 
         // Set the color for the overflow and navigation icon

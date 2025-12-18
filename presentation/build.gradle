@@ -43,14 +43,16 @@ android {
         applicationId "com.charles.messenger"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 2218
-        versionName "3.9.4"
+        versionCode 2219
+        versionName "3.9.5"
         setProperty("archivesBaseName", "messenger-v${versionName}")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         setProperty("archivesBaseName", "messenger-v${versionName}")
 
+        // Use test ad IDs for debug builds, production IDs for release
         buildConfigField "String", "ADMOB_INTERSTITIAL_ID", "\"" + localProperties['ADMOB_INTERSTITIAL_ID'] + "\""
+        buildConfigField "Boolean", "USE_TEST_ADS", "false"
         resValue "string", "admob_banner_id", localProperties['ADMOB_BANNER_ID']
         manifestPlaceholders = [ADMOB_APP_ID: localProperties['ADMOB_APP_ID']]
     }
@@ -60,11 +62,20 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Use Google's test ad IDs for debug builds
+            buildConfigField "Boolean", "USE_TEST_ADS", "true"
+            buildConfigField "String", "ADMOB_INTERSTITIAL_ID", "\"ca-app-pub-3940256099942544/1033173712\""
+            resValue "string", "admob_banner_id", "ca-app-pub-3940256099942544/6300978111"
+            manifestPlaceholders = [ADMOB_APP_ID: "ca-app-pub-3940256099942544~3347511713"]
+        }
         release {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
+            // Use production ad IDs (already set in defaultConfig)
+            buildConfigField "Boolean", "USE_TEST_ADS", "false"
         }
     }
 
@@ -91,6 +102,11 @@ android {
         signingConfigs.release.storePassword = System.getenv("keystore_password")
         signingConfigs.release.keyAlias = System.getenv("key_alias")
         signingConfigs.release.keyPassword = System.getenv("key_password")
+    } else if (localProperties.containsKey('STORE_FILE')) {
+        signingConfigs.release.storeFile = file(localProperties['STORE_FILE'])
+        signingConfigs.release.storePassword = localProperties['STORE_PASSWORD']
+        signingConfigs.release.keyAlias = localProperties['KEY_ALIAS']
+        signingConfigs.release.keyPassword = localProperties['KEY_PASSWORD']
     }
 }
 

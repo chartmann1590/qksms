@@ -33,20 +33,24 @@ class InterstitialAdManager @Inject constructor() {
      * Preload an interstitial ad
      */
     fun loadAd(activity: Activity) {
-        if (interstitialAd != null || isLoading) return
+        if (interstitialAd != null || isLoading) {
+            Timber.d("Skipping ad load - already loaded or loading")
+            return
+        }
 
         isLoading = true
         val adRequest = AdRequest.Builder().build()
+        Timber.d("Loading interstitial ad with unit ID: $AD_UNIT_ID")
 
         InterstitialAd.load(activity, AD_UNIT_ID, adRequest, object : InterstitialAdLoadCallback() {
             override fun onAdFailedToLoad(adError: LoadAdError) {
-                Timber.d("Interstitial ad failed to load: ${adError.message}")
+                Timber.e("Interstitial ad failed to load: ${adError.message} (code: ${adError.code})")
                 interstitialAd = null
                 isLoading = false
             }
 
             override fun onAdLoaded(ad: InterstitialAd) {
-                Timber.d("Interstitial ad loaded successfully")
+                Timber.d("Interstitial ad loaded successfully!")
                 interstitialAd = ad
                 isLoading = false
 
@@ -57,12 +61,12 @@ class InterstitialAdManager @Inject constructor() {
                     }
 
                     override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                        Timber.d("Interstitial ad failed to show: ${adError.message}")
+                        Timber.e("Interstitial ad failed to show: ${adError.message}")
                         interstitialAd = null
                     }
 
                     override fun onAdShowedFullScreenContent() {
-                        Timber.d("Interstitial ad showed")
+                        Timber.d("Interstitial ad showed successfully!")
                     }
                 }
             }
