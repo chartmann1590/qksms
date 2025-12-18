@@ -29,7 +29,8 @@ import javax.inject.Inject
 
 class AiSettingsPresenter @Inject constructor(
     private val prefs: Preferences,
-    private val fetchOllamaModels: FetchOllamaModels
+    private val fetchOllamaModels: FetchOllamaModels,
+    private val autoReplyNotification: com.charles.messenger.common.util.AiAutoReplyNotification
 ) : QkPresenter<AiSettingsView, AiSettingsState>(
     AiSettingsState(
         aiEnabled = false,
@@ -91,6 +92,8 @@ class AiSettingsPresenter @Inject constructor(
             .doOnNext { enabled ->
                 prefs.aiAutoReplyToAll.set(enabled)
                 Timber.d("Auto-Reply to All: $enabled")
+                // Update notification
+                autoReplyNotification.updateIfNeeded()
             }
             .autoDisposable(view.scope())
             .subscribe { enabled ->

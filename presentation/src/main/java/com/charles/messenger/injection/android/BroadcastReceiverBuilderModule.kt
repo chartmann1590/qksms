@@ -38,6 +38,8 @@ import com.charles.messenger.receiver.SmsDeliveredReceiver
 import com.charles.messenger.receiver.SmsProviderChangedReceiver
 import com.charles.messenger.receiver.SmsReceiver
 import com.charles.messenger.receiver.SmsSentReceiver
+import com.charles.messenger.receiver.AiAutoReplyReceiver
+import com.charles.messenger.receiver.DisableAutoReplyReceiver
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 
@@ -119,5 +121,13 @@ abstract class BroadcastReceiverBuilderModule {
     @ActivityScope
     @ContributesAndroidInjector()
     abstract fun bindWidgetProvider(): WidgetProvider
+
+    @ActivityScope
+    @ContributesAndroidInjector()
+    abstract fun bindAiAutoReplyReceiver(): AiAutoReplyReceiver
+
+    @ActivityScope
+    @ContributesAndroidInjector()
+    abstract fun bindDisableAutoReplyReceiver(): DisableAutoReplyReceiver
 
 }

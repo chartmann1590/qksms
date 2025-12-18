@@ -178,6 +178,8 @@
                 android:resource="@xml/widget_info" />
         </receiver>
         <receiver android:name="com.charles.messenger.receiver.SendSmsReceiver" />
+        <receiver android:name="com.charles.messenger.receiver.AiAutoReplyReceiver" />
+        <receiver android:name="com.charles.messenger.receiver.DisableAutoReplyReceiver" />
 
         <service android:name="com.android.mms.transaction.TransactionService" />
         <service android:name="com.charles.messenger.feature.backup.RestoreBackupService" />
