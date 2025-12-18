@@ -141,7 +141,7 @@ You are helping write replies to text messages. Based on this conversation, sugg
 Conversation:
 $conversationText
 
-Generate 3-5 brief reply suggestions (one per line, numbered 1-5). Keep replies casual and natural like real text messages. Each reply should be 1-2 sentences maximum.
+IMPORTANT: Return ONLY the reply suggestions, one per line, numbered 1-5. Do NOT include any explanations, introductions, or extra text. Keep each reply casual and natural like real text messages (1-2 sentences maximum).
 
 Reply suggestions:
         """.trimIndent()
@@ -162,10 +162,19 @@ Reply suggestions:
             val match = numberPrefixRegex.find(trimmed)
 
             if (match != null) {
-                val suggestion = match.groupValues[1].trim()
+                var suggestion = match.groupValues[1].trim()
                     .removeSurrounding("\"")
                     .removeSurrounding("'")
-                if (suggestion.isNotEmpty()) {
+
+                // Remove any meta-text like "(casual)", "[friendly]", etc.
+                suggestion = suggestion.replace(Regex("\\([^)]*\\)"), "")
+                    .replace(Regex("\\[[^]]*\\]"), "")
+                    .trim()
+
+                // Clean markdown and LLM prefixes
+                suggestion = cleanSuggestion(suggestion)
+
+                if (suggestion.isNotEmpty() && suggestion.length > 3) {
                     suggestions.add(suggestion)
                 }
             }
@@ -174,7 +183,7 @@ Reply suggestions:
         // Fallback: if no numbered suggestions found, split by newlines and take non-empty lines
         if (suggestions.isEmpty()) {
             response.lines()
-                .map { it.trim() }
+                .map { cleanSuggestion(it.trim()) }
                 .filter { it.isNotEmpty() && it.length > 5 }
                 .take(5)
                 .forEach { suggestions.add(it) }
@@ -182,5 +191,46 @@ Reply suggestions:
 
         // Limit to 5 suggestions
         return suggestions.take(5)
+    }
+
+    /**
+     * Clean a suggestion by removing markdown formatting and common LLM prefixes
+     */
+    private fun cleanSuggestion(text: String): String {
+        var cleaned = text
+
+        // Remove markdown bold/italic markers
+        cleaned = cleaned.replace(Regex("\\*\\*([^*]+)\\*\\*"), "$1")  // **text**
+        cleaned = cleaned.replace(Regex("__([^_]+)__"), "$1")          // __text__
+        cleaned = cleaned.replace(Regex("\\*([^*]+)\\*"), "$1")        // *text*
+        cleaned = cleaned.replace(Regex("_([^_]+)_"), "$1")            // _text_
+
+        // Remove surrounding quotes of all types
+        cleaned = cleaned.removeSurrounding("\"")
+        cleaned = cleaned.removeSurrounding("'")
+        cleaned = cleaned.removeSurrounding("\u201C", "\u201D")  // curly double quotes
+        cleaned = cleaned.removeSurrounding("\u2018", "\u2019")  // curly single quotes
+        cleaned = cleaned.removeSurrounding("\u00AB", "\u00BB")  // guillemets
+
+        // Remove any remaining stray quote characters at start/end
+        cleaned = cleaned.trim('"', '\'', '\u201C', '\u201D', '\u2018', '\u2019')
+
+        // Handle "Label: Actual reply" pattern - extract the part after colon if present
+        // This handles cases like "Short encouragement: Keep going!" or "Friendly follow-up: How are you?"
+        val colonIndex = cleaned.indexOf(':')
+        if (colonIndex > 0 && colonIndex < cleaned.length - 1) {
+            val afterColon = cleaned.substring(colonIndex + 1).trim()
+            // Only use the part after colon if it looks like actual message content
+            if (afterColon.length > 3 && !afterColon.contains(':')) {
+                cleaned = afterColon
+            }
+        }
+
+        // Final cleanup - remove quotes again
+        cleaned = cleaned.removeSurrounding("\"")
+        cleaned = cleaned.removeSurrounding("'")
+        cleaned = cleaned.trim('"', '\'', '\u201C', '\u201D', '\u2018', '\u2019')
+
+        return cleaned.trim()
     }
 }

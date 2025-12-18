@@ -719,10 +719,18 @@ class ComposeViewModel @Inject constructor(
         view.smartReplyIntent
                 .filter { prefs.aiReplyEnabled.get() }
                 .filter { prefs.ollamaModel.get().isNotEmpty() }
-                .doOnNext { newState { copy(loadingSuggestions = true, showingSuggestions = false) } }
+                .doOnNext {
+                    newState { copy(loadingSuggestions = true, showingSuggestions = false) }
+                    view.showToast("Loading smart replies...")
+                }
                 .withLatestFrom(conversation) { _, conv -> conv }
-                .switchMap { conv ->
-                    val recentMessages = messageRepo.getMessages(conv.id).takeLast(10)
+                .map { conv ->
+                    // Get messages on main thread (Realm requires this)
+                    val recentMessages = messageRepo.getMessages(conv.id).toList().takeLast(10)
+                    Pair(conv, recentMessages)
+                }
+                .observeOn(io.reactivex.schedulers.Schedulers.io())
+                .switchMap { (_, recentMessages) ->
                     generateSmartReplies.buildObservable(
                         com.charles.messenger.interactor.GenerateSmartReplies.Params(
                             baseUrl = prefs.ollamaApiUrl.get(),

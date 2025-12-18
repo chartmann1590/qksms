@@ -26,7 +26,8 @@ import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.charles.messenger.R
-import com.charles.messenger.feature.settings.ai.AiSettingsController
+import com.charles.messenger.feature.main.MainActivity
+import com.charles.messenger.receiver.DisableAutoReplyReceiver
 import com.charles.messenger.util.Preferences
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -65,10 +66,12 @@ class AiAutoReplyNotification @Inject constructor(
     }
 
     fun show() {
+        val count = prefs.aiAutoReplyCount.get()
+
         // Create intent to open AI settings
-        val settingsIntent = Intent(Intent.ACTION_MAIN).apply {
-            addCategory(Intent.CATEGORY_LAUNCHER)
-            setPackage(context.packageName)
+        val settingsIntent = Intent(context, MainActivity::class.java).apply {
+            action = "com.charles.messenger.ACTION_OPEN_AI_SETTINGS"
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         val pendingIntent = PendingIntent.getActivity(
             context,
@@ -94,10 +97,16 @@ class AiAutoReplyNotification @Inject constructor(
             }
         )
 
+        val contentText = if (count == 0) {
+            context.getString(R.string.ai_auto_reply_notification_text)
+        } else {
+            context.getString(R.string.ai_auto_reply_notification_text_with_count, count)
+        }
+
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_smart_reply_24dp)
             .setContentTitle(context.getString(R.string.ai_auto_reply_notification_title))
-            .setContentText(context.getString(R.string.ai_auto_reply_notification_text))
+            .setContentText(contentText)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)
             .setContentIntent(pendingIntent)
@@ -113,6 +122,19 @@ class AiAutoReplyNotification @Inject constructor(
 
     fun dismiss() {
         notificationManager.cancel(NOTIFICATION_ID)
+    }
+
+    fun incrementCount() {
+        val newCount = prefs.aiAutoReplyCount.get() + 1
+        prefs.aiAutoReplyCount.set(newCount)
+        // Update the notification with new count
+        if (prefs.aiAutoReplyToAll.get()) {
+            show()
+        }
+    }
+
+    fun resetCount() {
+        prefs.aiAutoReplyCount.set(0)
     }
 
     fun updateIfNeeded() {

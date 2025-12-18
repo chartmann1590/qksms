@@ -27,6 +27,7 @@ import com.jakewharton.rxbinding2.widget.checkedChanges
 import com.charles.messenger.R
 import com.charles.messenger.common.base.QkController
 import com.charles.messenger.common.widget.PreferenceView
+import com.charles.messenger.common.widget.QkSwitch
 import com.charles.messenger.injection.appComponent
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
@@ -55,6 +56,17 @@ class AiSettingsController : QkController<AiSettingsView, AiSettingsState, AiSet
         presenter.bindIntents(this)
         setTitle(R.string.ai_settings_title)
         showBackButton(true)
+
+        // Handle clicks on switch preferences to toggle them
+        aiEnabled.clicks().subscribe {
+            val switch = aiEnabled.widget?.findViewById<QkSwitch>(R.id.checkbox)
+            switch?.isChecked = !(switch?.isChecked ?: false)
+        }
+
+        aiAutoReplyToAll.clicks().subscribe {
+            val switch = aiAutoReplyToAll.widget?.findViewById<QkSwitch>(R.id.checkbox)
+            switch?.isChecked = !(switch?.isChecked ?: false)
+        }
     }
 
     override fun preferenceClicks(): Observable<PreferenceView> = (0 until preferences.childCount)
@@ -67,7 +79,7 @@ class AiSettingsController : QkController<AiSettingsView, AiSettingsState, AiSet
 
     override fun aiEnabledChanged(): Observable<Boolean> {
         return aiEnabled.widget?.let { widget ->
-            (widget.findViewById<View>(R.id.toggle) as? android.widget.Switch)
+            (widget.findViewById<View>(R.id.checkbox) as? QkSwitch)
                 ?.checkedChanges()
                 ?.skipInitialValue()
         } ?: Observable.empty()
@@ -79,7 +91,7 @@ class AiSettingsController : QkController<AiSettingsView, AiSettingsState, AiSet
 
     override fun autoReplyToAllChanged(): Observable<Boolean> {
         return aiAutoReplyToAll.widget?.let { widget ->
-            (widget.findViewById<View>(R.id.toggle) as? android.widget.Switch)
+            (widget.findViewById<View>(R.id.checkbox) as? QkSwitch)
                 ?.checkedChanges()
                 ?.skipInitialValue()
         } ?: Observable.empty()
@@ -131,7 +143,7 @@ class AiSettingsController : QkController<AiSettingsView, AiSettingsState, AiSet
     override fun render(state: AiSettingsState) {
         // Update AI enabled switch
         aiEnabled.widget?.let { widget ->
-            (widget.findViewById<View>(R.id.toggle) as? android.widget.Switch)?.isChecked = state.aiEnabled
+            (widget.findViewById<View>(R.id.checkbox) as? QkSwitch)?.isChecked = state.aiEnabled
         }
 
         // Update Ollama URL summary
@@ -174,7 +186,7 @@ class AiSettingsController : QkController<AiSettingsView, AiSettingsState, AiSet
 
         // Update auto-reply toggle
         aiAutoReplyToAll.widget?.let { widget ->
-            (widget.findViewById<View>(R.id.toggle) as? android.widget.Switch)?.isChecked = state.autoReplyToAll
+            (widget.findViewById<View>(R.id.checkbox) as? QkSwitch)?.isChecked = state.autoReplyToAll
         }
 
         // Show/hide warning based on auto-reply state

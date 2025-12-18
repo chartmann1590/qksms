@@ -21,9 +21,9 @@ package com.charles.messenger.feature.compose
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.recyclerview.widget.RecyclerView
 import com.charles.messenger.R
-import com.google.android.material.chip.Chip
 
 class SuggestionChipsAdapter(
     private val onChipClicked: (String) -> Unit
@@ -48,7 +48,7 @@ class SuggestionChipsAdapter(
     override fun getItemCount(): Int = suggestions.size
 
     inner class ChipViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val chip: Chip = itemView.findViewById(R.id.suggestionChip)
+        private val chip: Button = itemView.findViewById(R.id.suggestionChip)
 
         fun bind(suggestion: String) {
             chip.text = suggestion

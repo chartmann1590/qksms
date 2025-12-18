@@ -17,16 +17,21 @@
   ~ You should have received a copy of the GNU General Public License
   ~ along with QKSMS.  If not, see <http://www.gnu.org/licenses/>.
   -->
-<com.google.android.material.chip.Chip
+<Button
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/suggestionChip"
-    style="@style/Widget.MaterialComponents.Chip.Action"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginEnd="8dp"
-    android:clickable="true"
-    android:focusable="true"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
+    android:minHeight="0dp"
+    android:minWidth="0dp"
+    android:maxLines="2"
+    android:ellipsize="end"
     android:textSize="14sp"
-    app:chipCornerRadius="16dp"
-    app:chipStrokeWidth="1dp" />
+    android:textAllCaps="false"
+    android:background="@drawable/rounded_rectangle_4dp"
+    android:textColor="?android:attr/textColorPrimary" />

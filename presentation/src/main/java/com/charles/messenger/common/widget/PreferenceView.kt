@@ -62,6 +62,8 @@ class PreferenceView @JvmOverloads constructor(
             }
         }
 
+    val widget: android.view.ViewGroup get() = widgetFrame
+
     init {
         if (!isInEditMode) {
             appComponent.inject(this)

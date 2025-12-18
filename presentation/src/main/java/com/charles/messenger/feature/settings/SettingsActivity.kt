@@ -24,6 +24,7 @@ import com.bluelinelabs.conductor.Router
 import com.bluelinelabs.conductor.RouterTransaction
 import com.charles.messenger.R
 import com.charles.messenger.common.base.QkThemedActivity
+import com.charles.messenger.feature.settings.ai.AiSettingsController
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.container_activity.*
 
@@ -38,7 +39,13 @@ class SettingsActivity : QkThemedActivity() {
 
         router = Conductor.attachRouter(this, container, savedInstanceState)
         if (!router.hasRootController()) {
-            router.setRoot(RouterTransaction.with(SettingsController()))
+            val screen = intent.getStringExtra("screen")
+            val controller = if (screen == "ai_settings") {
+                AiSettingsController()
+            } else {
+                SettingsController()
+            }
+            router.setRoot(RouterTransaction.with(controller))
         }
     }
 

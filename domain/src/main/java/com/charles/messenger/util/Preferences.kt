@@ -127,6 +127,7 @@ class Preferences @Inject constructor(
     val ollamaApiUrl = rxPrefs.getString("ollamaApiUrl", "http://localhost:11434")
     val ollamaModel = rxPrefs.getString("ollamaModel", "")
     val aiAutoReplyToAll = rxPrefs.getBoolean("aiAutoReplyToAll", false)
+    val aiAutoReplyCount = rxPrefs.getInteger("aiAutoReplyCount", 0)
 
     init {
         // Migrate from old night mode preference to new one, now that we support android Q night mode

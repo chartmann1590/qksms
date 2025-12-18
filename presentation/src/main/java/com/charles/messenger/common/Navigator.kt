@@ -145,6 +145,12 @@ class Navigator @Inject constructor(
         startActivity(intent)
     }
 
+    fun showAiSettings() {
+        val intent = Intent(context, SettingsActivity::class.java)
+        intent.putExtra("screen", "ai_settings")
+        startActivity(intent)
+    }
+
     fun showDeveloper() {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.buymeacoffee.com/charleshartmann"))
         startActivityExternal(intent)

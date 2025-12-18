@@ -23,16 +23,20 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 33
 
     compileOptions {
         sourceCompatibility 1.8
         targetCompatibility 1.8
     }
 
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 29
+        targetSdkVersion 30
     }
 }
 
@@ -62,6 +66,10 @@ dependencies {
     implementation "com.jakewharton.timber:timber:$timber_version"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation project(":common")
+
+    // moshi (using reflection-based adapter for compatibility)
+    implementation "com.squareup.moshi:moshi:$moshi_version"
+    implementation "com.squareup.moshi:moshi-kotlin:$moshi_version"
 }
 
 repositories {

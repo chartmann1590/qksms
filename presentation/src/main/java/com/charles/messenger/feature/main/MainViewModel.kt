@@ -162,9 +162,10 @@ class MainViewModel @Inject constructor(
         view.onNewIntentIntent
                 .autoDisposable(view.scope())
                 .subscribe { intent ->
-                    when (intent.getStringExtra("screen")) {
-                        "compose" -> navigator.showConversation(intent.getLongExtra("threadId", 0))
-                        "blocking" -> navigator.showBlockedConversations()
+                    when {
+                        intent.action == "com.charles.messenger.ACTION_OPEN_AI_SETTINGS" -> navigator.showAiSettings()
+                        intent.getStringExtra("screen") == "compose" -> navigator.showConversation(intent.getLongExtra("threadId", 0))
+                        intent.getStringExtra("screen") == "blocking" -> navigator.showBlockedConversations()
                     }
                 }
 

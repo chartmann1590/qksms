@@ -18,6 +18,8 @@
  */
 package com.charles.messenger.interactor
 
+import android.content.Context
+import android.content.Intent
 import android.telephony.SmsMessage
 import com.charles.messenger.blocking.BlockingClient
 import com.charles.messenger.extensions.mapNotNull
@@ -31,6 +33,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 class ReceiveSms @Inject constructor(
+    private val context: Context,
     private val conversationRepo: ConversationRepository,
     private val blockingClient: BlockingClient,
     private val prefs: Preferences,
@@ -91,6 +94,16 @@ class ReceiveSms @Inject constructor(
                 .map { conversation -> conversation.id } // Map to the id because [delay] will put us on the wrong thread
                 .doOnNext { threadId -> notificationManager.update(threadId) } // Update the notification
                 .doOnNext { shortcutManager.updateShortcuts() } // Update shortcuts
+                .doOnNext { threadId ->
+                    // Trigger AI auto-reply if enabled
+                    if (prefs.aiAutoReplyToAll.get() && prefs.aiReplyEnabled.get()) {
+                        Timber.d("Triggering AI auto-reply for thread: $threadId")
+                        val intent = Intent("com.charles.messenger.AI_AUTO_REPLY")
+                        intent.setPackage(context.packageName)
+                        intent.putExtra("thread_id", threadId)
+                        context.sendBroadcast(intent)
+                    }
+                }
                 .flatMap { updateBadge.buildObservable(Unit) } // Update the badge and widget
     }
 

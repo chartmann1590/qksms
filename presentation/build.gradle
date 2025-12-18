@@ -43,8 +43,8 @@ android {
         applicationId "com.charles.messenger"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 2219
-        versionName "3.9.5"
+        versionCode 2220
+        versionName "3.9.6"
         setProperty("archivesBaseName", "messenger-v${versionName}")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -212,6 +212,7 @@ dependencies {
     implementation "com.google.android.flexbox:flexbox:3.0.0"
     implementation "com.jakewharton.timber:timber:$timber_version"
     implementation "com.squareup.moshi:moshi-kotlin:$moshi_version"
+    implementation "com.squareup.okhttp3:okhttp:$okhttp3_version"
     implementation "me.leolin:ShortcutBadger:1.1.22"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation project(":android-smsmms")
@@ -236,6 +237,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-ads:20.5.0'
 }
 
+// Only apply Google services plugins for withAnalytics flavor
 if (getGradle().getStartParameter().getTaskRequests().toString().toLowerCase().contains("withanalytics")) {
     apply plugin: 'com.google.gms.google-services'
     apply plugin: 'com.google.firebase.crashlytics'

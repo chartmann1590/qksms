@@ -21,15 +21,22 @@ package com.charles.messenger.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.charles.messenger.common.util.AiAutoReplyNotification
 import com.charles.messenger.interactor.GenerateSmartReplies
 import com.charles.messenger.interactor.SendMessage
+import com.charles.messenger.model.Message
 import com.charles.messenger.repository.ConversationRepository
 import com.charles.messenger.repository.MessageRepository
 import com.charles.messenger.util.Preferences
 import dagger.android.AndroidInjection
+import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.plusAssign
+import io.reactivex.schedulers.Schedulers
+import io.realm.Realm
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class AiAutoReplyReceiver : BroadcastReceiver() {
@@ -39,6 +46,7 @@ class AiAutoReplyReceiver : BroadcastReceiver() {
     @Inject lateinit var sendMessage: SendMessage
     @Inject lateinit var messageRepo: MessageRepository
     @Inject lateinit var conversationRepo: ConversationRepository
+    @Inject lateinit var autoReplyNotification: AiAutoReplyNotification
 
     private val disposables = CompositeDisposable()
 
@@ -62,7 +70,7 @@ class AiAutoReplyReceiver : BroadcastReceiver() {
             return
         }
 
-        // Get thread ID from intent extras (this varies by device)
+        // Get thread ID from intent extras
         val threadId = intent.getLongExtra("thread_id", -1L)
         if (threadId == -1L) {
             Timber.w("Could not determine thread ID, skipping auto-reply")
@@ -71,53 +79,85 @@ class AiAutoReplyReceiver : BroadcastReceiver() {
 
         Timber.d("Auto-reply triggered for thread: $threadId")
 
-        // Get conversation
-        val conversation = conversationRepo.getConversation(threadId)
-        if (conversation == null) {
-            Timber.w("Conversation not found for thread: $threadId")
-            return
-        }
+        val pendingResult = goAsync()
 
-        // Get recent messages for context
-        val messages = messageRepo.getMessages(threadId).takeLast(10)
-        if (messages.isEmpty()) {
-            Timber.w("No messages found for thread: $threadId")
-            return
-        }
+        // Delay to ensure message is fully committed to Realm
+        disposables += Single.timer(1500, TimeUnit.MILLISECONDS)
+            .observeOn(AndroidSchedulers.mainThread())
+            .flatMap {
+                // Use a fresh Realm instance and refresh to get latest data
+                val realm = Realm.getDefaultInstance()
+                realm.refresh()
 
-        // Generate and send reply
-        disposables += generateSmartReplies
-            .buildObservable(GenerateSmartReplies.Params(
-                baseUrl = prefs.ollamaApiUrl.get(),
-                model = prefs.ollamaModel.get(),
-                messages = messages
-            ))
-            .firstOrError()
-            .flatMap { suggestions ->
-                if (suggestions.isEmpty()) {
-                    Timber.w("No suggestions generated")
-                    throw Exception("No suggestions available")
+                // Get conversation on main thread (Realm requirement)
+                val conversation = conversationRepo.getConversation(threadId)
+                if (conversation == null) {
+                    realm.close()
+                    Timber.w("Conversation not found for thread: $threadId")
+                    return@flatMap Single.error<Unit>(Exception("Conversation not found"))
                 }
 
-                val replyText = suggestions.first()
-                Timber.d("Auto-replying with: $replyText")
+                // Get recent messages synchronously with fresh Realm
+                val realmMessages = realm.where(Message::class.java)
+                    .equalTo("threadId", threadId)
+                    .sort("date")
+                    .findAll()
 
-                // Send the first suggestion as reply
-                sendMessage.buildObservable(SendMessage.Params(
-                    subId = -1,
-                    threadId = threadId,
-                    addresses = listOf(conversation.recipients.first().address),
-                    body = replyText,
-                    attachments = emptyList()
-                )).firstOrError()
+                if (realmMessages.isEmpty()) {
+                    realm.close()
+                    Timber.w("No messages found for thread: $threadId")
+                    return@flatMap Single.error<Unit>(Exception("No messages found"))
+                }
+
+                // Copy to unmanaged list to use across threads
+                val messages = realm.copyFromRealm(realmMessages).takeLast(10)
+                realm.close()
+
+                Timber.d("Found ${messages.size} messages for auto-reply context")
+
+                val recipient = conversation.recipients.firstOrNull()
+                if (recipient == null) {
+                    return@flatMap Single.error<Unit>(Exception("No recipient found"))
+                }
+                val recipientAddress = recipient.address
+
+                // Generate smart replies on IO thread
+                generateSmartReplies
+                    .buildObservable(GenerateSmartReplies.Params(
+                        baseUrl = prefs.ollamaApiUrl.get(),
+                        model = prefs.ollamaModel.get(),
+                        messages = messages
+                    ))
+                    .subscribeOn(Schedulers.io())
+                    .firstOrError()
+                    .flatMap { suggestions ->
+                        if (suggestions.isEmpty()) {
+                            Timber.w("No suggestions generated")
+                            return@flatMap Single.error<Unit>(Exception("No suggestions available"))
+                        }
+
+                        val replyText = suggestions.first()
+                        Timber.d("Auto-replying with: $replyText")
+
+                        sendMessage.buildObservable(SendMessage.Params(
+                            subId = -1,
+                            threadId = threadId,
+                            addresses = listOf(recipientAddress),
+                            body = replyText,
+                            attachments = emptyList()
+                        )).firstOrError().map { Unit }
+                    }
             }
             .subscribe(
                 {
                     Timber.d("Auto-reply sent successfully")
+                    autoReplyNotification.incrementCount()
+                    pendingResult.finish()
                     disposables.clear()
                 },
                 { error ->
                     Timber.e(error, "Auto-reply failed")
+                    pendingResult.finish()
                     disposables.clear()
                 }
             )

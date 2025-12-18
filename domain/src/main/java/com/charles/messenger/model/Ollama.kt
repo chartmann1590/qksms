@@ -19,12 +19,10 @@
 package com.charles.messenger.model
 
 import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
 
 /**
  * Represents an Ollama AI model
  */
-@JsonClass(generateAdapter = true)
 data class OllamaModel(
     @Json(name = "name") val name: String,
     @Json(name = "size") val size: Long,
@@ -34,7 +32,6 @@ data class OllamaModel(
 /**
  * Response from Ollama /api/tags endpoint
  */
-@JsonClass(generateAdapter = true)
 data class OllamaModelsResponse(
     @Json(name = "models") val models: List<OllamaModel>
 )
@@ -42,7 +39,6 @@ data class OllamaModelsResponse(
 /**
  * Request to Ollama /api/generate endpoint
  */
-@JsonClass(generateAdapter = true)
 data class OllamaGenerateRequest(
     @Json(name = "model") val model: String,
     @Json(name = "prompt") val prompt: String,
@@ -52,7 +48,6 @@ data class OllamaGenerateRequest(
 /**
  * Response from Ollama /api/generate endpoint
  */
-@JsonClass(generateAdapter = true)
 data class OllamaGenerateResponse(
     @Json(name = "model") val model: String,
     @Json(name = "response") val response: String,

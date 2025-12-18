@@ -19,6 +19,7 @@ Get the latest version of QKSMS:
 - **Beautiful Material Design** - Modern, clean interface that follows Material Design principles
 - **Highly Customizable** - Make it truly yours with extensive theming and customization options
 - **Privacy Focused** - Your messages stay on your device, with optional local backups
+- **🤖 AI Smart Reply** - Get intelligent reply suggestions powered by your own local Ollama server
 - **Feature Rich** - Everything you'd expect from a messaging app, plus powerful extras
 - **No Ads or Tracking** - Clean experience without intrusive advertisements (NoAnalytics variant available)
 
@@ -77,6 +78,25 @@ Get the latest version of QKSMS:
 - **Easy Restore** - Restore messages from backup files
 - **Manual Backups** - Create backups anytime you want
 - Never worry about losing your conversation history
+
+#### 🤖 AI Smart Reply & Auto-Reply (NEW!)
+QKSMS now features AI-powered smart replies using your own local Ollama server for complete privacy!
+
+- **Smart Reply Suggestions** - Get AI-generated reply suggestions while composing messages
+- **Auto-Reply to All** - Let AI automatically respond to incoming messages when you're busy
+- **Local AI Processing** - Uses Ollama running on your own machine—your messages never leave your network
+- **Multiple Model Support** - Choose from any model installed on your Ollama server
+
+**Setup Instructions:**
+1. Install [Ollama](https://ollama.ai) on your computer and pull a model (e.g., `ollama pull llama3.2`)
+2. Start Ollama with network access: `OLLAMA_HOST=0.0.0.0 ollama serve`
+3. In QKSMS, go to **Settings → Smart Reply (AI)**
+4. Enter your Ollama API URL (e.g., `http://192.168.1.100:11434` for your PC's local IP)
+5. Tap **Test Connection** to verify connectivity
+6. Select your preferred AI model from the dropdown
+7. Enable **Smart Reply** for suggestions, or **Auto-Reply to All** for fully automatic responses
+
+**Note:** Auto-Reply shows a persistent notification so you can quickly disable it. Use responsibly!
 
 #### Smart Automation (Messenger+ Features)
 - **Auto-Forward** - Automatically forward messages from specific senders

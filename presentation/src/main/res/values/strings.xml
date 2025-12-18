@@ -509,7 +509,8 @@
 
     <!-- Auto-Reply Notification -->
     <string name="ai_auto_reply_notification_title">AI Auto-Reply Active</string>
-    <string name="ai_auto_reply_notification_text">Tap to disable automatic replies</string>
+    <string name="ai_auto_reply_notification_text">Tap to open settings</string>
+    <string name="ai_auto_reply_notification_text_with_count">%d replies sent • Tap to open settings</string>
     <string name="ai_auto_reply_notification_action">Disable</string>
 
 </resources>

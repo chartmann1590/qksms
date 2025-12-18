@@ -92,6 +92,10 @@ class AiSettingsPresenter @Inject constructor(
             .doOnNext { enabled ->
                 prefs.aiAutoReplyToAll.set(enabled)
                 Timber.d("Auto-Reply to All: $enabled")
+                if (enabled) {
+                    // Reset count when enabling
+                    autoReplyNotification.resetCount()
+                }
                 // Update notification
                 autoReplyNotification.updateIfNeeded()
             }
@@ -109,10 +113,12 @@ class AiSettingsPresenter @Inject constructor(
         view.testConnectionClicks()
             .doOnNext { newState { copy(connectionStatus = ConnectionStatus.Testing, loadingModels = true) } }
             .withLatestFrom(state) { _, state -> state.ollamaUrl }
+            .observeOn(io.reactivex.schedulers.Schedulers.io())
             .switchMap { url ->
                 fetchOllamaModels.buildObservable(FetchOllamaModels.Params(url))
                     .toObservable()
             }
+            .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
             .autoDisposable(view.scope())
             .subscribe(
                 { models ->
