@@ -96,7 +96,8 @@ class ComposeViewModel @Inject constructor(
     private val prefs: Preferences,
     private val retrySending: RetrySending,
     private val sendMessage: SendMessage,
-    private val subscriptionManager: SubscriptionManagerCompat
+    private val subscriptionManager: SubscriptionManagerCompat,
+    private val generateSmartReplies: com.charles.messenger.interactor.GenerateSmartReplies
 ) : QkViewModel<ComposeView, ComposeState>(ComposeState(
         editingMode = threadId == 0L && addresses.isEmpty(),
         threadId = threadId,
@@ -713,6 +714,50 @@ class ComposeViewModel @Inject constructor(
         view.viewQksmsPlusIntent
                 .autoDisposable(view.scope())
                 .subscribe { navigator.showQksmsPlusActivity("compose_schedule") }
+
+        // Handle smart reply button clicks
+        view.smartReplyIntent
+                .filter { prefs.aiReplyEnabled.get() }
+                .filter { prefs.ollamaModel.get().isNotEmpty() }
+                .doOnNext { newState { copy(loadingSuggestions = true, showingSuggestions = false) } }
+                .withLatestFrom(conversation) { _, conv -> conv }
+                .switchMap { conv ->
+                    val recentMessages = messageRepo.getMessages(conv.id).takeLast(10)
+                    generateSmartReplies.buildObservable(
+                        com.charles.messenger.interactor.GenerateSmartReplies.Params(
+                            baseUrl = prefs.ollamaApiUrl.get(),
+                            model = prefs.ollamaModel.get(),
+                            messages = recentMessages
+                        )
+                    ).toObservable()
+                }
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDisposable(view.scope())
+                .subscribe(
+                    { suggestions ->
+                        Timber.d("Generated ${suggestions.size} suggestions")
+                        newState {
+                            copy(
+                                suggestedReplies = suggestions,
+                                showingSuggestions = true,
+                                loadingSuggestions = false
+                            )
+                        }
+                    },
+                    { error ->
+                        Timber.e(error, "Failed to generate suggestions")
+                        newState { copy(loadingSuggestions = false, showingSuggestions = false) }
+                        view.showToast("Failed to generate suggestions: ${error.message}")
+                    }
+                )
+
+        // Handle suggestion selection
+        view.selectSuggestionIntent
+                .autoDisposable(view.scope())
+                .subscribe { suggestion ->
+                    view.setDraft(suggestion)
+                    newState { copy(showingSuggestions = false) }
+                }
 
         // Navigate back
         view.optionsItemIntent

@@ -33,6 +33,7 @@ import android.provider.MediaStore
 import android.text.format.DateFormat
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
@@ -109,6 +110,14 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     override val sendIntent by lazy { send.clicks() }
     override val viewQksmsPlusIntent: Subject<Unit> = PublishSubject.create()
     override val backPressedIntent: Subject<Unit> = PublishSubject.create()
+    override val smartReplyIntent by lazy { smartReply.clicks() }
+    override val selectSuggestionIntent: Subject<String> = PublishSubject.create()
+
+    private val suggestionsAdapter by lazy {
+        SuggestionChipsAdapter { suggestion ->
+            selectSuggestionIntent.onNext(suggestion)
+        }
+    }
 
     private val viewModel by lazy { ViewModelProviders.of(this, viewModelFactory)[ComposeViewModel::class.java] }
 
@@ -140,6 +149,8 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         messageList.adapter = messageAdapter
 
         attachments.adapter = attachmentAdapter
+
+        suggestionsChips.adapter = suggestionsAdapter
 
         message.supportsInputContent = true
 
@@ -239,6 +250,14 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
 
         send.isEnabled = state.canSend
         send.imageAlpha = if (state.canSend) 255 else 128
+
+        // Smart Reply UI
+        smartReply.setVisible(prefs.aiReplyEnabled.get() && !state.editingMode)
+        smartReply.alpha = if (state.loadingSuggestions) 0.5f else 1.0f
+        smartReply.isEnabled = !state.loadingSuggestions
+
+        suggestionsChips.setVisible(state.showingSuggestions && state.suggestedReplies.isNotEmpty())
+        suggestionsAdapter.suggestions = state.suggestedReplies
     }
 
     override fun clearSelection() = messageAdapter.clearSelection()
@@ -395,6 +414,10 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         cameraDestination = savedInstanceState?.getParcelable(CameraDestinationKey)
         super.onRestoreInstanceState(savedInstanceState)
+    }
+
+    override fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     override fun onBackPressed() = backPressedIntent.onNext(Unit)
