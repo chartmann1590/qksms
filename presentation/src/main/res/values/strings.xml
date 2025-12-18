@@ -489,4 +489,27 @@
         <item>That\'s okay</item>
     </string-array>
 
+    <!-- AI Smart Reply Settings -->
+    <string name="settings_ai_reply_title">Smart Reply (AI)</string>
+    <string name="settings_ai_reply_summary">AI-powered message suggestions</string>
+    <string name="ai_settings_title">Smart Reply Settings</string>
+    <string name="ai_settings_enable">Enable Smart Reply</string>
+    <string name="ai_settings_enable_summary">Use AI to suggest replies</string>
+    <string name="ai_settings_ollama_url">Ollama API URL</string>
+    <string name="ai_settings_ollama_url_summary">http://10.0.2.2:11434</string>
+    <string name="ai_settings_model">AI Model</string>
+    <string name="ai_settings_model_summary">Select a model from your Ollama server</string>
+    <string name="ai_settings_test_connection">Test Connection</string>
+    <string name="ai_settings_status_connected">Connected ✓</string>
+    <string name="ai_settings_status_failed">Connection failed</string>
+    <string name="ai_settings_auto_reply_all">Auto-Reply to All Messages</string>
+    <string name="ai_settings_auto_reply_all_summary">AI will automatically reply to all incoming SMS</string>
+    <string name="ai_settings_auto_reply_warning">⚠️ Warning: When enabled, AI will automatically reply to ALL incoming SMS messages until disabled. Disable at any time from this screen.</string>
+    <string name="compose_smart_reply_cd">Generate smart reply suggestions</string>
+
+    <!-- Auto-Reply Notification -->
+    <string name="ai_auto_reply_notification_title">AI Auto-Reply Active</string>
+    <string name="ai_auto_reply_notification_text">Tap to disable automatic replies</string>
+    <string name="ai_auto_reply_notification_action">Disable</string>
+
 </resources>

@@ -269,4 +269,10 @@ class SettingsController : QkController<SettingsView, SettingsState, SettingsPre
                 .popChangeHandler(QkChangeHandler()))
     }
 
+    override fun showAiSettings() {
+        router.pushController(RouterTransaction.with(com.charles.messenger.feature.settings.ai.AiSettingsController())
+                .pushChangeHandler(QkChangeHandler())
+                .popChangeHandler(QkChangeHandler()))
+    }
+
 }

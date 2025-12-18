@@ -202,6 +202,8 @@ class SettingsPresenter @Inject constructor(
                         R.id.sync -> syncMessages.execute(Unit)
 
                         R.id.about -> view.showAbout()
+
+                        R.id.aiSettings -> view.showAiSettings()
                     }
                 }
 

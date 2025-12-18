@@ -119,6 +119,14 @@
             app:title="@string/settings_notifications_title" />
 
         <com.charles.messenger.common.widget.PreferenceView
+            android:id="@+id/aiSettings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/ic_smart_reply_24dp"
+            app:title="@string/settings_ai_reply_title"
+            app:summary="@string/settings_ai_reply_summary" />
+
+        <com.charles.messenger.common.widget.PreferenceView
             android:id="@+id/autoEmoji"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

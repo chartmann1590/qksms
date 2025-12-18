@@ -44,5 +44,8 @@ data class ComposeState(
     val attaching: Boolean = false,
     val remaining: String = "",
     val subscription: SubscriptionInfoCompat? = null,
-    val canSend: Boolean = false
+    val canSend: Boolean = false,
+    val suggestedReplies: List<String> = emptyList(),
+    val showingSuggestions: Boolean = false,
+    val loadingSuggestions: Boolean = false
 )

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2024 Charles Hartmann
+  ~
+  ~ This file is part of QKSMS.
+  ~
+  ~ QKSMS is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ QKSMS is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with QKSMS.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/windowBackground">
+
+    <LinearLayout
+        android:id="@+id/preferences"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
+        android:orientation="vertical"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
+
+        <!-- Enable/Disable AI Reply -->
+        <com.charles.messenger.common.widget.PreferenceView
+            android:id="@+id/aiEnabled"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:title="@string/ai_settings_enable"
+            app:summary="@string/ai_settings_enable_summary"
+            app:widget="@layout/settings_switch_widget" />
+
+        <View style="@style/Divider" />
+
+        <!-- Ollama API URL -->
+        <com.charles.messenger.common.widget.PreferenceView
+            android:id="@+id/ollamaUrl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:title="@string/ai_settings_ollama_url"
+            app:summary="@string/ai_settings_ollama_url_summary" />
+
+        <!-- Test Connection Button -->
+        <Button
+            android:id="@+id/testConnection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/ai_settings_test_connection"
+            style="?android:attr/borderlessButtonStyle" />
+
+        <!-- Connection Status -->
+        <TextView
+            android:id="@+id/connectionStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="8dp"
+            android:gravity="center"
+            android:textSize="14sp"
+            android:textColor="?android:attr/textColorSecondary" />
+
+        <!-- Model Selection -->
+        <com.charles.messenger.common.widget.PreferenceView
+            android:id="@+id/modelSelection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:title="@string/ai_settings_model"
+            app:summary="@string/ai_settings_model_summary" />
+
+        <View style="@style/Divider" />
+
+        <!-- Auto-Reply to All Toggle -->
+        <com.charles.messenger.common.widget.PreferenceView
+            android:id="@+id/aiAutoReplyToAll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:title="@string/ai_settings_auto_reply_all"
+            app:summary="@string/ai_settings_auto_reply_all_summary"
+            app:widget="@layout/settings_switch_widget" />
+
+        <!-- Warning Text -->
+        <TextView
+            android:id="@+id/autoReplyWarning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:text="@string/ai_settings_auto_reply_warning"
+            android:textColor="#D32F2F"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</ScrollView>

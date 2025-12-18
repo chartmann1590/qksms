@@ -217,4 +217,16 @@ class AppModule(private var application: Application) {
     @Provides
     fun provideSyncRepository(repository: SyncRepositoryImpl): SyncRepository = repository
 
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(): okhttp3.OkHttpClient {
+        return okhttp3.OkHttpClient.Builder()
+            .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .build()
+    }
+
+    @Provides
+    fun provideOllamaRepository(repository: com.charles.messenger.repository.OllamaRepositoryImpl): com.charles.messenger.repository.OllamaRepository = repository
+
 }

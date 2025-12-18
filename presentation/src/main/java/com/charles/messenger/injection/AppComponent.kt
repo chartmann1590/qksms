@@ -37,6 +37,7 @@ import com.charles.messenger.feature.compose.editing.DetailedChipView
 import com.charles.messenger.feature.conversationinfo.injection.ConversationInfoComponent
 import com.charles.messenger.feature.settings.SettingsController
 import com.charles.messenger.feature.settings.about.AboutController
+import com.charles.messenger.feature.settings.ai.AiSettingsController
 import com.charles.messenger.feature.settings.swipe.SwipeActionsController
 import com.charles.messenger.feature.themepicker.injection.ThemePickerComponent
 import com.charles.messenger.feature.widget.WidgetAdapter
@@ -68,6 +69,7 @@ interface AppComponent {
     fun inject(controller: BlockingController)
     fun inject(controller: BlockingManagerController)
     fun inject(controller: SettingsController)
+    fun inject(controller: AiSettingsController)
     fun inject(controller: SwipeActionsController)
 
     fun inject(dialog: QkDialog)

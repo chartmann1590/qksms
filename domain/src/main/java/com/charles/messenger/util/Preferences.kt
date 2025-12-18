@@ -76,6 +76,9 @@ class Preferences @Inject constructor(
         const val BLOCKING_MANAGER_CC = 1
         const val BLOCKING_MANAGER_SIA = 2
         const val BLOCKING_MANAGER_CB = 3
+
+        const val AI_REPLY_DISABLED = 0
+        const val AI_REPLY_ENABLED = 1
     }
 
     // Internal
@@ -118,6 +121,12 @@ class Preferences @Inject constructor(
     val longAsMms = rxPrefs.getBoolean("longAsMms", false)
     val mmsSize = rxPrefs.getInteger("mmsSize", 300)
     val logging = rxPrefs.getBoolean("logging", false)
+
+    // AI Reply preferences
+    val aiReplyEnabled = rxPrefs.getBoolean("aiReplyEnabled", false)
+    val ollamaApiUrl = rxPrefs.getString("ollamaApiUrl", "http://localhost:11434")
+    val ollamaModel = rxPrefs.getString("ollamaModel", "")
+    val aiAutoReplyToAll = rxPrefs.getBoolean("aiAutoReplyToAll", false)
 
     init {
         // Migrate from old night mode preference to new one, now that we support android Q night mode
