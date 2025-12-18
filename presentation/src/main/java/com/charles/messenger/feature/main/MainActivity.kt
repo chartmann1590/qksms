@@ -57,6 +57,7 @@ import com.charles.messenger.feature.conversations.ConversationItemTouchCallback
 import com.charles.messenger.feature.conversations.ConversationsAdapter
 import com.charles.messenger.manager.ChangelogManager
 import com.charles.messenger.repository.SyncRepository
+import com.charles.messenger.common.util.AnalyticsInitializer
 import com.charles.messenger.common.util.InterstitialAdManager
 import com.jakewharton.rxbinding2.widget.textChanges
 import com.uber.autodispose.android.lifecycle.scope
@@ -75,6 +76,7 @@ import javax.inject.Inject
 class MainActivity : QkThemedActivity(), MainView {
 
     @Inject lateinit var interstitialAdManager: InterstitialAdManager
+    @Inject lateinit var analyticsInitializer: AnalyticsInitializer
     @Inject lateinit var blockingDialog: BlockingDialog
     @Inject lateinit var disposables: CompositeDisposable
     @Inject lateinit var navigator: Navigator
@@ -136,6 +138,7 @@ class MainActivity : QkThemedActivity(), MainView {
 
         // Preload interstitial ad
         interstitialAdManager.loadAd(this)
+        analyticsInitializer.init(this)
 
         (snackbar as? ViewStub)?.setOnInflateListener { _, _ ->
             snackbarButton.clicks()
