@@ -1,6 +1,6 @@
 # Privacy Policy for QKSMS
 
-**Last Updated:** December 19, 2024
+**Last Updated:** December 19, 2025
 
 ## Introduction
 
