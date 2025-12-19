@@ -45,5 +45,8 @@ data class SettingsState(
     val longAsMms: Boolean = false,
     val maxMmsSizeSummary: String = "100KB",
     val maxMmsSizeId: Int = 100,
-    val syncProgress: SyncRepository.SyncProgress = SyncRepository.SyncProgress.Idle
+    val syncProgress: SyncRepository.SyncProgress = SyncRepository.SyncProgress.Idle,
+    val trialState: com.charles.messenger.manager.BillingManager.TrialState = com.charles.messenger.manager.BillingManager.TrialState.NOT_STARTED,
+    val trialDaysRemaining: Int = 0,
+    val upgraded: Boolean = true
 )

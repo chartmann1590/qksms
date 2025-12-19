@@ -90,3 +90,19 @@
     <init>(...);
     <fields>;
 }
+
+# Keep Moshi generated adapters for nested classes
+-keep class com.charles.messenger.manager.ChangelogManagerImpl_ChangesetJsonAdapter {
+    <init>(...);
+    <fields>;
+}
+
+# Keep the Changeset class and its generated adapter
+-keep class com.charles.messenger.manager.ChangelogManagerImpl$Changeset {
+    <init>(...);
+    <fields>;
+}
+-keep class com.charles.messenger.manager.ChangelogManagerImpl_ChangesetJsonAdapter {
+    <init>(...);
+    <fields>;
+}

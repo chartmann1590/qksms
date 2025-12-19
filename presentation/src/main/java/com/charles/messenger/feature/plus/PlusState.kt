@@ -18,9 +18,13 @@
  */
 package com.charles.messenger.feature.plus
 
+import com.charles.messenger.manager.BillingManager
+
 data class PlusState(
     val upgraded: Boolean = false,
-    val upgradePrice: String = "",
+    val upgradePrice: String = "$4.99",
     val upgradeDonatePrice: String = "",
-    val currency: String = ""
+    val currency: String = "USD",
+    val trialState: BillingManager.TrialState = BillingManager.TrialState.NOT_STARTED,
+    val trialDaysRemaining: Int = 0
 )

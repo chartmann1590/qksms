@@ -52,3 +52,19 @@ google-services.json
 freeline.py
 freeline/
 freeline_project_description.json
+
+# Signing certificates and security files
+*.pem
+upload_certificate.pem
+
+# App store assets (large graphics should be managed separately)
+feature_graphic.png
+icon.png
+/icon.png
+/feature_graphic.png
+
+# Windows artifacts
+nul
+
+# Release artifacts
+app-release.apk

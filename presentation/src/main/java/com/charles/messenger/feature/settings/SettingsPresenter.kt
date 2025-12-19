@@ -141,6 +141,16 @@ class SettingsPresenter @Inject constructor(
                 .subscribe { syncProgress -> newState { copy(syncProgress = syncProgress) } }
 
         disposables += syncMessages
+        
+        // Update trial status
+        disposables += billingManager.trialStatus
+                .subscribe { trialState -> newState { copy(trialState = trialState) } }
+        
+        disposables += billingManager.trialDaysRemaining
+                .subscribe { days -> newState { copy(trialDaysRemaining = days) } }
+        
+        disposables += billingManager.upgradeStatus
+                .subscribe { upgraded -> newState { copy(upgraded = upgraded) } }
     }
 
     override fun bindIntents(view: SettingsView) {
@@ -201,6 +211,8 @@ class SettingsPresenter @Inject constructor(
 
                         R.id.sync -> syncMessages.execute(Unit)
 
+                        R.id.trial -> navigator.showQksmsPlusActivity("settings")
+                        
                         R.id.about -> view.showAbout()
 
                         R.id.aiSettings -> view.showAiSettings()

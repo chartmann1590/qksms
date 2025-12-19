@@ -98,6 +98,13 @@ class MainViewModel @Inject constructor(
         // Update the upgraded status
         disposables += billingManager.upgradeStatus
                 .subscribe { upgraded -> newState { copy(upgraded = upgraded) } }
+        
+        // Update trial status
+        disposables += billingManager.trialStatus
+                .subscribe { trialState -> newState { copy(trialState = trialState) } }
+        
+        disposables += billingManager.trialDaysRemaining
+                .subscribe { days -> newState { copy(trialDaysRemaining = days) } }
 
         // Show the rating UI
         disposables += ratingManager.shouldShowRating
@@ -171,16 +178,30 @@ class MainViewModel @Inject constructor(
 
         // Show changelog
         if (changelogManager.didUpdate()) {
+            timber.log.Timber.d("Changelog update detected, last seen: ${prefs.changelogVersion.get()}")
             if (Locale.getDefault().language.startsWith("en")) {
                 GlobalScope.launch(Dispatchers.Main) {
-                    val changelog = changelogManager.getChangelog()
-                    changelogManager.markChangelogSeen()
-                    view.showChangelog(changelog)
+                    try {
+                        val changelog = changelogManager.getChangelog()
+                        timber.log.Timber.d("Got changelog: added=${changelog.added.size}, improved=${changelog.improved.size}, fixed=${changelog.fixed.size}")
+                        if (changelog.added.isNotEmpty() || changelog.improved.isNotEmpty() || changelog.fixed.isNotEmpty()) {
+                            changelogManager.markChangelogSeen()
+                            view.showChangelog(changelog)
+                        } else {
+                            timber.log.Timber.d("Changelog is empty, not showing dialog")
+                            changelogManager.markChangelogSeen()
+                        }
+                    } catch (e: Exception) {
+                        timber.log.Timber.e(e, "Error showing changelog")
+                        changelogManager.markChangelogSeen()
+                    }
                 }
             } else {
+                timber.log.Timber.d("Locale is not English, skipping changelog")
                 changelogManager.markChangelogSeen()
             }
         } else {
+            timber.log.Timber.d("No changelog update detected")
             changelogManager.markChangelogSeen()
         }
 
@@ -369,11 +390,17 @@ class MainViewModel @Inject constructor(
                 .autoDisposable(view.scope())
                 .subscribe()
 
+        view.optionsItemIntent
+                .filter { itemId -> itemId == R.id.upgrade }
+                .autoDisposable(view.scope())
+                .subscribe { navigator.showQksmsPlusActivity("toolbar_menu") }
+
         view.plusBannerIntent
                 .autoDisposable(view.scope())
                 .subscribe {
                     newState { copy(drawerOpen = false) }
-                    navigator.showQksmsPlusActivity("main_banner")
+                    // Navigate to Plus screen to show trial info or purchase options
+                    navigator.showQksmsPlusActivity("drawer_banner")
                 }
 
         view.rateIntent

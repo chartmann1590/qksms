@@ -4,6 +4,7 @@
 package com.charles.messenger.common.util
 
 import android.app.Activity
+import com.charles.messenger.manager.BillingManager
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
@@ -18,7 +19,9 @@ import javax.inject.Singleton
 import com.charles.messenger.BuildConfig
 
 @Singleton
-class InterstitialAdManager @Inject constructor() {
+class InterstitialAdManager @Inject constructor(
+    private val billingManager: BillingManager
+) {
 
     companion object {
         private const val AD_UNIT_ID = BuildConfig.ADMOB_INTERSTITIAL_ID
@@ -27,7 +30,14 @@ class InterstitialAdManager @Inject constructor() {
 
     private var interstitialAd: InterstitialAd? = null
     private var isLoading = false
+    private var isUpgraded = false
     private val random = Random()
+
+    init {
+        billingManager.upgradeStatus.subscribe { upgraded ->
+            isUpgraded = upgraded
+        }
+    }
 
     /**
      * Preload an interstitial ad
@@ -78,6 +88,12 @@ class InterstitialAdManager @Inject constructor() {
      * Returns true if ad was shown, false otherwise
      */
     fun maybeShowAd(activity: Activity): Boolean {
+        // Don't show ads to upgraded users
+        if (isUpgraded) {
+            Timber.d("User is upgraded, skipping interstitial ad")
+            return false
+        }
+
         // Check probability
         if (random.nextFloat() >= SHOW_PROBABILITY) {
             Timber.d("Skipping ad based on probability")

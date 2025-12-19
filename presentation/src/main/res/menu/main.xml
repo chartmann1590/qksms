@@ -83,4 +83,11 @@
         android:visible="false"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/upgrade"
+        android:icon="@drawable/ic_star_black_24dp"
+        android:title="@string/main_menu_upgrade"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+
 </menu>

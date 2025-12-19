@@ -28,6 +28,8 @@ data class MainState(
     val page: MainPage = Inbox(),
     val drawerOpen: Boolean = false,
     val upgraded: Boolean = true,
+    val trialState: com.charles.messenger.manager.BillingManager.TrialState = com.charles.messenger.manager.BillingManager.TrialState.NOT_STARTED,
+    val trialDaysRemaining: Int = 0,
     val showRating: Boolean = false,
     val syncing: SyncRepository.SyncProgress = SyncRepository.SyncProgress.Idle,
     val defaultSms: Boolean = true,

@@ -24,8 +24,8 @@ apply plugin: 'kotlin-kapt'
 // Google services plugins are conditionally applied at the bottom of this file
 
 android {
-    compileSdkVersion 33
-    buildToolsVersion "29.0.3"
+    compileSdkVersion 35
+    buildToolsVersion "35.0.0"
     flavorDimensions "analytics"
 
     def localProperties = new Properties()
@@ -40,9 +40,9 @@ android {
             resolutionStrategy { force 'androidx.core:core-ktx:1.6.0' }
         }
 
-        applicationId "com.charles.messenger"
+        applicationId "com.charles.messenger.v2"
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 35
         versionCode 2220
         versionName "3.9.6"
         setProperty("archivesBaseName", "messenger-v${versionName}")

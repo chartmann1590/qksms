@@ -37,6 +37,7 @@ import com.charles.messenger.repository.ConversationRepository
 import com.charles.messenger.repository.MessageRepository
 import com.charles.messenger.util.PhoneNumberUtils
 import com.charles.messenger.util.Preferences
+import com.charles.messenger.manager.BillingManager
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
@@ -59,6 +60,7 @@ import javax.inject.Inject
  */
 abstract class QkThemedActivity : QkActivity() {
 
+    @Inject lateinit var billingManager: BillingManager
     @Inject lateinit var colors: Colors
     @Inject lateinit var conversationRepo: ConversationRepository
     @Inject lateinit var messageRepo: MessageRepository
@@ -138,23 +140,33 @@ abstract class QkThemedActivity : QkActivity() {
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
 
-        // Initialize and load AdMob banner
+        // Initialize and load AdMob banner (only for non-upgraded users)
         try {
             val adView = findViewById<AdView>(R.id.adView)
-            adView?.let {
-                val adRequest = AdRequest.Builder().build()
-                it.loadAd(adRequest)
-                timber.log.Timber.d("Banner ad loading with unit ID: ${it.adUnitId}")
+            adView?.let { ad ->
+                billingManager.upgradeStatus
+                    .take(1)
+                    .autoDisposable(scope(Lifecycle.Event.ON_DESTROY))
+                    .subscribe { upgraded ->
+                        if (upgraded) {
+                            ad.visibility = View.GONE
+                            timber.log.Timber.d("User is upgraded, hiding banner ad")
+                        } else {
+                            val adRequest = AdRequest.Builder().build()
+                            ad.loadAd(adRequest)
+                            timber.log.Timber.d("Banner ad loading with unit ID: ${ad.adUnitId}")
 
-                it.adListener = object : com.google.android.gms.ads.AdListener() {
-                    override fun onAdLoaded() {
-                        timber.log.Timber.d("Banner ad loaded successfully")
-                    }
+                            ad.adListener = object : com.google.android.gms.ads.AdListener() {
+                                override fun onAdLoaded() {
+                                    timber.log.Timber.d("Banner ad loaded successfully")
+                                }
 
-                    override fun onAdFailedToLoad(error: com.google.android.gms.ads.LoadAdError) {
-                        timber.log.Timber.e("Banner ad failed to load: ${error.message} (${error.code})")
+                                override fun onAdFailedToLoad(error: com.google.android.gms.ads.LoadAdError) {
+                                    timber.log.Timber.e("Banner ad failed to load: ${error.message} (${error.code})")
+                                }
+                            }
+                        }
                     }
-                }
             }
         } catch (e: Exception) {
             timber.log.Timber.e(e, "Error loading banner ad")

@@ -31,9 +31,12 @@ class BillingManagerImpl @Inject constructor(
 
     override val products: Observable<List<BillingManager.Product>> = BehaviorSubject.createDefault(listOf())
     override val upgradeStatus: Observable<Boolean> = BehaviorSubject.createDefault(true)
+    override val trialStatus: Observable<BillingManager.TrialState> = BehaviorSubject.createDefault(BillingManager.TrialState.ACTIVE)
+    override val trialDaysRemaining: Observable<Int> = BehaviorSubject.createDefault(7)
 
     override suspend fun checkForPurchases() = Unit
     override suspend fun queryProducts() = Unit
     override suspend fun initiatePurchaseFlow(activity: Activity, sku: String) = Unit
+    override fun startTrial() = Unit
 
 }

@@ -75,13 +75,9 @@ class Navigator @Inject constructor(
      * one of [main_menu, compose_schedule, settings_night, settings_theme]
      */
     fun showQksmsPlusActivity(source: String) {
-        //analyticsManager.track("Viewed messenger+", Pair("source", source))
-        //val intent = Intent(context, PlusActivity::class.java)
-        //startActivity(intent)
-
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.buymeacoffee.com/charleshartmann"))
-        startActivityExternal(intent)
-
+        analyticsManager.track("Viewed messenger+", Pair("source", source))
+        val intent = Intent(context, PlusActivity::class.java)
+        startActivity(intent)
     }
 
     /**

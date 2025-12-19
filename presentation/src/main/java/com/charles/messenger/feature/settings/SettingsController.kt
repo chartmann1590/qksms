@@ -32,6 +32,7 @@ import com.jakewharton.rxbinding2.view.clicks
 import com.jakewharton.rxbinding2.view.longClicks
 import com.charles.messenger.BuildConfig
 import com.charles.messenger.R
+import com.charles.messenger.manager.BillingManager
 import com.charles.messenger.common.MenuItem
 import com.charles.messenger.common.QkChangeHandler
 import com.charles.messenger.common.QkDialog
@@ -200,6 +201,21 @@ class SettingsController : QkController<SettingsView, SettingsState, SettingsPre
                 syncingProgress.max = state.syncProgress.max
                 progressAnimator.apply { setIntValues(syncingProgress.progress, state.syncProgress.progress) }.start()
                 syncingProgress.isIndeterminate = state.syncProgress.indeterminate
+            }
+        }
+        
+        // Show/hide and update trial preference
+        val fdroid = BuildConfig.FLAVOR == "noAnalytics"
+        trial.isVisible = !fdroid && !state.upgraded
+        when (state.trialState) {
+            com.charles.messenger.manager.BillingManager.TrialState.ACTIVE -> {
+                trial.summary = context.getString(R.string.settings_trial_summary_active, state.trialDaysRemaining)
+            }
+            com.charles.messenger.manager.BillingManager.TrialState.EXPIRED -> {
+                trial.summary = context.getString(R.string.settings_trial_summary_expired)
+            }
+            else -> {
+                trial.summary = context.getString(R.string.settings_trial_summary_not_started)
             }
         }
     }

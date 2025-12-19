@@ -238,6 +238,15 @@
             app:layout_constraintBottom_toBottomOf="parent" />
 
         <com.charles.messenger.common.widget.PreferenceView
+            android:id="@+id/trial"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:icon="@drawable/ic_star_black_24dp"
+            app:title="@string/settings_trial_title"
+            tools:summary="7 days remaining" />
+
+        <com.charles.messenger.common.widget.PreferenceView
             android:id="@+id/about"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

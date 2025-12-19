@@ -50,6 +50,7 @@ class ChangelogDialog(activity: MainActivity) {
     }
 
     fun show(changelog: ChangelogManager.CumulativeChangelog) {
+        timber.log.Timber.d("Showing changelog dialog: added=${changelog.added.size}, improved=${changelog.improved.size}, fixed=${changelog.fixed.size}")
         adapter.setChangelog(changelog)
         dialog.show()
     }

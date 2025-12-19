@@ -43,10 +43,19 @@ class PlusViewModel @Inject constructor(
                     newState {
                         val upgrade = products.firstOrNull { it.sku == BillingManager.SKU_PLUS }
                         val upgradeDonate = products.firstOrNull { it.sku == BillingManager.SKU_PLUS_DONATE }
-                        copy(upgradePrice = upgrade?.price ?: "", upgradeDonatePrice = upgradeDonate?.price ?: "",
-                                currency = upgrade?.priceCurrencyCode ?: upgradeDonate?.priceCurrencyCode ?: "")
+                        // Use Google Play price if available, otherwise default to $4.99
+                        val upgradePrice = upgrade?.price?.takeIf { it.isNotEmpty() } ?: "$4.99"
+                        copy(upgradePrice = upgradePrice, 
+                                upgradeDonatePrice = upgradeDonate?.price ?: "",
+                                currency = upgrade?.priceCurrencyCode ?: upgradeDonate?.priceCurrencyCode ?: "USD")
                     }
                 }
+
+        disposables += billingManager.trialStatus
+                .subscribe { trialState -> newState { copy(trialState = trialState) } }
+
+        disposables += billingManager.trialDaysRemaining
+                .subscribe { days -> newState { copy(trialDaysRemaining = days) } }
     }
 
     override fun bindView(view: PlusView) {
@@ -58,6 +67,11 @@ class PlusViewModel @Inject constructor(
                 .doOnNext { sku -> analyticsManager.track("Clicked Upgrade", Pair("sku", sku)) }
                 .autoDisposable(view.scope())
                 .subscribe { sku -> view.initiatePurchaseFlow(billingManager, sku) }
+
+        view.startTrialIntent
+                .doOnNext { analyticsManager.track("Started Trial") }
+                .autoDisposable(view.scope())
+                .subscribe { billingManager.startTrial() }
 
         view.donateIntent
                 .autoDisposable(view.scope())

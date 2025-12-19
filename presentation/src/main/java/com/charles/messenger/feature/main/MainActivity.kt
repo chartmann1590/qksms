@@ -247,12 +247,30 @@ class MainActivity : QkThemedActivity(), MainView {
         toolbar.menu.findItem(R.id.read)?.isVisible = markRead && selectedConversations != 0
         toolbar.menu.findItem(R.id.unread)?.isVisible = !markRead && selectedConversations != 0
         toolbar.menu.findItem(R.id.block)?.isVisible = selectedConversations != 0
+        toolbar.menu.findItem(R.id.upgrade)?.isVisible = !state.upgraded && selectedConversations == 0
 
         listOf(plusBadge1, plusBadge2).forEach { badge ->
             badge.isVisible = drawerBadgesExperiment.variant && !state.upgraded
         }
-        plus.isVisible = state.upgraded
-        plusBanner.isVisible = !state.upgraded
+        plus.isVisible = !state.upgraded
+        // Show banner when not upgraded OR in trial mode
+        plusBanner.isVisible = !state.upgraded || state.trialState == com.charles.messenger.manager.BillingManager.TrialState.ACTIVE
+        
+        // Update banner text based on trial state
+        when (state.trialState) {
+            com.charles.messenger.manager.BillingManager.TrialState.ACTIVE -> {
+                plusTitle.text = getString(R.string.drawer_trial_active_title)
+                plusSummary.text = getString(R.string.drawer_trial_active_summary, state.trialDaysRemaining)
+            }
+            com.charles.messenger.manager.BillingManager.TrialState.EXPIRED -> {
+                plusTitle.text = getString(R.string.drawer_trial_expired_title)
+                plusSummary.text = getString(R.string.drawer_trial_expired_summary)
+            }
+            else -> {
+                plusTitle.text = getString(R.string.drawer_plus_banner_title)
+                plusSummary.text = getString(R.string.drawer_plus_banner_summary)
+            }
+        }
         rateLayout.setVisible(state.showRating)
 
         compose.setVisible(state.page is Inbox || state.page is Archived)

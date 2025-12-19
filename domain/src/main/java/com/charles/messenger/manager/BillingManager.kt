@@ -27,6 +27,13 @@ interface BillingManager {
     companion object {
         const val SKU_PLUS = "remove_ads"
         const val SKU_PLUS_DONATE = "qksms_plus_donate"
+        const val TRIAL_DURATION_DAYS = 7
+    }
+
+    enum class TrialState {
+        NOT_STARTED,
+        ACTIVE,
+        EXPIRED
     }
 
     data class Product(
@@ -37,11 +44,15 @@ interface BillingManager {
 
     val products: Observable<List<Product>>
     val upgradeStatus: Observable<Boolean>
+    val trialStatus: Observable<TrialState>
+    val trialDaysRemaining: Observable<Int>
 
     suspend fun checkForPurchases()
 
     suspend fun queryProducts()
 
     suspend fun initiatePurchaseFlow(activity: Activity, sku: String)
+
+    fun startTrial()
 
 }

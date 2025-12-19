@@ -1,6 +1,6 @@
 # Privacy Policy for QKSMS
 
-**Last Updated:** December 18, 2025
+**Last Updated:** December 19, 2024
 
 ## Introduction
 
@@ -25,6 +25,7 @@ All your data remains on your device:
 - **Contacts:** Accessed from your device's contact list but never transmitted
 - **Settings & Preferences:** Stored locally on your device
 - **Backups:** Created and stored locally on your device (if you use the backup feature)
+- **Trial Usage:** A hashed device identifier is stored locally to manage the Messenger+ 7-day free trial across app reinstalls (never transmitted to external servers)
 
 ### Analytics Variants
 

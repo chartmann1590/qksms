@@ -56,6 +56,7 @@ class PlusActivity : QkThemedActivity(), PlusView {
 
     override val upgradeIntent by lazy { upgrade.clicks() }
     override val upgradeDonateIntent by lazy { upgradeDonate.clicks() }
+    override val startTrialIntent by lazy { startTrial.clicks() }
     override val donateIntent by lazy { donate.clicks() }
     override val themeClicks by lazy { themes.clicks() }
     override val scheduleClicks by lazy { schedule.clicks() }
@@ -94,25 +95,48 @@ class PlusActivity : QkThemedActivity(), PlusView {
         val theme = colors.theme().theme
         donate.setBackgroundTint(theme)
         upgrade.setBackgroundTint(theme)
+        startTrial.setBackgroundTint(theme)
         thanksIcon.setTint(theme)
     }
 
     override fun render(state: PlusState) {
-        description.text = getString(R.string.qksms_plus_description_summary, state.upgradePrice)
-        upgrade.text = "Dont CLick"
-        upgradeDonate.text = getString(R.string.qksms_plus_upgrade_donate, state.upgradeDonatePrice, state.currency)
-
         val fdroid = BuildConfig.FLAVOR == "noAnalytics"
+
+        // Update description based on trial state
+        when (state.trialState) {
+            BillingManager.TrialState.NOT_STARTED -> {
+                description.text = getString(R.string.qksms_plus_description_summary, state.upgradePrice)
+                trialStatus.setVisible(false)
+                startTrial.setVisible(!fdroid && !state.upgraded)
+            }
+            BillingManager.TrialState.ACTIVE -> {
+                description.text = getString(R.string.qksms_plus_trial_active_description)
+                trialStatus.text = getString(R.string.qksms_plus_trial_days_remaining, state.trialDaysRemaining)
+                trialStatus.setVisible(true)
+                startTrial.setVisible(false)
+            }
+            BillingManager.TrialState.EXPIRED -> {
+                description.text = getString(R.string.qksms_plus_trial_expired_description, state.upgradePrice)
+                trialStatus.text = getString(R.string.qksms_plus_trial_expired)
+                trialStatus.setVisible(true)
+                startTrial.setVisible(false)
+            }
+        }
+
+        upgrade.text = getString(R.string.qksms_plus_upgrade, state.upgradePrice)
+        upgradeDonate.text = getString(R.string.qksms_plus_upgrade_donate, state.upgradeDonatePrice, state.currency)
 
         free.setVisible(fdroid)
         toUpgrade.setVisible(!fdroid && !state.upgraded)
         upgraded.setVisible(!fdroid && state.upgraded)
 
-        themes.isEnabled = state.upgraded
-        schedule.isEnabled = state.upgraded
-        backup.isEnabled = state.upgraded
-        delayed.isEnabled = state.upgraded
-        night.isEnabled = state.upgraded
+        // Features are enabled if upgraded OR trial is active
+        val featuresEnabled = state.upgraded || state.trialState == BillingManager.TrialState.ACTIVE
+        themes.isEnabled = featuresEnabled
+        schedule.isEnabled = featuresEnabled
+        backup.isEnabled = featuresEnabled
+        delayed.isEnabled = featuresEnabled
+        night.isEnabled = featuresEnabled
     }
 
     override fun initiatePurchaseFlow(billingManager: BillingManager, sku: String) {

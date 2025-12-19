@@ -33,7 +33,8 @@ import javax.inject.Singleton
 class Preferences @Inject constructor(
     context: Context,
     private val rxPrefs: RxSharedPreferences,
-    private val sharedPrefs: SharedPreferences
+    private val sharedPrefs: SharedPreferences,
+    private val deviceIdManager: DeviceIdManager
 ) {
 
     companion object {
@@ -86,7 +87,7 @@ class Preferences @Inject constructor(
     val night = rxPrefs.getBoolean("night", false)
     val canUseSubId = rxPrefs.getBoolean("canUseSubId", true)
     val version = rxPrefs.getInteger("version", context.versionCode)
-    val changelogVersion = rxPrefs.getInteger("changelogVersion", context.versionCode)
+    val changelogVersion = rxPrefs.getInteger("changelogVersion", 0)
     @Deprecated("This should only be accessed when migrating to @blockingManager")
     val sia = rxPrefs.getBoolean("sia", false)
 
@@ -128,6 +129,29 @@ class Preferences @Inject constructor(
     val ollamaModel = rxPrefs.getString("ollamaModel", "")
     val aiAutoReplyToAll = rxPrefs.getBoolean("aiAutoReplyToAll", false)
     val aiAutoReplyCount = rxPrefs.getInteger("aiAutoReplyCount", 0)
+
+    // Messenger Plus trial
+    val trialStartTimestamp = rxPrefs.getLong("plusTrialStartTimestamp", 0L)
+    
+    /**
+     * Gets the trial start timestamp for the current device.
+     * This persists across app reinstalls using device ID.
+     */
+    fun getTrialStartTimestampForDevice(): Long {
+        val deviceId = deviceIdManager.getDeviceId()
+        return sharedPrefs.getLong("trial_${deviceId}", 0L)
+    }
+    
+    /**
+     * Sets the trial start timestamp for the current device.
+     * This persists across app reinstalls using device ID.
+     */
+    fun setTrialStartTimestampForDevice(timestamp: Long) {
+        val deviceId = deviceIdManager.getDeviceId()
+        sharedPrefs.edit().putLong("trial_${deviceId}", timestamp).apply()
+        // Also update the legacy preference for backward compatibility
+        trialStartTimestamp.set(timestamp)
+    }
 
     init {
         // Migrate from old night mode preference to new one, now that we support android Q night mode

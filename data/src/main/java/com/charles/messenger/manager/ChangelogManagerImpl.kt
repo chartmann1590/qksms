@@ -27,6 +27,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import javax.inject.Inject
 
 class ChangelogManagerImpl @Inject constructor(
@@ -42,18 +43,30 @@ class ChangelogManagerImpl @Inject constructor(
         val adapter = moshi.adapter<List<Changeset>>(listType)
 
         return withContext(Dispatchers.IO) {
-            val changelogs = context.assets.open("changelog.json").bufferedReader().use { it.readText() }
-                    .let(adapter::fromJson)
-                    .orEmpty()
+            try {
+                val jsonText = context.assets.open("changelog.json").bufferedReader().use { it.readText() }
+                val changelogs = adapter.fromJson(jsonText)
+                    ?: emptyList<Changeset>()
+                
+                Timber.d("Loaded ${changelogs.size} changelog entries")
+                Timber.d("Current version code: ${context.versionCode}, Last seen: ${prefs.changelogVersion.get()}")
+                
+                val filtered = changelogs
                     .sortedBy { changelog -> changelog.versionCode }
                     .filter { changelog ->
                         changelog.versionCode in prefs.changelogVersion.get().inc()..context.versionCode
                     }
+                
+                Timber.d("Filtered to ${filtered.size} changelog entries to show")
 
-            ChangelogManager.CumulativeChangelog(
-                    added = changelogs.fold(listOf()) { acc, changelog -> acc + changelog.added.orEmpty()},
-                    improved = changelogs.fold(listOf()) { acc, changelog -> acc + changelog.improved.orEmpty()},
-                    fixed = changelogs.fold(listOf()) { acc, changelog -> acc + changelog.fixed.orEmpty()})
+                ChangelogManager.CumulativeChangelog(
+                        added = filtered.fold(listOf()) { acc, changelog -> acc + changelog.added.orEmpty()},
+                        improved = filtered.fold(listOf()) { acc, changelog -> acc + changelog.improved.orEmpty()},
+                        fixed = filtered.fold(listOf()) { acc, changelog -> acc + changelog.fixed.orEmpty()})
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading changelog")
+                ChangelogManager.CumulativeChangelog(added = emptyList(), improved = emptyList(), fixed = emptyList())
+            }
         }
     }
 
@@ -61,7 +74,7 @@ class ChangelogManagerImpl @Inject constructor(
         prefs.changelogVersion.set(context.versionCode)
     }
 
-    @JsonClass(generateAdapter = true)
+    @JsonClass(generateAdapter = false)
     data class Changeset(
         @Json(name = "added") val added: List<String>?,
         @Json(name = "improved") val improved: List<String>?,
@@ -69,5 +82,6 @@ class ChangelogManagerImpl @Inject constructor(
         @Json(name = "versionName") val versionName: String,
         @Json(name = "versionCode") val versionCode: Int
     )
+
 
 }
