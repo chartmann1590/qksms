@@ -158,7 +158,7 @@ QKSMS is built with modern Android development practices:
 - **presentation/** - Android app module (UI, activities, controllers, resources)
 - **domain/** - Business logic layer (pure Kotlin, no Android dependencies)
 - **data/** - Data access layer (repositories, database, networking)
-- **common/** - Shared utilities and extensions
+- **common/** - Shared utilities, extensions, and debugging tools
 - **android-smsmms/** - SMS/MMS handling library
 
 ### Build Variants

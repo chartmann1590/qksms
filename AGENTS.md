@@ -19,6 +19,7 @@
 - `common/` — shared utilities, extensions, and Android helpers.
   - Extension functions and null-safety helpers
   - Common models and utilities
+  - DebugLogger utility for runtime debugging
 - Tests live mainly in `*/src/androidTest/java/...` (Kotlin `*Test.kt`).
 
 ## Build, Test, and Development Commands

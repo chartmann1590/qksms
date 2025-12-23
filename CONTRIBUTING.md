@@ -147,6 +147,7 @@ QKSMS follows **Clean Architecture** with clear separation of concerns:
 4. **common/** - Shared utilities (Android library)
    - Extension functions and null-safety helpers
    - Common models and utilities
+   - DebugLogger utility for runtime debugging
    - No module dependencies
 
 5. **android-smsmms/** - SMS/MMS handling library
