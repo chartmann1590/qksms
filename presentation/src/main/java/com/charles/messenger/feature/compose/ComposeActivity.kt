@@ -239,6 +239,7 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                 .doOnNext { attach.setBackgroundTint(it.theme) }
                 .doOnNext { attach.setTint(it.textPrimary) }
                 .doOnNext { messageAdapter.theme = it }
+                .doOnNext { suggestionsAdapter.theme = it }
                 .autoDisposable(scope())
                 .subscribe()
 

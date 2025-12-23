@@ -140,19 +140,37 @@ class MainViewModel @Inject constructor(
         when {
             !permissionManager.isDefaultSms() -> view.requestDefaultSms()
             !permissionManager.hasReadSms() || !permissionManager.hasContacts() -> view.requestPermissions()
+            !permissionManager.hasNotifications() -> view.requestNotificationPermission()
         }
 
         val permissions = view.activityResumedIntent
                 .filter { resumed -> resumed }
                 .observeOn(Schedulers.io())
-                .map { Triple(permissionManager.isDefaultSms(), permissionManager.hasReadSms(), permissionManager.hasContacts()) }
+                .map { 
+                    val defaultSms = permissionManager.isDefaultSms()
+                    val smsPermission = permissionManager.hasReadSms()
+                    val contactPermission = permissionManager.hasContacts()
+                    val notificationPermission = permissionManager.hasNotifications()
+                    listOf(defaultSms, smsPermission, contactPermission, notificationPermission)
+                }
                 .distinctUntilChanged()
                 .share()
 
         // If the default messenger state or permission states change, update the ViewState
         permissions
-                .doOnNext { (defaultSms, smsPermission, contactPermission) ->
-                    newState { copy(defaultSms = defaultSms, smsPermission = smsPermission, contactPermission = contactPermission) }
+                .doOnNext { permissionList ->
+                    val defaultSms = permissionList[0]
+                    val smsPermission = permissionList[1]
+                    val contactPermission = permissionList[2]
+                    val notificationPermission = permissionList[3]
+                    newState { 
+                        copy(
+                            defaultSms = defaultSms, 
+                            smsPermission = smsPermission, 
+                            contactPermission = contactPermission,
+                            notificationPermission = notificationPermission
+                        ) 
+                    }
                 }
                 .autoDisposable(view.scope())
                 .subscribe()
@@ -160,7 +178,7 @@ class MainViewModel @Inject constructor(
         // If we go from not having all permissions to having them, sync messages
         permissions
                 .skip(1)
-                .filter { it.first && it.second && it.third }
+                .filter { it[0] && it[1] && it[2] }
                 .take(1)
                 .autoDisposable(view.scope())
                 .subscribe { syncMessages.execute(Unit) }
@@ -478,6 +496,7 @@ class MainViewModel @Inject constructor(
                         !state.defaultSms -> view.requestDefaultSms()
                         !state.smsPermission -> view.requestPermissions()
                         !state.contactPermission -> view.requestPermissions()
+                        !state.notificationPermission -> view.requestNotificationPermission()
                     }
                 }
                 .autoDisposable(view.scope())

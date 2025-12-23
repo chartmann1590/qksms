@@ -24,7 +24,7 @@ import android.view.animation.AlphaAnimation
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
-import androidx.cardview.widget.CardView
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.charles.messenger.R
 import com.charles.messenger.common.util.Colors
 import com.charles.messenger.common.util.extensions.setBackgroundTint
@@ -41,7 +41,7 @@ class DetailedChipView(context: Context) : RelativeLayout(context) {
     private lateinit var avatar: AvatarView
     private lateinit var name: TextView
     private lateinit var info: TextView
-    private lateinit var card: CardView
+    private lateinit var card: ConstraintLayout
     private lateinit var delete: ImageView
 
     init {

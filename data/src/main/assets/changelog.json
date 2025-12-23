@@ -1,5 +1,15 @@
 [
   {
+    "versionCode": 2225,
+    "versionName": "3.9.8",
+    "improved": [
+      "Performance improvements and stability updates"
+    ],
+    "fixed": [
+      "Various bug fixes and improvements"
+    ]
+  },
+  {
     "versionCode": 2220,
     "versionName": "3.9.6",
     "added": [

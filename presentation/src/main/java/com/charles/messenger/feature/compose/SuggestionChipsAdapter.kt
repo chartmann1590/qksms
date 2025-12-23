@@ -24,12 +24,21 @@ import android.view.ViewGroup
 import android.widget.Button
 import androidx.recyclerview.widget.RecyclerView
 import com.charles.messenger.R
+import com.charles.messenger.common.util.Colors
+import com.charles.messenger.common.util.extensions.resolveThemeColor
+import com.charles.messenger.common.util.extensions.setBackgroundTint
 
 class SuggestionChipsAdapter(
     private val onChipClicked: (String) -> Unit
 ) : RecyclerView.Adapter<SuggestionChipsAdapter.ChipViewHolder>() {
 
     var suggestions: List<String> = emptyList()
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
+
+    var theme: Colors.Theme? = null
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -42,7 +51,7 @@ class SuggestionChipsAdapter(
     }
 
     override fun onBindViewHolder(holder: ChipViewHolder, position: Int) {
-        holder.bind(suggestions[position])
+        holder.bind(suggestions[position], theme)
     }
 
     override fun getItemCount(): Int = suggestions.size
@@ -50,8 +59,20 @@ class SuggestionChipsAdapter(
     inner class ChipViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val chip: Button = itemView.findViewById(R.id.suggestionChip)
 
-        fun bind(suggestion: String) {
+        fun bind(suggestion: String, theme: Colors.Theme?) {
             chip.text = suggestion
+            
+            // Apply theme colors - use bubble color for background to match the compose area
+            chip.setBackgroundTint(itemView.context.resolveThemeColor(R.attr.bubbleColor))
+            
+            // Set text color based on theme
+            theme?.let { theme ->
+                chip.setTextColor(theme.textPrimary)
+            } ?: run {
+                // Fallback to theme attribute if theme not set yet
+                chip.setTextColor(itemView.context.resolveThemeColor(android.R.attr.textColorPrimary))
+            }
+            
             chip.setOnClickListener {
                 onChipClicked(suggestion)
             }

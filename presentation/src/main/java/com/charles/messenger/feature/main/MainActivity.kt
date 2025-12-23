@@ -25,6 +25,7 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
@@ -331,7 +332,7 @@ class MainActivity : QkThemedActivity(), MainView {
         when (state.syncing) {
             is SyncRepository.SyncProgress.Idle -> {
                 binding.syncing.isVisible = false
-                binding.snackbar.isVisible = !state.defaultSms || !state.smsPermission || !state.contactPermission
+                binding.snackbar.isVisible = !state.defaultSms || !state.smsPermission || !state.contactPermission || !state.notificationPermission
             }
 
             is SyncRepository.SyncProgress.Running -> {
@@ -361,6 +362,12 @@ class MainActivity : QkThemedActivity(), MainView {
             !state.contactPermission -> {
                 snackbarBinding?.snackbarTitle?.setText(R.string.main_permission_required)
                 snackbarBinding?.snackbarMessage?.setText(R.string.main_permission_contacts)
+                snackbarBinding?.snackbarButton?.setText(R.string.main_permission_allow)
+            }
+
+            !state.notificationPermission -> {
+                snackbarBinding?.snackbarTitle?.setText(R.string.main_permission_required)
+                snackbarBinding?.snackbarMessage?.setText(R.string.main_permission_notifications)
                 snackbarBinding?.snackbarButton?.setText(R.string.main_permission_allow)
             }
         }
@@ -401,6 +408,19 @@ class MainActivity : QkThemedActivity(), MainView {
                 Manifest.permission.READ_SMS,
                 Manifest.permission.SEND_SMS,
                 Manifest.permission.READ_CONTACTS), 0)
+    }
+
+    override fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(this, arrayOf(
+                    Manifest.permission.POST_NOTIFICATIONS), 1)
+        } else {
+            // For Android 12 and below, open notification settings
+            val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+            }
+            startActivity(intent)
+        }
     }
 
     override fun clearSearch() {

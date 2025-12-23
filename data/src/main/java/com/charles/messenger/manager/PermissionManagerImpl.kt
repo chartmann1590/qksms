@@ -24,6 +24,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Telephony
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import javax.inject.Inject
 
@@ -59,6 +60,15 @@ class PermissionManagerImpl @Inject constructor(private val context: Context) : 
 
     override fun hasStorage(): Boolean {
         return hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    }
+
+    override fun hasNotifications(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            hasPermission(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            // For Android 12 and below, check if notifications are enabled via NotificationManagerCompat
+            NotificationManagerCompat.from(context).areNotificationsEnabled()
+        }
     }
 
     private fun hasPermission(permission: String): Boolean {

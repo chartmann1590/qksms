@@ -44,6 +44,8 @@ import com.charles.messenger.common.util.extensions.setVisible
 import com.charles.messenger.common.widget.QkEditText
 import com.charles.messenger.feature.compose.MessagesAdapter
 import com.charles.messenger.feature.compose.SuggestionChipsAdapter
+import com.uber.autodispose.android.lifecycle.scope
+import com.uber.autodispose.autoDisposable
 import dagger.android.AndroidInjection
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
@@ -110,6 +112,12 @@ class QkReplyActivity : QkThemedActivity(), QkReplyView {
         suggestionsChips = findViewById(R.id.suggestionsChips)
 
         suggestionsChips.adapter = suggestionsAdapter
+
+        // Subscribe to theme changes and update suggestion chips
+        theme
+                .doOnNext { suggestionsAdapter.theme = it }
+                .autoDisposable(scope())
+                .subscribe()
 
         viewModel.bindView(this)
 

@@ -111,7 +111,6 @@ class BackupController : QkController<BackupView, BackupState, BackupPresenter>(
 
     override fun onAttach(view: View) {
         super.onAttach(view)
-        presenter.bindIntents(this)
         setTitle(R.string.backup_title)
         showBackButton(true)
     }
@@ -134,6 +133,9 @@ class BackupController : QkController<BackupView, BackupState, BackupPresenter>(
         progress = view.findViewById(R.id.progress)
         backup = view.findViewById(R.id.backup)
         restore = view.findViewById(R.id.restore)
+        
+        // Bind intents after views are initialized
+        presenter.bindIntents(this)
 
         themedActivity?.colors?.theme()?.let { theme ->
             progressBar.indeterminateTintList = ColorStateList.valueOf(theme.theme)
