@@ -22,8 +22,11 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.viewbinding.ViewBinding
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
@@ -38,6 +41,35 @@ abstract class QkActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         onNewIntent(intent)
+    }
+
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+        super.onPostCreate(savedInstanceState)
+        // Setup window insets for activities that don't extend QkThemedActivity
+        // (QkThemedActivity will override this and provide more specific handling)
+        setupWindowInsets()
+    }
+
+    /**
+     * Sets up window insets handling to respect system bars.
+     * Can be overridden by subclasses for custom handling.
+     */
+    protected open fun setupWindowInsets() {
+        val rootView = window.decorView.findViewById<View>(android.R.id.content)
+        rootView?.let { root ->
+            ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
+                val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                // For QkActivity (non-themed), apply padding to root or find a content view
+                val contentView = root.findViewById<View>(R.id.root) ?: root
+                contentView.setPadding(
+                    systemBars.left,
+                    systemBars.top,
+                    systemBars.right,
+                    systemBars.bottom
+                )
+                insets
+            }
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

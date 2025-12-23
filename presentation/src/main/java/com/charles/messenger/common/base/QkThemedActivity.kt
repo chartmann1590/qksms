@@ -24,6 +24,8 @@ import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.iterator
 import androidx.lifecycle.Lifecycle
 import com.charles.messenger.R
@@ -122,6 +124,10 @@ abstract class QkThemedActivity : QkActivity() {
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
+
+        // Handle window insets to respect system bars (status bar and navigation bar)
+        // This ensures content doesn't extend behind system bars on all activities
+        setupWindowInsets()
 
         // Initialize and load AdMob banner (only for non-upgraded users)
         try {
@@ -250,6 +256,58 @@ abstract class QkThemedActivity : QkActivity() {
     open fun getActivityThemeRes(black: Boolean) = when {
         black -> R.style.AppTheme_Black
         else -> R.style.AppTheme
+    }
+
+    /**
+     * Sets up window insets handling to respect system bars (status bar and navigation bar).
+     * This ensures content doesn't extend behind system bars on physical devices.
+     * 
+     * This method tries to find common layout patterns and applies padding appropriately:
+     * - mainContent (MainActivity with DrawerLayout)
+     * - containerContent (container_activity.xml used by Settings, Backup, etc.)
+     * - contentView (ComposeActivity)
+     * - Falls back to root view if no specific content view is found
+     * 
+     * Activities can override this method to provide custom insets handling if needed.
+     * 
+     * Note: This overrides QkActivity's setupWindowInsets() to provide more specific handling
+     * for themed activities, so we don't call super to avoid duplicate insets application.
+     */
+    override fun setupWindowInsets() {
+        val rootView = window.decorView.findViewById<View>(android.R.id.content)
+        rootView?.let { root ->
+            ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
+                val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                
+                // Try to find common content view IDs used across activities
+                // Check for DrawerLayout first (MainActivity), then other patterns
+                val contentView = when {
+                    // MainActivity: DrawerLayout contains mainContent ConstraintLayout
+                    root.findViewById<View>(R.id.drawerLayout) != null -> {
+                        root.findViewById<View>(R.id.drawerLayout)?.findViewById<View>(R.id.mainContent)
+                    }
+                    // Container activities: LinearLayout with containerContent
+                    root.findViewById<View>(R.id.containerContent) != null -> {
+                        root.findViewById<View>(R.id.containerContent)
+                    }
+                    // ComposeActivity: ConstraintLayout with contentView
+                    root.findViewById<View>(R.id.contentView) != null -> {
+                        root.findViewById<View>(R.id.contentView)
+                    }
+                    // Fall back to root view
+                    else -> root
+                }
+                
+                contentView?.setPadding(
+                    systemBars.left,
+                    systemBars.top,
+                    systemBars.right,
+                    systemBars.bottom
+                )
+                
+                insets
+            }
+        }
     }
 
 }

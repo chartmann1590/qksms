@@ -138,6 +138,10 @@ class MainActivity : QkThemedActivity(), MainView {
         binding = MainActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
         drawerBinding = DrawerViewBinding.bind(binding.drawer.root)
+        
+        // Window insets are handled by base class setupWindowInsets() in onPostCreate
+        // MainActivity's DrawerLayout with mainContent is automatically handled
+        
         viewModel.bindView(this)
         onNewIntentIntent.onNext(intent)
 
