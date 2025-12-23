@@ -20,7 +20,6 @@ package com.charles.messenger.common.widget
 
 import android.app.Activity
 import android.view.LayoutInflater
-import android.widget.Button
 import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
@@ -35,8 +34,8 @@ class QkDialog(private val context: Activity) : AlertDialog(context) {
     private val titleView: TextView = view.findViewById(R.id.title)
     private val subtitleView: TextView = view.findViewById(R.id.subtitle)
     private val listView: RecyclerView = view.findViewById(R.id.list)
-    private val positiveButtonView: Button = view.findViewById(R.id.positiveButton)
-    private val negativeButtonView: Button = view.findViewById(R.id.negativeButton)
+    private val positiveButtonView: QkTextView = view.findViewById(R.id.positiveButton)
+    private val negativeButtonView: QkTextView = view.findViewById(R.id.negativeButton)
 
     @StringRes
     var titleRes: Int? = null

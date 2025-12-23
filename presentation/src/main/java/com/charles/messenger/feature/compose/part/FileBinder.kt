@@ -24,7 +24,7 @@ import android.view.Gravity
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.cardview.widget.CardView
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.charles.messenger.R
 import com.charles.messenger.common.base.QkViewHolder
 import com.charles.messenger.common.util.Colors
@@ -55,7 +55,7 @@ class FileBinder @Inject constructor(colors: Colors, private val context: Contex
         canGroupWithPrevious: Boolean,
         canGroupWithNext: Boolean
     ) {
-        val fileBackground = holder.itemView.findViewById<CardView>(R.id.fileBackground)
+        val fileBackground = holder.itemView.findViewById<ConstraintLayout>(R.id.fileBackground)
         val filename = holder.itemView.findViewById<TextView>(R.id.filename)
         val size = holder.itemView.findViewById<TextView>(R.id.size)
         val icon = holder.itemView.findViewById<ImageView>(R.id.icon)
