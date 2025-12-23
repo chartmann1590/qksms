@@ -24,6 +24,8 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import com.charles.messenger.R
 import com.charles.messenger.common.base.QkController
 import com.charles.messenger.common.util.Colors
@@ -31,8 +33,6 @@ import com.charles.messenger.feature.blocking.BlockingDialog
 import com.charles.messenger.injection.appComponent
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
-import kotlinx.android.synthetic.main.blocked_messages_controller.*
-import kotlinx.android.synthetic.main.container_activity.*
 import javax.inject.Inject
 
 class BlockedMessagesController : QkController<BlockedMessagesView, BlockedMessagesState, BlockedMessagesPresenter>(),
@@ -51,14 +51,20 @@ class BlockedMessagesController : QkController<BlockedMessagesView, BlockedMessa
     @Inject lateinit var context: Context
     @Inject override lateinit var presenter: BlockedMessagesPresenter
 
+    private lateinit var empty: TextView
+    private lateinit var conversations: RecyclerView
+
     init {
         appComponent.inject(this)
         retainViewMode = RetainViewMode.RETAIN_DETACH
         layoutRes = R.layout.blocked_messages_controller
     }
 
-    override fun onViewCreated() {
-        super.onViewCreated()
+    override fun onViewCreated(view: View) {
+        super.onViewCreated(view)
+        empty = view.findViewById(R.id.empty)
+        conversations = view.findViewById(R.id.conversations)
+
         blockedMessagesAdapter.emptyView = empty
         conversations.adapter = blockedMessagesAdapter
     }
@@ -90,8 +96,9 @@ class BlockedMessagesController : QkController<BlockedMessagesView, BlockedMessa
     override fun render(state: BlockedMessagesState) {
         blockedMessagesAdapter.updateData(state.data)
 
-        themedActivity?.toolbar?.menu?.findItem(R.id.block)?.isVisible = state.selected > 0
-        themedActivity?.toolbar?.menu?.findItem(R.id.delete)?.isVisible = state.selected > 0
+        val toolbar = activity?.findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+        toolbar?.menu?.findItem(R.id.block)?.isVisible = state.selected > 0
+        toolbar?.menu?.findItem(R.id.delete)?.isVisible = state.selected > 0
 
         setTitle(when (state.selected) {
             0 -> context.getString(R.string.blocked_messages_title)

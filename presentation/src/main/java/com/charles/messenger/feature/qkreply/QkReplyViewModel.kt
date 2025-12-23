@@ -26,14 +26,17 @@ import com.charles.messenger.compat.SubscriptionManagerCompat
 import com.charles.messenger.extensions.asObservable
 import com.charles.messenger.extensions.mapNotNull
 import com.charles.messenger.interactor.DeleteMessages
+import com.charles.messenger.interactor.GenerateSmartReplies
 import com.charles.messenger.interactor.MarkRead
 import com.charles.messenger.interactor.SendMessage
 import com.charles.messenger.model.Message
 import com.charles.messenger.repository.ConversationRepository
 import com.charles.messenger.repository.MessageRepository
 import com.charles.messenger.util.ActiveSubscriptionObservable
+import com.charles.messenger.util.Preferences
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.Observables
 import io.reactivex.rxkotlin.plusAssign
 import io.reactivex.rxkotlin.withLatestFrom
@@ -41,6 +44,7 @@ import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
 import io.realm.RealmResults
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Named
@@ -49,9 +53,11 @@ class QkReplyViewModel @Inject constructor(
     @Named("threadId") private val threadId: Long,
     private val conversationRepo: ConversationRepository,
     private val deleteMessages: DeleteMessages,
+    private val generateSmartReplies: GenerateSmartReplies,
     private val markRead: MarkRead,
     private val messageRepo: MessageRepository,
     private val navigator: Navigator,
+    private val prefs: Preferences,
     private val sendMessage: SendMessage,
     private val subscriptionManager: SubscriptionManagerCompat
 ) : QkViewModel<QkReplyView, QkReplyState>(QkReplyState(threadId = threadId)) {
@@ -221,6 +227,56 @@ class QkReplyViewModel @Inject constructor(
                 }
                 .autoDisposable(view.scope())
                 .subscribe()
+
+        // Handle smart reply button clicks
+        view.smartReplyIntent
+                .filter { prefs.aiReplyEnabled.get() }
+                .filter { prefs.ollamaModel.get().isNotEmpty() }
+                .doOnNext {
+                    newState { copy(loadingSuggestions = true, showingSuggestions = false) }
+                }
+                .withLatestFrom(conversation) { _, conv -> conv }
+                .map { conv ->
+                    // Get messages on main thread (Realm requires this)
+                    val recentMessages = messageRepo.getMessages(conv.id).toList().takeLast(10)
+                    Pair(conv, recentMessages)
+                }
+                .observeOn(Schedulers.io())
+                .switchMap { (_, recentMessages) ->
+                    generateSmartReplies.buildObservable(
+                        GenerateSmartReplies.Params(
+                            baseUrl = prefs.ollamaApiUrl.get(),
+                            model = prefs.ollamaModel.get(),
+                            messages = recentMessages
+                        )
+                    ).toObservable()
+                }
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDisposable(view.scope())
+                .subscribe(
+                    { suggestions ->
+                        Timber.d("Generated ${suggestions.size} suggestions")
+                        newState {
+                            copy(
+                                suggestedReplies = suggestions,
+                                showingSuggestions = true,
+                                loadingSuggestions = false
+                            )
+                        }
+                    },
+                    { error ->
+                        Timber.e(error, "Failed to generate suggestions")
+                        newState { copy(loadingSuggestions = false, showingSuggestions = false) }
+                    }
+                )
+
+        // Handle suggestion selection
+        view.selectSuggestionIntent
+                .autoDisposable(view.scope())
+                .subscribe { suggestion ->
+                    view.setDraft(suggestion)
+                    newState { copy(showingSuggestions = false) }
+                }
     }
 
 }

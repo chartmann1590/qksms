@@ -25,11 +25,10 @@ import androidx.annotation.LayoutRes
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import com.bluelinelabs.conductor.archlifecycle.LifecycleController
-import kotlinx.android.extensions.LayoutContainer
-import kotlinx.android.synthetic.*
-import kotlinx.android.synthetic.main.toolbar.view.*
+import com.charles.messenger.R
+import com.charles.messenger.databinding.ToolbarBinding
 
-abstract class QkController<ViewContract : QkViewContract<State>, State, Presenter : QkPresenter<ViewContract, State>> : LifecycleController(), LayoutContainer {
+abstract class QkController<ViewContract : QkViewContract<State>, State, Presenter : QkPresenter<ViewContract, State>> : LifecycleController() {
 
     abstract var presenter: Presenter
 
@@ -39,19 +38,46 @@ abstract class QkController<ViewContract : QkViewContract<State>, State, Present
     protected val themedActivity: QkThemedActivity?
         get() = activity as? QkThemedActivity
 
-    override var containerView: View? = null
+    @Deprecated("Use getView() instead", ReplaceWith("getView()"))
+    protected var controllerView: View? = null
+    private var toolbarBinding: ToolbarBinding? = null
 
     @LayoutRes
     var layoutRes: Int = 0
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup): View {
         return inflater.inflate(layoutRes, container, false).also {
-            containerView = it
-            onViewCreated()
+            controllerView = it
+            // Try to bind toolbar if it exists and has the standard layout
+            it.findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)?.let { toolbar ->
+                // Only bind if toolbar has the standard layout with toolbarTitle
+                // Check multiple times to ensure the view exists before calling bind()
+                val toolbarTitleView = toolbar.findViewById<View>(R.id.toolbarTitle)
+                if (toolbarTitleView != null) {
+                    try {
+                        // Double-check that the view is still there and is the right type
+                        val titleView = toolbar.findViewById<android.widget.TextView>(R.id.toolbarTitle)
+                        if (titleView != null) {
+                            toolbarBinding = ToolbarBinding.bind(toolbar)
+                        } else {
+                            toolbarBinding = null
+                        }
+                    } catch (e: NullPointerException) {
+                        // ToolbarBinding.bind() throws NPE if required views are missing
+                        toolbarBinding = null
+                    } catch (e: Exception) {
+                        // Toolbar doesn't have standard layout, skip binding
+                        toolbarBinding = null
+                    }
+                } else {
+                    toolbarBinding = null
+                }
+            }
+            onViewCreated(it)
         }
     }
 
-    open fun onViewCreated() {
+    open fun onViewCreated(view: View) {
     }
 
     fun setTitle(@StringRes titleId: Int) {
@@ -60,7 +86,7 @@ abstract class QkController<ViewContract : QkViewContract<State>, State, Present
 
     fun setTitle(title: CharSequence?) {
         activity?.title = title
-        view?.toolbarTitle?.text = title
+        toolbarBinding?.toolbarTitle?.text = title
     }
 
     fun showBackButton(show: Boolean) {
@@ -68,8 +94,8 @@ abstract class QkController<ViewContract : QkViewContract<State>, State, Present
     }
 
     override fun onDestroyView(view: View) {
-        containerView = null
-        clearFindViewByIdCache()
+        this.controllerView = null
+        toolbarBinding = null
     }
 
     override fun onDestroy() {

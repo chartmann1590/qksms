@@ -19,6 +19,7 @@
 package com.charles.messenger.feature.compose.part
 
 import android.content.Context
+import android.widget.ImageView
 import com.charles.messenger.R
 import com.charles.messenger.common.base.QkViewHolder
 import com.charles.messenger.common.util.Colors
@@ -29,7 +30,6 @@ import com.charles.messenger.extensions.isVideo
 import com.charles.messenger.model.Message
 import com.charles.messenger.model.MmsPart
 import com.charles.messenger.util.GlideApp
-import kotlinx.android.synthetic.main.mms_preview_list_item.*
 import javax.inject.Inject
 
 class MediaBinder @Inject constructor(colors: Colors, private val context: Context) : PartBinder() {
@@ -46,17 +46,20 @@ class MediaBinder @Inject constructor(colors: Colors, private val context: Conte
         canGroupWithPrevious: Boolean,
         canGroupWithNext: Boolean
     ) {
-        holder.video.setVisible(part.isVideo())
-        holder.containerView.setOnClickListener { clicks.onNext(part.id) }
+        val video = holder.itemView.findViewById<ImageView>(R.id.video)
+        val thumbnail = holder.itemView.findViewById<BubbleImageView>(R.id.thumbnail)
 
-        holder.thumbnail.bubbleStyle = when {
+        video.setVisible(part.isVideo())
+        holder.itemView.setOnClickListener { clicks.onNext(part.id) }
+
+        thumbnail.bubbleStyle = when {
             !canGroupWithPrevious && canGroupWithNext -> if (message.isMe()) BubbleImageView.Style.OUT_FIRST else BubbleImageView.Style.IN_FIRST
             canGroupWithPrevious && canGroupWithNext -> if (message.isMe()) BubbleImageView.Style.OUT_MIDDLE else BubbleImageView.Style.IN_MIDDLE
             canGroupWithPrevious && !canGroupWithNext -> if (message.isMe()) BubbleImageView.Style.OUT_LAST else BubbleImageView.Style.IN_LAST
             else -> BubbleImageView.Style.ONLY
         }
 
-        GlideApp.with(context).load(part.getUri()).fitCenter().into(holder.thumbnail)
+        GlideApp.with(context).load(part.getUri()).fitCenter().into(thumbnail)
     }
 
 }

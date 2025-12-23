@@ -106,3 +106,22 @@
     <init>(...);
     <fields>;
 }
+
+# --- FIXED RULES ---
+
+# Keep AdMob
+-keep class com.google.android.gms.ads.** { *; }
+-keep class com.google.ads.** { *; }
+
+# Keep Conductor
+-keep class com.bluelinelabs.conductor.** { *; }
+
+# Keep Custom Views (for XML inflation)
+-keep public class * extends android.view.View {
+    public <init>(android.content.Context);
+    public <init>(android.content.Context, android.util.AttributeSet);
+    public <init>(android.content.Context, android.util.AttributeSet, int);
+}
+
+# Keep Application Code (Prevent aggressive shrinking destroying functionality)
+-keep class com.charles.messenger.** { *; }

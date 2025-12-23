@@ -20,16 +20,23 @@ package com.charles.messenger.common.widget
 
 import android.app.Activity
 import android.view.LayoutInflater
+import android.widget.Button
+import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.RecyclerView
 import com.charles.messenger.R
 import com.charles.messenger.common.base.QkAdapter
-import kotlinx.android.synthetic.main.qk_dialog.view.*
 
 class QkDialog(private val context: Activity) : AlertDialog(context) {
 
     private val view = LayoutInflater.from(context).inflate(R.layout.qk_dialog, null)
+    private val titleView: TextView = view.findViewById(R.id.title)
+    private val subtitleView: TextView = view.findViewById(R.id.subtitle)
+    private val listView: RecyclerView = view.findViewById(R.id.list)
+    private val positiveButtonView: Button = view.findViewById(R.id.positiveButton)
+    private val negativeButtonView: Button = view.findViewById(R.id.negativeButton)
 
     @StringRes
     var titleRes: Int? = null
@@ -41,8 +48,8 @@ class QkDialog(private val context: Activity) : AlertDialog(context) {
     var title: String? = null
         set(value) {
             field = value
-            view.title.text = value
-            view.title.isVisible = !value.isNullOrBlank()
+            titleView.text = value
+            titleView.isVisible = !value.isNullOrBlank()
         }
 
     @StringRes
@@ -55,15 +62,15 @@ class QkDialog(private val context: Activity) : AlertDialog(context) {
     var subtitle: String? = null
         set(value) {
             field = value
-            view.subtitle.text = value
-            view.subtitle.isVisible = !value.isNullOrBlank()
+            subtitleView.text = value
+            subtitleView.isVisible = !value.isNullOrBlank()
         }
 
     var adapter: QkAdapter<*>? = null
         set(value) {
             field = value
-            view.list.isVisible = value != null
-            view.list.adapter = value
+            listView.isVisible = value != null
+            listView.adapter = value
         }
 
     var positiveButtonListener: (() -> Unit)? = null
@@ -72,9 +79,9 @@ class QkDialog(private val context: Activity) : AlertDialog(context) {
     var positiveButton: Int? = null
         set(value) {
             field = value
-            value?.run(view.positiveButton::setText)
-            view.positiveButton.isVisible = value != null
-            view.positiveButton.setOnClickListener {
+            value?.run(positiveButtonView::setText)
+            positiveButtonView.isVisible = value != null
+            positiveButtonView.setOnClickListener {
                 positiveButtonListener?.invoke() ?: dismiss()
             }
         }
@@ -85,9 +92,9 @@ class QkDialog(private val context: Activity) : AlertDialog(context) {
     var negativeButton: Int? = null
         set(value) {
             field = value
-            value?.run(view.negativeButton::setText)
-            view.negativeButton.isVisible = value != null
-            view.negativeButton.setOnClickListener {
+            value?.run(negativeButtonView::setText)
+            negativeButtonView.isVisible = value != null
+            negativeButtonView.setOnClickListener {
                 negativeButtonListener?.invoke() ?: dismiss()
             }
         }

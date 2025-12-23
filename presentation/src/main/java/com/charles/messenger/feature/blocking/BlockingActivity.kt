@@ -19,13 +19,13 @@
 package com.charles.messenger.feature.blocking
 
 import android.os.Bundle
+import android.view.ViewGroup
 import com.bluelinelabs.conductor.Conductor
 import com.bluelinelabs.conductor.Router
 import com.bluelinelabs.conductor.RouterTransaction
 import com.charles.messenger.R
 import com.charles.messenger.common.base.QkThemedActivity
 import dagger.android.AndroidInjection
-import kotlinx.android.synthetic.main.container_activity.*
 
 class BlockingActivity : QkThemedActivity() {
 
@@ -36,6 +36,7 @@ class BlockingActivity : QkThemedActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.container_activity)
 
+        val container = findViewById<ViewGroup>(R.id.container)
         router = Conductor.attachRouter(this, container, savedInstanceState)
         if (!router.hasRootController()) {
             router.setRoot(RouterTransaction.with(BlockingController()))

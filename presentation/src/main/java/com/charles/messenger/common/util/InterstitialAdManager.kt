@@ -43,6 +43,19 @@ class InterstitialAdManager @Inject constructor(
      * Preload an interstitial ad
      */
     fun loadAd(activity: Activity) {
+        // #region agent log
+        com.charles.messenger.util.DebugLogger.log(
+            location = "InterstitialAdManager.kt:45",
+            message = "loadAd called",
+            data = mapOf(
+                "adUnitId" to AD_UNIT_ID,
+                "isUpgraded" to isUpgraded.toString(),
+                "hasAd" to (interstitialAd != null).toString(),
+                "isLoading" to isLoading.toString()
+            ),
+            hypothesisId = "H8"
+        )
+        // #endregion
         if (interstitialAd != null || isLoading) {
             Timber.d("Skipping ad load - already loaded or loading")
             return
@@ -54,12 +67,31 @@ class InterstitialAdManager @Inject constructor(
 
         InterstitialAd.load(activity, AD_UNIT_ID, adRequest, object : InterstitialAdLoadCallback() {
             override fun onAdFailedToLoad(adError: LoadAdError) {
+                // #region agent log
+                com.charles.messenger.util.DebugLogger.log(
+                    location = "InterstitialAdManager.kt:56",
+                    message = "Interstitial ad failed to load",
+                    data = mapOf(
+                        "errorCode" to adError.code.toString(),
+                        "errorMessage" to (adError.message ?: "null"),
+                        "errorDomain" to (adError.domain ?: "null")
+                    ),
+                    hypothesisId = "H8"
+                )
+                // #endregion
                 Timber.e("Interstitial ad failed to load: ${adError.message} (code: ${adError.code})")
                 interstitialAd = null
                 isLoading = false
             }
 
             override fun onAdLoaded(ad: InterstitialAd) {
+                // #region agent log
+                com.charles.messenger.util.DebugLogger.log(
+                    location = "InterstitialAdManager.kt:62",
+                    message = "Interstitial ad loaded successfully",
+                    hypothesisId = "H8"
+                )
+                // #endregion
                 Timber.d("Interstitial ad loaded successfully!")
                 interstitialAd = ad
                 isLoading = false
@@ -88,23 +120,68 @@ class InterstitialAdManager @Inject constructor(
      * Returns true if ad was shown, false otherwise
      */
     fun maybeShowAd(activity: Activity): Boolean {
+        // #region agent log
+        com.charles.messenger.util.DebugLogger.log(
+            location = "InterstitialAdManager.kt:90",
+            message = "maybeShowAd called",
+            data = mapOf(
+                "isUpgraded" to isUpgraded.toString(),
+                "hasAd" to (interstitialAd != null).toString()
+            ),
+            hypothesisId = "H7"
+        )
+        // #endregion
         // Don't show ads to upgraded users
         if (isUpgraded) {
+            // #region agent log
+            com.charles.messenger.util.DebugLogger.log(
+                location = "InterstitialAdManager.kt:92",
+                message = "User is upgraded, skipping ad",
+                hypothesisId = "H7"
+            )
+            // #endregion
             Timber.d("User is upgraded, skipping interstitial ad")
             return false
         }
 
         // Check probability
-        if (random.nextFloat() >= SHOW_PROBABILITY) {
+        val randomValue = random.nextFloat()
+        // #region agent log
+        com.charles.messenger.util.DebugLogger.log(
+            location = "InterstitialAdManager.kt:98",
+            message = "Probability check",
+            data = mapOf(
+                "randomValue" to randomValue.toString(),
+                "showProbability" to SHOW_PROBABILITY.toString(),
+                "willShow" to (randomValue < SHOW_PROBABILITY).toString()
+            ),
+            hypothesisId = "H8"
+        )
+        // #endregion
+        if (randomValue >= SHOW_PROBABILITY) {
             Timber.d("Skipping ad based on probability")
             loadAd(activity) // Preload for next time
             return false
         }
 
         return if (interstitialAd != null) {
+            // #region agent log
+            com.charles.messenger.util.DebugLogger.log(
+                location = "InterstitialAdManager.kt:104",
+                message = "Showing interstitial ad",
+                hypothesisId = "H8"
+            )
+            // #endregion
             interstitialAd?.show(activity)
             true
         } else {
+            // #region agent log
+            com.charles.messenger.util.DebugLogger.log(
+                location = "InterstitialAdManager.kt:108",
+                message = "Ad not ready, loading for next time",
+                hypothesisId = "H8"
+            )
+            // #endregion
             Timber.d("Interstitial ad not ready, loading for next time")
             loadAd(activity)
             false

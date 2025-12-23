@@ -21,6 +21,7 @@ package com.charles.messenger.feature.compose.editing
 import android.content.Context
 import android.os.Build
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.RelativeLayout
 import androidx.recyclerview.widget.RecyclerView
@@ -30,9 +31,10 @@ import com.charles.messenger.common.base.QkViewHolder
 import com.charles.messenger.common.util.extensions.dpToPx
 import com.charles.messenger.common.util.extensions.resolveThemeColor
 import com.charles.messenger.common.util.extensions.setBackgroundTint
+import com.charles.messenger.common.widget.AvatarView
+import com.charles.messenger.common.widget.QkTextView
 import com.charles.messenger.model.Recipient
 import io.reactivex.subjects.PublishSubject
-import kotlinx.android.synthetic.main.contact_chip.*
 import javax.inject.Inject
 
 class ChipsAdapter @Inject constructor() : QkAdapter<Recipient>() {
@@ -46,6 +48,7 @@ class ChipsAdapter @Inject constructor() : QkAdapter<Recipient>() {
         return QkViewHolder(view).apply {
             // These theme attributes don't apply themselves on API 21
             if (Build.VERSION.SDK_INT <= 22) {
+                val content = itemView.findViewById<View>(R.id.content)
                 content.setBackgroundTint(view.context.resolveThemeColor(R.attr.bubbleColor))
             }
 
@@ -59,8 +62,11 @@ class ChipsAdapter @Inject constructor() : QkAdapter<Recipient>() {
     override fun onBindViewHolder(holder: QkViewHolder, position: Int) {
         val recipient = getItem(position)
 
-        holder.avatar.setRecipient(recipient)
-        holder.name.text = recipient.contact?.name?.takeIf { it.isNotBlank() } ?: recipient.address
+        val avatar = holder.itemView.findViewById<AvatarView>(R.id.avatar)
+        val name = holder.itemView.findViewById<QkTextView>(R.id.name)
+
+        avatar.setRecipient(recipient)
+        name.text = recipient.contact?.name?.takeIf { it.isNotBlank() } ?: recipient.address
     }
 
     /**

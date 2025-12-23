@@ -21,6 +21,8 @@ package com.charles.messenger.feature.compose.part
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import com.charles.messenger.R
 import com.charles.messenger.common.base.QkAdapter
 import com.charles.messenger.common.base.QkViewHolder
 import com.charles.messenger.common.util.Colors
@@ -31,7 +33,6 @@ import com.charles.messenger.feature.compose.BubbleUtils.canGroup
 import com.charles.messenger.model.Message
 import com.charles.messenger.model.MmsPart
 import io.reactivex.Observable
-import kotlinx.android.synthetic.main.message_list_item_in.*
 import javax.inject.Inject
 
 class PartsAdapter @Inject constructor(
@@ -62,14 +63,15 @@ class PartsAdapter @Inject constructor(
         this.previous = previous
         this.next = next
         this.holder = holder
-        this.bodyVisible = holder.body.visibility == View.VISIBLE
+        val body = holder.itemView.findViewById<TextView>(R.id.body)
+        this.bodyVisible = body?.visibility == View.VISIBLE
         this.data = message.parts.filter { !it.isSmil() && !it.isText() }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): QkViewHolder {
         val layout = partBinders.getOrNull(viewType)?.partLayout ?: 0
         val view = LayoutInflater.from(parent.context).inflate(layout, parent, false)
-        holder?.containerView?.let(view::forwardTouches)
+        holder?.itemView?.let(view::forwardTouches)
         return QkViewHolder(view)
     }
 

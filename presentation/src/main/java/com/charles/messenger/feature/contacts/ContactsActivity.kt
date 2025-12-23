@@ -22,8 +22,11 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.view.View
+import android.widget.EditText
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.RecyclerView
 import com.jakewharton.rxbinding2.view.clicks
 import com.charles.messenger.R
 import com.charles.messenger.common.ViewModelFactory
@@ -44,7 +47,6 @@ import dagger.android.AndroidInjection
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
-import kotlinx.android.synthetic.main.contacts_activity.*
 import javax.inject.Inject
 
 class ContactsActivity : QkThemedActivity(), ContactsContract {
@@ -57,6 +59,10 @@ class ContactsActivity : QkThemedActivity(), ContactsContract {
     @Inject lateinit var contactsAdapter: ComposeItemAdapter
     @Inject lateinit var phoneNumberAdapter: PhoneNumberPickerAdapter
     @Inject lateinit var viewModelFactory: ViewModelFactory
+
+    private lateinit var search: EditText
+    private lateinit var cancel: View
+    private lateinit var contacts: RecyclerView
 
     override val queryChangedIntent: Observable<CharSequence> by lazy { search.textChanges() }
     override val queryClearedIntent: Observable<*> by lazy { cancel.clicks() }
@@ -84,6 +90,11 @@ class ContactsActivity : QkThemedActivity(), ContactsContract {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.contacts_activity)
+
+        search = findViewById(R.id.search)
+        cancel = findViewById(R.id.cancel)
+        contacts = findViewById(R.id.contacts)
+
         showBackButton(true)
         viewModel.bindView(this)
 

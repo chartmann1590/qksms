@@ -48,7 +48,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.Observables
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
-import kotlinx.android.synthetic.main.toolbar.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -118,23 +117,7 @@ abstract class QkThemedActivity : QkActivity() {
                 .autoDisposable(scope())
                 .subscribe { recreate() }
 
-        // We can only set light nav bar on API 27 in attrs, but we can do it in API 26 here
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O) {
-            val night = !resolveThemeBoolean(R.attr.isLightTheme)
-            window.decorView.systemUiVisibility = if (night) 0 else
-                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-        }
-
-        // Some devices don't let you modify android.R.attr.navigationBarColor
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            window.navigationBarColor = resolveThemeColor(android.R.attr.windowBackground)
-        }
-
-        // Set the color for the recent apps title
-        val toolbarColor = resolveThemeColor(R.attr.colorPrimary)
-        val icon = BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher)
-        val taskDesc = ActivityManager.TaskDescription(getString(R.string.app_name), icon, toolbarColor)
-        setTaskDescription(taskDesc)
+        // ...
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
@@ -143,37 +126,105 @@ abstract class QkThemedActivity : QkActivity() {
         // Initialize and load AdMob banner (only for non-upgraded users)
         try {
             val adView = findViewById<AdView>(R.id.adView)
+            // #region agent log
+            com.charles.messenger.util.DebugLogger.log(
+                location = "QkThemedActivity.kt:128",
+                message = "Banner ad view lookup",
+                data = mapOf("adViewFound" to (adView != null).toString()),
+                hypothesisId = "H9"
+            )
+            // #endregion
             adView?.let { ad ->
+                // #region agent log
+                com.charles.messenger.util.DebugLogger.log(
+                    location = "QkThemedActivity.kt:130",
+                    message = "Subscribing to upgrade status",
+                    data = mapOf("adUnitId" to (ad.adUnitId ?: "null")),
+                    hypothesisId = "H9"
+                )
+                // #endregion
                 billingManager.upgradeStatus
                     .take(1)
                     .autoDisposable(scope(Lifecycle.Event.ON_DESTROY))
                     .subscribe { upgraded ->
+                        // #region agent log
+                        com.charles.messenger.util.DebugLogger.log(
+                            location = "QkThemedActivity.kt:133",
+                            message = "Upgrade status received",
+                            data = mapOf("upgraded" to upgraded.toString()),
+                            hypothesisId = "H7"
+                        )
+                        // #endregion
                         if (upgraded) {
                             ad.visibility = View.GONE
                             timber.log.Timber.d("User is upgraded, hiding banner ad")
                         } else {
+                            // #region agent log
+                            com.charles.messenger.util.DebugLogger.log(
+                                location = "QkThemedActivity.kt:138",
+                                message = "Loading banner ad",
+                                data = mapOf("adUnitId" to (ad.adUnitId ?: "null")),
+                                hypothesisId = "H8"
+                            )
+                            // #endregion
                             val adRequest = AdRequest.Builder().build()
                             ad.loadAd(adRequest)
                             timber.log.Timber.d("Banner ad loading with unit ID: ${ad.adUnitId}")
 
                             ad.adListener = object : com.google.android.gms.ads.AdListener() {
                                 override fun onAdLoaded() {
+                                    // #region agent log
+                                    com.charles.messenger.util.DebugLogger.log(
+                                        location = "QkThemedActivity.kt:143",
+                                        message = "Banner ad loaded successfully",
+                                        hypothesisId = "H8"
+                                    )
+                                    // #endregion
                                     timber.log.Timber.d("Banner ad loaded successfully")
                                 }
 
                                 override fun onAdFailedToLoad(error: com.google.android.gms.ads.LoadAdError) {
+                                    // #region agent log
+                                    com.charles.messenger.util.DebugLogger.log(
+                                        location = "QkThemedActivity.kt:147",
+                                        message = "Banner ad failed to load",
+                                        data = mapOf(
+                                            "errorCode" to error.code.toString(),
+                                            "errorMessage" to (error.message ?: "null"),
+                                            "errorDomain" to (error.domain ?: "null")
+                                        ),
+                                        hypothesisId = "H8"
+                                    )
+                                    // #endregion
                                     timber.log.Timber.e("Banner ad failed to load: ${error.message} (${error.code})")
                                 }
                             }
                         }
                     }
+            } ?: run {
+                // #region agent log
+                com.charles.messenger.util.DebugLogger.log(
+                    location = "QkThemedActivity.kt:129",
+                    message = "Banner ad view not found in layout",
+                    hypothesisId = "H9"
+                )
+                // #endregion
             }
         } catch (e: Exception) {
+            // #region agent log
+            com.charles.messenger.util.DebugLogger.log(
+                location = "QkThemedActivity.kt:154",
+                message = "Exception loading banner ad",
+                data = mapOf("error" to e.message, "errorType" to e.javaClass.simpleName),
+                hypothesisId = "H10"
+            )
+            // #endregion
             timber.log.Timber.e(e, "Error loading banner ad")
         }
 
         // Set the color for the overflow and navigation icon
         val textSecondary = resolveThemeColor(android.R.attr.textColorSecondary)
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
         toolbar?.overflowIcon = toolbar?.overflowIcon?.apply { setTint(textSecondary) }
 
         // Update the colours of the menu items

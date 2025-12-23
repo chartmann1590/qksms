@@ -20,9 +20,15 @@ package com.charles.messenger.feature.scheduled
 
 import android.graphics.Typeface
 import android.os.Bundle
+import android.view.View
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.appbar.CollapsingToolbarLayout
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.jakewharton.rxbinding2.view.clicks
 import com.charles.messenger.R
 import com.charles.messenger.common.QkDialog
@@ -31,8 +37,6 @@ import com.charles.messenger.common.util.FontProvider
 import com.charles.messenger.common.util.extensions.setBackgroundTint
 import com.charles.messenger.common.util.extensions.setTint
 import dagger.android.AndroidInjection
-import kotlinx.android.synthetic.main.collapsing_toolbar.*
-import kotlinx.android.synthetic.main.scheduled_activity.*
 import javax.inject.Inject
 
 
@@ -42,6 +46,15 @@ class ScheduledActivity : QkThemedActivity(), ScheduledView {
     @Inject lateinit var fontProvider: FontProvider
     @Inject lateinit var messageAdapter: ScheduledMessageAdapter
     @Inject lateinit var viewModelFactory: ViewModelProvider.Factory
+
+    private lateinit var collapsingToolbar: CollapsingToolbarLayout
+    private lateinit var empty: View
+    private lateinit var messages: RecyclerView
+    private lateinit var sampleMessage: TextView
+    private lateinit var compose: FloatingActionButton
+    private lateinit var upgrade: View
+    private lateinit var upgradeIcon: ImageView
+    private lateinit var upgradeLabel: TextView
 
     override val messageClickIntent by lazy { messageAdapter.clicks }
     override val messageMenuIntent by lazy { dialog.adapter.menuItemClicks }
@@ -54,6 +67,16 @@ class ScheduledActivity : QkThemedActivity(), ScheduledView {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.scheduled_activity)
+
+        collapsingToolbar = findViewById(R.id.collapsingToolbar)
+        empty = findViewById(R.id.empty)
+        messages = findViewById(R.id.messages)
+        sampleMessage = findViewById(R.id.sampleMessage)
+        compose = findViewById(R.id.compose)
+        upgrade = findViewById(R.id.upgrade)
+        upgradeIcon = findViewById(R.id.upgradeIcon)
+        upgradeLabel = findViewById(R.id.upgradeLabel)
+
         setTitle(R.string.scheduled_title)
         showBackButton(true)
         viewModel.bindView(this)

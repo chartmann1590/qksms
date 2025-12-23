@@ -19,14 +19,16 @@
 package com.charles.messenger.feature.changelog
 
 import android.view.LayoutInflater
+import android.view.View
 import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.RecyclerView
 import com.charles.messenger.BuildConfig
 import com.charles.messenger.R
+import com.charles.messenger.common.widget.QkTextView
 import com.charles.messenger.feature.main.MainActivity
 import com.charles.messenger.manager.ChangelogManager
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
-import kotlinx.android.synthetic.main.changelog_dialog.view.*
 
 class ChangelogDialog(activity: MainActivity) {
 
@@ -38,15 +40,20 @@ class ChangelogDialog(activity: MainActivity) {
     init {
         val layout = LayoutInflater.from(activity).inflate(R.layout.changelog_dialog, null)
 
+        val versionView = layout.findViewById<QkTextView>(R.id.version)
+        val changelogView = layout.findViewById<RecyclerView>(R.id.changelog)
+        val moreView = layout.findViewById<View>(R.id.more)
+        val dismissView = layout.findViewById<View>(R.id.dismiss)
+
         dialog = AlertDialog.Builder(activity)
                 .setCancelable(true)
                 .setView(layout)
                 .create()
 
-        layout.version.text = activity.getString(R.string.changelog_version, BuildConfig.VERSION_NAME)
-        layout.changelog.adapter = adapter
-        layout.more.setOnClickListener { dialog.dismiss(); moreClicks.onNext(Unit) }
-        layout.dismiss.setOnClickListener { dialog.dismiss() }
+        versionView.text = activity.getString(R.string.changelog_version, BuildConfig.VERSION_NAME)
+        changelogView.adapter = adapter
+        moreView.setOnClickListener { dialog.dismiss(); moreClicks.onNext(Unit) }
+        dismissView.setOnClickListener { dialog.dismiss() }
     }
 
     fun show(changelog: ChangelogManager.CumulativeChangelog) {

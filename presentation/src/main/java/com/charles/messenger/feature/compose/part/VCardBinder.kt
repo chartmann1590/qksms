@@ -20,7 +20,11 @@ package com.charles.messenger.feature.compose.part
 
 import android.content.Context
 import android.view.Gravity
+import android.view.View
 import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.core.view.isVisible
 import com.charles.messenger.R
 import com.charles.messenger.common.base.QkViewHolder
@@ -38,7 +42,6 @@ import ezvcard.Ezvcard
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.mms_vcard_list_item.*
 import javax.inject.Inject
 
 class VCardBinder @Inject constructor(colors: Colors, private val context: Context) : PartBinder() {
@@ -55,10 +58,15 @@ class VCardBinder @Inject constructor(colors: Colors, private val context: Conte
         canGroupWithPrevious: Boolean,
         canGroupWithNext: Boolean
     ) {
-        BubbleUtils.getBubble(false, canGroupWithPrevious, canGroupWithNext, message.isMe())
-                .let(holder.vCardBackground::setBackgroundResource)
+        val vCardBackground = holder.itemView.findViewById<CardView>(R.id.vCardBackground)
+        val name = holder.itemView.findViewById<TextView>(R.id.name)
+        val label = holder.itemView.findViewById<TextView>(R.id.label)
+        val vCardAvatar = holder.itemView.findViewById<ImageView>(R.id.vCardAvatar)
 
-        holder.containerView.setOnClickListener { clicks.onNext(part.id) }
+        BubbleUtils.getBubble(false, canGroupWithPrevious, canGroupWithNext, message.isMe())
+                .let(vCardBackground::setBackgroundResource)
+
+        holder.itemView.setOnClickListener { clicks.onNext(part.id) }
 
         Observable.just(part.getUri())
                 .map(context.contentResolver::openInputStream)
@@ -67,23 +75,23 @@ class VCardBinder @Inject constructor(colors: Colors, private val context: Conte
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe { displayName ->
-                    holder.name?.text = displayName
-                    holder.name.isVisible = displayName.isNotEmpty()
+                    name.text = displayName
+                    name.isVisible = displayName.isNotEmpty()
                 }
 
-        val params = holder.vCardBackground.layoutParams as FrameLayout.LayoutParams
+        val params = vCardBackground.layoutParams as FrameLayout.LayoutParams
         if (!message.isMe()) {
-            holder.vCardBackground.layoutParams = params.apply { gravity = Gravity.START }
-            holder.vCardBackground.setBackgroundTint(theme.theme)
-            holder.vCardAvatar.setTint(theme.textPrimary)
-            holder.name.setTextColor(theme.textPrimary)
-            holder.label.setTextColor(theme.textTertiary)
+            vCardBackground.layoutParams = params.apply { gravity = Gravity.START }
+            vCardBackground.setBackgroundTint(theme.theme)
+            vCardAvatar.setTint(theme.textPrimary)
+            name.setTextColor(theme.textPrimary)
+            label.setTextColor(theme.textTertiary)
         } else {
-            holder.vCardBackground.layoutParams = params.apply { gravity = Gravity.END }
-            holder.vCardBackground.setBackgroundTint(holder.containerView.context.resolveThemeColor(R.attr.bubbleColor))
-            holder.vCardAvatar.setTint(holder.containerView.context.resolveThemeColor(android.R.attr.textColorSecondary))
-            holder.name.setTextColor(holder.containerView.context.resolveThemeColor(android.R.attr.textColorPrimary))
-            holder.label.setTextColor(holder.containerView.context.resolveThemeColor(android.R.attr.textColorTertiary))
+            vCardBackground.layoutParams = params.apply { gravity = Gravity.END }
+            vCardBackground.setBackgroundTint(holder.itemView.context.resolveThemeColor(R.attr.bubbleColor))
+            vCardAvatar.setTint(holder.itemView.context.resolveThemeColor(android.R.attr.textColorSecondary))
+            name.setTextColor(holder.itemView.context.resolveThemeColor(android.R.attr.textColorPrimary))
+            label.setTextColor(holder.itemView.context.resolveThemeColor(android.R.attr.textColorTertiary))
         }
     }
 

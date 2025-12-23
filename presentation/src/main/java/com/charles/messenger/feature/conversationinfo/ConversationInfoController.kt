@@ -21,6 +21,7 @@ package com.charles.messenger.feature.conversationinfo
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bluelinelabs.conductor.RouterTransaction
 import com.charles.messenger.R
 import com.charles.messenger.common.Navigator
@@ -37,7 +38,6 @@ import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
-import kotlinx.android.synthetic.main.conversation_info_controller.*
 import javax.inject.Inject
 
 class ConversationInfoController(
@@ -48,6 +48,8 @@ class ConversationInfoController(
     @Inject lateinit var blockingDialog: BlockingDialog
     @Inject lateinit var navigator: Navigator
     @Inject lateinit var adapter: ConversationInfoAdapter
+
+    private lateinit var recyclerView: RecyclerView
 
     private val nameDialog: TextInputDialog by lazy {
         TextInputDialog(activity!!, activity!!.getString(R.string.info_name), nameChangeSubject::onNext)
@@ -66,7 +68,11 @@ class ConversationInfoController(
         layoutRes = R.layout.conversation_info_controller
     }
 
-    override fun onViewCreated() {
+    override fun onViewCreated(view: View) {
+        super.onViewCreated(view)
+        if (view.parent == null) return
+        recyclerView = view.findViewById(R.id.recyclerView)
+
         recyclerView.adapter = adapter
         recyclerView.addItemDecoration(GridSpacingItemDecoration(adapter, activity!!))
         recyclerView.layoutManager = GridLayoutManager(activity, 3).apply {

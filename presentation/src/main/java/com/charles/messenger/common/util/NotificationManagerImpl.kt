@@ -57,6 +57,7 @@ import com.charles.messenger.util.GlideApp
 import com.charles.messenger.util.PhoneNumberUtils
 import com.charles.messenger.util.Preferences
 import com.charles.messenger.util.tryOrNull
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -293,14 +294,98 @@ class NotificationManagerImpl @Inject constructor(
                 }
                 .forEach { notification.addAction(it) }
 
-        if (prefs.qkreply.get()) {
+        // Determine if QK popup should be shown
+        // Don't show if auto-reply is enabled (auto-reply will handle it)
+        // Show if smart replies are enabled (to allow user to generate smart replies)
+        // Otherwise, show if qkreply setting is enabled
+        val aiAutoReplyToAll = prefs.aiAutoReplyToAll.get()
+        val aiReplyEnabled = prefs.aiReplyEnabled.get()
+        val qkreply = prefs.qkreply.get()
+        val ollamaModel = prefs.ollamaModel.get()
+        // #region agent log
+        try {
+            val logFile = java.io.File("h:\\qksms\\.cursor\\debug.log")
+            val logEntry = """{"timestamp":${System.currentTimeMillis()},"location":"NotificationManagerImpl.kt:320","message":"Checking QK popup conditions","data":{"threadId":$threadId,"aiAutoReplyToAll":$aiAutoReplyToAll,"aiReplyEnabled":$aiReplyEnabled,"qkreply":$qkreply,"ollamaModel":"$ollamaModel"},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}""" + "\n"
+            logFile.appendText(logEntry)
+            Timber.d("QK Popup check: aiAutoReplyToAll=$aiAutoReplyToAll, aiReplyEnabled=$aiReplyEnabled, qkreply=$qkreply, ollamaModel=$ollamaModel")
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to write debug log")
+        }
+        // #endregion
+        val shouldShowQkPopup = when {
+            aiAutoReplyToAll -> false // Auto-reply enabled, don't show popup
+            aiReplyEnabled -> true // Smart replies enabled, show popup for smart reply option
+            else -> qkreply // Use existing qkreply setting
+        }
+        // #region agent log
+        try {
+            val logFile = java.io.File("h:\\qksms\\.cursor\\debug.log")
+            val logEntry = """{"timestamp":${System.currentTimeMillis()},"location":"NotificationManagerImpl.kt:330","message":"QK popup decision","data":{"threadId":$threadId,"shouldShowQkPopup":$shouldShowQkPopup},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}""" + "\n"
+            logFile.appendText(logEntry)
+            Timber.d("QK Popup decision: shouldShowQkPopup=$shouldShowQkPopup for threadId=$threadId")
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to write debug log")
+        }
+        // #endregion
+
+        // Add smart reply button to notification if smart replies are enabled
+        if (aiReplyEnabled && ollamaModel.isNotEmpty() && !aiAutoReplyToAll) {
+            // #region agent log
+            try {
+                val logFile = java.io.File("h:\\qksms\\.cursor\\debug.log")
+                val logEntry = """{"timestamp":${System.currentTimeMillis()},"location":"NotificationManagerImpl.kt:300","message":"Adding smart reply action to notification","data":{"threadId":$threadId,"aiReplyEnabled":$aiReplyEnabled,"ollamaModel":"$ollamaModel","aiAutoReplyToAll":$aiAutoReplyToAll},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}""" + "\n"
+                logFile.appendText(logEntry)
+                Timber.d("Adding smart reply action to notification for threadId=$threadId")
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to write debug log")
+            }
+            // #endregion
+            val smartReplyIntent = Intent(context, QkReplyActivity::class.java)
+                    .putExtra("threadId", threadId)
+                    .putExtra("triggerSmartReply", true)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            val smartReplyPI = PendingIntent.getActivity(context, (threadId + 10000).toInt(), smartReplyIntent,
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                    } else {
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                    })
+            val smartReplyAction = NotificationCompat.Action.Builder(
+                    R.drawable.ic_smart_reply_24dp,
+                    context.getString(R.string.notification_smart_reply),
+                    smartReplyPI
+            ).build()
+            notification.addAction(smartReplyAction)
+        }
+
+        if (shouldShowQkPopup) {
             notification.priority = NotificationCompat.PRIORITY_DEFAULT
 
             val intent = Intent(context, QkReplyActivity::class.java)
                     .putExtra("threadId", threadId)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-            context.startActivity(intent)
+            // #region agent log
+            try {
+                val logFile = java.io.File("h:\\qksms\\.cursor\\debug.log")
+                val logEntry = """{"timestamp":${System.currentTimeMillis()},"location":"NotificationManagerImpl.kt:340","message":"Starting QK popup activity","data":{"threadId":$threadId},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}""" + "\n"
+                logFile.appendText(logEntry)
+                Timber.d("Starting QK popup activity for threadId=$threadId")
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to write debug log")
+            }
+            // #endregion
+            try {
+                context.startActivity(intent)
+            } catch (e: Exception) {
+                // #region agent log
+                try {
+                    val logFile = java.io.File("h:\\qksms\\.cursor\\debug.log")
+                    val logEntry = """{"timestamp":${System.currentTimeMillis()},"location":"NotificationManagerImpl.kt:350","message":"Failed to start QK popup activity","data":{"threadId":$threadId,"error":"${e.message}"},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}""" + "\n"
+                    logFile.appendText(logEntry)
+                    Timber.e(e, "Failed to start QK popup activity")
+                } catch (e2: Exception) {}
+                // #endregion
+            }
         }
 
         notificationManager.notify(threadId.toInt(), notification.build())

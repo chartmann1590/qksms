@@ -34,9 +34,14 @@ import com.charles.messenger.injection.appComponent
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
-import kotlinx.android.synthetic.main.theme_picker_controller.*
-import kotlinx.android.synthetic.main.theme_picker_hsv.*
 import javax.inject.Inject
+import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager.widget.ViewPager
+import android.widget.Button
+import android.widget.EditText
+import android.widget.LinearLayout
+import com.charles.messenger.common.widget.PagerTitleView
+import com.charles.messenger.feature.themepicker.HSVPickerView
 
 class ThemePickerController(
     val recipientId: Long = 0L
@@ -50,6 +55,16 @@ class ThemePickerController(
 
     private val viewQksmsPlusSubject: Subject<Unit> = PublishSubject.create()
 
+    private lateinit var pager: ViewPager
+    private lateinit var tabs: PagerTitleView
+    private lateinit var materialColors: RecyclerView
+    private lateinit var picker: HSVPickerView
+    private lateinit var clear: Button
+    private lateinit var apply: Button
+    private lateinit var hex: EditText
+    private lateinit var applyGroup: LinearLayout
+    private lateinit var contentView: View
+
     init {
         appComponent
                 .themePickerBuilder()
@@ -60,7 +75,17 @@ class ThemePickerController(
         layoutRes = R.layout.theme_picker_controller
     }
 
-    override fun onViewCreated() {
+    override fun onViewCreated(view: View) {
+        pager = view.findViewById(R.id.pager)
+        tabs = view.findViewById(R.id.tabs)
+        materialColors = view.findViewById(R.id.materialColors)
+        picker = view.findViewById(R.id.picker)
+        clear = view.findViewById(R.id.clear)
+        apply = view.findViewById(R.id.apply)
+        hex = view.findViewById(R.id.hex)
+        applyGroup = view.findViewById(R.id.applyGroup)
+        contentView = view.findViewById(R.id.contentView)
+
         pager.offscreenPageLimit = 1
         pager.adapter = themePagerAdapter
         tabs.pager = pager

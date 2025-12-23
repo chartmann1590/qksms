@@ -35,6 +35,7 @@ import com.charles.messenger.manager.BillingManager
 import com.charles.messenger.manager.ReferralManager
 import com.charles.messenger.migration.QkMigration
 import com.charles.messenger.migration.QkRealmMigration
+import com.charles.messenger.util.DebugLogger
 import com.charles.messenger.util.NightModeManager
 import com.uber.rxdogtag.RxDogTag
 import com.uber.rxdogtag.autodispose.AutoDisposeConfigurer
@@ -73,6 +74,9 @@ class QKApplication : Application(), HasActivityInjector, HasBroadcastReceiverIn
     override fun onCreate() {
         super.onCreate()
 
+        // Initialize debug logger
+        DebugLogger.init(this)
+
         AppComponentManager.init(this)
         appComponent.inject(this)
 
@@ -86,9 +90,21 @@ class QKApplication : Application(), HasActivityInjector, HasBroadcastReceiverIn
         qkMigration.performMigration()
 
         GlobalScope.launch(Dispatchers.IO) {
-            referralManager.trackReferrer()
-            billingManager.checkForPurchases()
-            billingManager.queryProducts()
+            try {
+                referralManager.trackReferrer()
+            } catch (e: Exception) {
+                Timber.w(e, "Error tracking referrer")
+            }
+            try {
+                billingManager.checkForPurchases()
+            } catch (e: Exception) {
+                Timber.w(e, "Error checking for purchases")
+            }
+            try {
+                billingManager.queryProducts()
+            } catch (e: Exception) {
+                Timber.w(e, "Error querying products")
+            }
         }
 
         nightModeManager.updateCurrentTheme()

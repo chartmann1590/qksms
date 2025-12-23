@@ -19,6 +19,8 @@
 package com.charles.messenger.feature.settings.swipe
 
 import android.view.View
+import android.widget.ImageView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import com.jakewharton.rxbinding2.view.clicks
 import com.charles.messenger.R
@@ -28,13 +30,13 @@ import com.charles.messenger.common.util.Colors
 import com.charles.messenger.common.util.extensions.animateLayoutChanges
 import com.charles.messenger.common.util.extensions.setBackgroundTint
 import com.charles.messenger.common.util.extensions.setTint
+import com.charles.messenger.common.widget.QkTextView
 import com.charles.messenger.injection.appComponent
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
-import kotlinx.android.synthetic.main.swipe_actions_controller.*
 import javax.inject.Inject
 
 class SwipeActionsController : QkController<SwipeActionsView, SwipeActionsState, SwipeActionsPresenter>(), SwipeActionsView {
@@ -42,6 +44,13 @@ class SwipeActionsController : QkController<SwipeActionsView, SwipeActionsState,
     @Inject override lateinit var presenter: SwipeActionsPresenter
     @Inject lateinit var actionsDialog: QkDialog
     @Inject lateinit var colors: Colors
+
+    private lateinit var right: ConstraintLayout
+    private lateinit var rightIcon: ImageView
+    private lateinit var rightLabel: QkTextView
+    private lateinit var left: ConstraintLayout
+    private lateinit var leftIcon: ImageView
+    private lateinit var leftLabel: QkTextView
 
     /**
      * Allows us to subscribe to [actionClicks] more than once
@@ -55,7 +64,14 @@ class SwipeActionsController : QkController<SwipeActionsView, SwipeActionsState,
         actionsDialog.adapter.setData(R.array.settings_swipe_actions)
     }
 
-    override fun onViewCreated() {
+    override fun onViewCreated(view: View) {
+        right = view.findViewById(R.id.right)
+        rightIcon = view.findViewById(R.id.rightIcon)
+        rightLabel = view.findViewById(R.id.rightLabel)
+        left = view.findViewById(R.id.left)
+        leftIcon = view.findViewById(R.id.leftIcon)
+        leftLabel = view.findViewById(R.id.leftLabel)
+
         colors.theme().let { theme ->
             rightIcon.setBackgroundTint(theme.theme)
             rightIcon.setTint(theme.textPrimary)

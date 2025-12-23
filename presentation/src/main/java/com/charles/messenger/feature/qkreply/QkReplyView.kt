@@ -20,6 +20,7 @@ package com.charles.messenger.feature.qkreply
 
 import com.charles.messenger.common.base.QkView
 import io.reactivex.Observable
+import io.reactivex.subjects.Subject
 
 interface QkReplyView : QkView<QkReplyState> {
 
@@ -27,6 +28,8 @@ interface QkReplyView : QkView<QkReplyState> {
     val textChangedIntent: Observable<CharSequence>
     val changeSimIntent: Observable<*>
     val sendIntent: Observable<Unit>
+    val smartReplyIntent: Observable<Unit>
+    val selectSuggestionIntent: Subject<String>
 
     fun setDraft(draft: String)
     fun finish()

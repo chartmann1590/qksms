@@ -47,29 +47,83 @@ class OllamaRepositoryImpl @Inject constructor(
 
     override fun getAvailableModels(baseUrl: String): Single<List<OllamaModel>> {
         return Single.fromCallable {
-            val url = "${baseUrl.trimEnd('/')}$TAGS_ENDPOINT"
-            Timber.d("Fetching models from: $url")
+            // #region agent log
+            com.charles.messenger.util.DebugLogger.log(
+                location = "OllamaRepositoryImpl.kt:48",
+                message = "getAvailableModels called",
+                data = mapOf("baseUrl" to baseUrl),
+                hypothesisId = "H4"
+            )
+            // #endregion
+            try {
+                val url = "${baseUrl.trimEnd('/')}$TAGS_ENDPOINT"
+                Timber.d("Fetching models from: $url")
 
-            val request = Request.Builder()
-                .url(url)
-                .get()
-                .build()
+                val request = Request.Builder()
+                    .url(url)
+                    .get()
+                    .build()
 
-            val response = okHttpClient.newCall(request).execute()
+                val response = okHttpClient.newCall(request).execute()
 
-            if (!response.isSuccessful) {
-                throw Exception("Failed to fetch models: ${response.code} ${response.message}")
+                if (!response.isSuccessful) {
+                    throw Exception("Failed to fetch models: ${response.code} ${response.message}")
+                }
+
+                val responseBody = response.body?.string()
+                    ?: throw Exception("Empty response body")
+
+                val adapter = moshi.adapter(OllamaModelsResponse::class.java)
+                val modelsResponse = adapter.fromJson(responseBody)
+                    ?: throw Exception("Failed to parse models response")
+
+                Timber.d("Fetched ${modelsResponse.models.size} models")
+                modelsResponse.models
+            } catch (e: java.net.SocketException) {
+                // #region agent log
+                com.charles.messenger.util.DebugLogger.log(
+                    location = "OllamaRepositoryImpl.kt:74",
+                    message = "SocketException caught and handled",
+                    data = mapOf("error" to e.message, "errorType" to "SocketException"),
+                    hypothesisId = "H4"
+                )
+                // #endregion
+                Timber.e(e, "Socket error while fetching models")
+                throw Exception("Connection error: ${e.message}", e)
+            } catch (e: android.system.ErrnoException) {
+                // #region agent log
+                com.charles.messenger.util.DebugLogger.log(
+                    location = "OllamaRepositoryImpl.kt:77",
+                    message = "ErrnoException caught and handled",
+                    data = mapOf("error" to e.message, "errorType" to "ErrnoException"),
+                    hypothesisId = "H4"
+                )
+                // #endregion
+                Timber.e(e, "Connection error while fetching models")
+                throw Exception("Connection refused: ${e.message}", e)
+            } catch (e: java.net.UnknownHostException) {
+                // #region agent log
+                com.charles.messenger.util.DebugLogger.log(
+                    location = "OllamaRepositoryImpl.kt:84",
+                    message = "UnknownHostException caught and handled",
+                    data = mapOf("error" to e.message, "errorType" to "UnknownHostException"),
+                    hypothesisId = "H4"
+                )
+                // #endregion
+                Timber.e(e, "Unknown host error while fetching models")
+                throw Exception("Unknown host: ${e.message}", e)
+            } catch (e: Exception) {
+                // #region agent log
+                com.charles.messenger.util.DebugLogger.log(
+                    location = "OllamaRepositoryImpl.kt:91",
+                    message = "Generic Exception caught",
+                    data = mapOf("error" to e.message, "errorType" to e.javaClass.simpleName),
+                    hypothesisId = "H4"
+                )
+                // #endregion
+                Timber.e(e, "Error fetching models")
+                throw e
             }
-
-            val responseBody = response.body?.string()
-                ?: throw Exception("Empty response body")
-
-            val adapter = moshi.adapter(OllamaModelsResponse::class.java)
-            val modelsResponse = adapter.fromJson(responseBody)
-                ?: throw Exception("Failed to parse models response")
-
-            Timber.d("Fetched ${modelsResponse.models.size} models")
-            modelsResponse.models
         }
     }
 
@@ -79,46 +133,60 @@ class OllamaRepositoryImpl @Inject constructor(
         conversationContext: List<Message>
     ): Single<List<String>> {
         return Single.fromCallable {
-            val url = "${baseUrl.trimEnd('/')}$GENERATE_ENDPOINT"
-            Timber.d("Generating replies from: $url with model: $model")
+            try {
+                val url = "${baseUrl.trimEnd('/')}$GENERATE_ENDPOINT"
+                Timber.d("Generating replies from: $url with model: $model")
 
-            // Build conversation context prompt
-            val prompt = buildPrompt(conversationContext)
-            Timber.d("Prompt: $prompt")
+                // Build conversation context prompt
+                val prompt = buildPrompt(conversationContext)
+                Timber.d("Prompt: $prompt")
 
-            // Create request
-            val generateRequest = OllamaGenerateRequest(
-                model = model,
-                prompt = prompt,
-                stream = false
-            )
+                // Create request
+                val generateRequest = OllamaGenerateRequest(
+                    model = model,
+                    prompt = prompt,
+                    stream = false
+                )
 
-            val requestAdapter = moshi.adapter(OllamaGenerateRequest::class.java)
-            val requestJson = requestAdapter.toJson(generateRequest)
+                val requestAdapter = moshi.adapter(OllamaGenerateRequest::class.java)
+                val requestJson = requestAdapter.toJson(generateRequest)
 
-            val request = Request.Builder()
-                .url(url)
-                .post(requestJson.toRequestBody(JSON_MEDIA_TYPE.toMediaType()))
-                .build()
+                val request = Request.Builder()
+                    .url(url)
+                    .post(requestJson.toRequestBody(JSON_MEDIA_TYPE.toMediaType()))
+                    .build()
 
-            val response = okHttpClient.newCall(request).execute()
+                val response = okHttpClient.newCall(request).execute()
 
-            if (!response.isSuccessful) {
-                throw Exception("Failed to generate replies: ${response.code} ${response.message}")
+                if (!response.isSuccessful) {
+                    throw Exception("Failed to generate replies: ${response.code} ${response.message}")
+                }
+
+                val responseBody = response.body?.string()
+                    ?: throw Exception("Empty response body")
+
+                val responseAdapter = moshi.adapter(OllamaGenerateResponse::class.java)
+                val generateResponse = responseAdapter.fromJson(responseBody)
+                    ?: throw Exception("Failed to parse generate response")
+
+                // Parse the response into multiple suggestions
+                val suggestions = parseReplySuggestions(generateResponse.response)
+                Timber.d("Generated ${suggestions.size} suggestions")
+
+                suggestions
+            } catch (e: java.net.SocketException) {
+                Timber.e(e, "Socket error while generating replies")
+                throw Exception("Connection error: ${e.message}", e)
+            } catch (e: android.system.ErrnoException) {
+                Timber.e(e, "Connection error while generating replies")
+                throw Exception("Connection refused: ${e.message}", e)
+            } catch (e: java.net.UnknownHostException) {
+                Timber.e(e, "Unknown host error while generating replies")
+                throw Exception("Unknown host: ${e.message}", e)
+            } catch (e: Exception) {
+                Timber.e(e, "Error generating replies")
+                throw e
             }
-
-            val responseBody = response.body?.string()
-                ?: throw Exception("Empty response body")
-
-            val responseAdapter = moshi.adapter(OllamaGenerateResponse::class.java)
-            val generateResponse = responseAdapter.fromJson(responseBody)
-                ?: throw Exception("Failed to parse generate response")
-
-            // Parse the response into multiple suggestions
-            val suggestions = parseReplySuggestions(generateResponse.response)
-            Timber.d("Generated ${suggestions.size} suggestions")
-
-            suggestions
         }
     }
 

@@ -20,7 +20,10 @@ package com.charles.messenger.feature.compose
 
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.charles.messenger.R
@@ -35,9 +38,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
-import kotlinx.android.synthetic.main.attachment_contact_list_item.*
-import kotlinx.android.synthetic.main.attachment_image_list_item.*
-import kotlinx.android.synthetic.main.attachment_image_list_item.view.*
 import javax.inject.Inject
 
 class AttachmentAdapter @Inject constructor(
@@ -55,7 +55,10 @@ class AttachmentAdapter @Inject constructor(
         val inflater = LayoutInflater.from(parent.context)
         val view = when (viewType) {
             VIEW_TYPE_IMAGE -> inflater.inflate(R.layout.attachment_image_list_item, parent, false)
-                    .apply { thumbnailBounds.clipToOutline = true }
+                    .apply {
+                        val thumbnailBounds = findViewById<View>(R.id.thumbnailBounds)
+                        thumbnailBounds.clipToOutline = true
+                    }
 
             VIEW_TYPE_CONTACT -> inflater.inflate(R.layout.attachment_contact_list_item, parent, false)
 
@@ -74,9 +77,12 @@ class AttachmentAdapter @Inject constructor(
         val attachment = getItem(position)
 
         when (attachment) {
-            is Attachment.Image -> Glide.with(context)
-                    .load(attachment.getUri())
-                    .into(holder.thumbnail)
+            is Attachment.Image -> {
+                val thumbnail = holder.itemView.findViewById<ImageView>(R.id.thumbnail)
+                Glide.with(context)
+                        .load(attachment.getUri())
+                        .into(thumbnail)
+            }
 
             is Attachment.Contact -> Observable.just(attachment.vCard)
                     .mapNotNull { vCard -> Ezvcard.parse(vCard).first() }
@@ -84,8 +90,9 @@ class AttachmentAdapter @Inject constructor(
                     .subscribeOn(Schedulers.computation())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe { displayName ->
-                        holder.name?.text = displayName
-                        holder.name?.isVisible = displayName.isNotEmpty()
+                        val name = holder.itemView.findViewById<TextView>(R.id.name)
+                        name.text = displayName
+                        name.isVisible = displayName.isNotEmpty()
                     }
         }
     }

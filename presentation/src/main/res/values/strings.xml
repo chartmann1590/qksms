@@ -354,6 +354,8 @@
     <string name="qksms_plus_thanks_title">Thank you for supporting Messenger!</string>
     <string name="qksms_plus_thanks_summary">You now have access to all Messenger+ features</string>
     <string name="qksms_plus_error">An error has occurred, please try again</string>
+    <string name="qksms_plus_error_billing_unavailable">Google Play Billing is not available on this device. Please try on a device with Google Play Services installed.</string>
+    <string name="qksms_plus_error_billing_timeout">Unable to connect to Google Play Billing. Please check your internet connection and try again.</string>
     <string name="qksms_plus_free_title">Messenger+ is free for F-Droid users! If you\'d like to support development, a donation would be highly appreciated.</string>
     <string name="qksms_plus_donate">Donate via PayPal</string>
     <string name="qksms_plus_coming_soon">Coming soon</string>
@@ -520,6 +522,7 @@
     <string name="ai_settings_auto_reply_all_summary">AI will automatically reply to all incoming SMS</string>
     <string name="ai_settings_auto_reply_warning">⚠️ Warning: When enabled, AI will automatically reply to ALL incoming SMS messages until disabled. Disable at any time from this screen.</string>
     <string name="compose_smart_reply_cd">Generate smart reply suggestions</string>
+    <string name="notification_smart_reply">Smart Reply</string>
 
     <!-- Auto-Reply Notification -->
     <string name="ai_auto_reply_notification_title">AI Auto-Reply Active</string>

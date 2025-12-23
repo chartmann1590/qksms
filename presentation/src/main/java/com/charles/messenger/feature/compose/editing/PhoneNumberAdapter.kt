@@ -23,8 +23,8 @@ import android.view.ViewGroup
 import com.charles.messenger.R
 import com.charles.messenger.common.base.QkAdapter
 import com.charles.messenger.common.base.QkViewHolder
+import com.charles.messenger.common.widget.QkTextView
 import com.charles.messenger.model.PhoneNumber
-import kotlinx.android.synthetic.main.contact_number_list_item.*
 
 class PhoneNumberAdapter : QkAdapter<PhoneNumber>() {
 
@@ -37,8 +37,11 @@ class PhoneNumberAdapter : QkAdapter<PhoneNumber>() {
     override fun onBindViewHolder(holder: QkViewHolder, position: Int) {
         val number = getItem(position)
 
-        holder.address.text = number.address
-        holder.type.text = number.type
+        val address = holder.itemView.findViewById<QkTextView>(R.id.address)
+        val type = holder.itemView.findViewById<QkTextView>(R.id.type)
+
+        address.text = number.address
+        type.text = number.type
     }
 
     override fun areItemsTheSame(old: PhoneNumber, new: PhoneNumber): Boolean {

@@ -20,7 +20,10 @@ package com.charles.messenger.feature.settings.ai
 
 import android.app.AlertDialog
 import android.view.View
+import android.widget.Button
 import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import com.jakewharton.rxbinding2.view.clicks
 import com.jakewharton.rxbinding2.widget.checkedChanges
@@ -32,7 +35,6 @@ import com.charles.messenger.injection.appComponent
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
-import kotlinx.android.synthetic.main.ai_settings_controller.*
 import javax.inject.Inject
 
 class AiSettingsController : QkController<AiSettingsView, AiSettingsState, AiSettingsPresenter>(), AiSettingsView {
@@ -42,18 +44,52 @@ class AiSettingsController : QkController<AiSettingsView, AiSettingsState, AiSet
     private val urlChangedSubject: Subject<String> = PublishSubject.create()
     private val modelSelectedSubject: Subject<String> = PublishSubject.create()
 
+    private lateinit var preferences: LinearLayout
+    private lateinit var aiEnabled: PreferenceView
+    private lateinit var ollamaUrl: PreferenceView
+    private lateinit var modelSelection: PreferenceView
+    private lateinit var testConnection: Button
+    private lateinit var connectionStatus: TextView
+    private lateinit var aiAutoReplyToAll: PreferenceView
+    private lateinit var autoReplyWarning: TextView
+
     init {
         appComponent.inject(this)
         layoutRes = R.layout.ai_settings_controller
     }
 
-    override fun onViewCreated() {
-        super.onViewCreated()
+    override fun onViewCreated(view: View) {
+        super.onViewCreated(view)
+        // #region agent log
+        com.charles.messenger.util.DebugLogger.log(
+            location = "AiSettingsController.kt:61",
+            message = "onViewCreated started",
+            hypothesisId = "H2"
+        )
+        // #endregion
+        preferences = view.findViewById(R.id.preferences)
+        aiEnabled = view.findViewById(R.id.aiEnabled)
+        ollamaUrl = view.findViewById(R.id.ollamaUrl)
+        modelSelection = view.findViewById(R.id.modelSelection)
+        testConnection = view.findViewById(R.id.testConnection)
+        connectionStatus = view.findViewById(R.id.connectionStatus)
+        aiAutoReplyToAll = view.findViewById(R.id.aiAutoReplyToAll)
+        autoReplyWarning = view.findViewById(R.id.autoReplyWarning)
+        
+        // #region agent log
+        com.charles.messenger.util.DebugLogger.log(
+            location = "AiSettingsController.kt:73",
+            message = "All views initialized, calling bindIntents",
+            data = mapOf("preferencesInitialized" to ::preferences.isInitialized),
+            hypothesisId = "H2"
+        )
+        // #endregion
+        // Bind intents AFTER all views are initialized
+        presenter.bindIntents(this)
     }
 
     override fun onAttach(view: View) {
         super.onAttach(view)
-        presenter.bindIntents(this)
         setTitle(R.string.ai_settings_title)
         showBackButton(true)
 
@@ -69,11 +105,39 @@ class AiSettingsController : QkController<AiSettingsView, AiSettingsState, AiSet
         }
     }
 
-    override fun preferenceClicks(): Observable<PreferenceView> = (0 until preferences.childCount)
-        .map { index -> preferences.getChildAt(index) }
-        .mapNotNull { view -> view as? PreferenceView }
-        .map { preference -> preference.clicks().map { preference } }
-        .let { preferences -> Observable.merge(preferences) }
+    override fun preferenceClicks(): Observable<PreferenceView> {
+        // #region agent log
+        com.charles.messenger.util.DebugLogger.log(
+            location = "AiSettingsController.kt:93",
+            message = "preferenceClicks called",
+            data = mapOf("preferencesInitialized" to ::preferences.isInitialized),
+            hypothesisId = "H2"
+        )
+        // #endregion
+        if (!::preferences.isInitialized) {
+            // #region agent log
+            com.charles.messenger.util.DebugLogger.log(
+                location = "AiSettingsController.kt:96",
+                message = "preferences not initialized, returning empty",
+                hypothesisId = "H2"
+            )
+            // #endregion
+            return Observable.empty()
+        }
+        // #region agent log
+        com.charles.messenger.util.DebugLogger.log(
+            location = "AiSettingsController.kt:100",
+            message = "preferences initialized, building observable",
+            data = mapOf("childCount" to preferences.childCount),
+            hypothesisId = "H2"
+        )
+        // #endregion
+        return (0 until preferences.childCount)
+            .map { index -> preferences.getChildAt(index) }
+            .mapNotNull { view -> view as? PreferenceView }
+            .map { preference -> preference.clicks().map { preference } }
+            .let { preferences -> Observable.merge(preferences) }
+    }
 
     override fun testConnectionClicks(): Observable<Unit> = testConnection.clicks()
 

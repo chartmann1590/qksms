@@ -22,6 +22,7 @@ import android.content.Context
 import android.text.format.Formatter
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.TextView
 import com.charles.messenger.R
 import com.charles.messenger.common.base.FlowableAdapter
 import com.charles.messenger.common.base.QkViewHolder
@@ -29,7 +30,6 @@ import com.charles.messenger.common.util.DateFormatter
 import com.charles.messenger.model.BackupFile
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
-import kotlinx.android.synthetic.main.backup_list_item.*
 import javax.inject.Inject
 
 class BackupAdapter @Inject constructor(
@@ -53,9 +53,13 @@ class BackupAdapter @Inject constructor(
 
         val count = backup.messages
 
-        holder.title.text = dateFormatter.getDetailedTimestamp(backup.date)
-        holder.messages.text = context.resources.getQuantityString(R.plurals.backup_message_count, count, count)
-        holder.size.text = Formatter.formatFileSize(context, backup.size)
+        val title = holder.itemView.findViewById<TextView>(R.id.title)
+        val messages = holder.itemView.findViewById<TextView>(R.id.messages)
+        val size = holder.itemView.findViewById<TextView>(R.id.size)
+
+        title.text = dateFormatter.getDetailedTimestamp(backup.date)
+        messages.text = context.resources.getQuantityString(R.plurals.backup_message_count, count, count)
+        size.text = Formatter.formatFileSize(context, backup.size)
     }
 
 }

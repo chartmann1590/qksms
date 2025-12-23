@@ -34,8 +34,7 @@ import com.charles.messenger.repository.SyncRepository
 import com.charles.messenger.service.AutoDeleteService
 import com.charles.messenger.util.NightModeManager
 import com.charles.messenger.util.Preferences
-import com.uber.autodispose.android.lifecycle.scope
-import com.uber.autodispose.autoDisposable
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.plusAssign
 import io.reactivex.rxkotlin.withLatestFrom
 import io.reactivex.schedulers.Schedulers
@@ -91,14 +90,18 @@ class SettingsPresenter @Inject constructor(
                 .subscribe { enabled -> newState { copy(notificationsEnabled = enabled) } }
 
         disposables += prefs.autoEmoji.asObservable()
-                .subscribe { enabled -> newState { copy(autoEmojiEnabled = enabled) } }
+                .subscribe { enabled -> 
+                    newState { copy(autoEmojiEnabled = enabled) }
+                }
 
         val delayedSendingLabels = context.resources.getStringArray(R.array.delayed_sending_labels)
         disposables += prefs.sendDelay.asObservable()
                 .subscribe { id -> newState { copy(sendDelaySummary = delayedSendingLabels[id], sendDelayId = id) } }
 
         disposables += prefs.delivery.asObservable()
-                .subscribe { enabled -> newState { copy(deliveryEnabled = enabled) } }
+                .subscribe { enabled -> 
+                    newState { copy(deliveryEnabled = enabled) }
+                }
 
         disposables += prefs.signature.asObservable()
                 .subscribe { signature -> newState { copy(signature = signature) } }
@@ -110,7 +113,9 @@ class SettingsPresenter @Inject constructor(
                 }
 
         disposables += prefs.autoColor.asObservable()
-                .subscribe { autoColor -> newState { copy(autoColor = autoColor) } }
+                .subscribe { autoColor -> 
+                    newState { copy(autoColor = autoColor) }
+                }
 
         disposables += prefs.systemFont.asObservable()
                 .subscribe { enabled -> newState { copy(systemFontEnabled = enabled) } }
@@ -154,14 +159,55 @@ class SettingsPresenter @Inject constructor(
     }
 
     override fun bindIntents(view: SettingsView) {
-        super.bindIntents(view)
+        // Keep the state subscription alive for the lifetime of the presenter
+        disposables += state
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { state ->
+                    view.render(state)
+                }
 
-        view.preferenceClicks()
-                .autoDisposable(view.scope())
-                .subscribe {
-                    Timber.v("Preference click: ${context.resources.getResourceName(it.id)}")
+        disposables += view.preferenceClicks()
+                .subscribe(
+                    { preference ->
+                        // #region agent log
+                        com.charles.messenger.util.DebugLogger.log(
+                            location = "SettingsPresenter.kt:171",
+                            message = "Preference click received",
+                            data = mapOf("preferenceId" to preference.id.toString()),
+                            hypothesisId = "H3"
+                        )
+                        // #endregion
+                        try {
+                            // #region agent log
+                            com.charles.messenger.util.DebugLogger.log(
+                                location = "SettingsPresenter.kt:180",
+                                message = "Before getResourceName call",
+                                data = mapOf(
+                                    "contextNull" to (context == null),
+                                    "preferenceId" to preference.id.toString()
+                                ),
+                                hypothesisId = "H3"
+                            )
+                            // #endregion
+                            val resourceName = try {
+                                context.resources.getResourceName(preference.id)
+                            } catch (e: Exception) {
+                                "unknown_resource"
+                            }
+                            Timber.v("Preference click: $resourceName")
 
-                    when (it.id) {
+                            // #region agent log
+                            com.charles.messenger.util.DebugLogger.log(
+                                location = "SettingsPresenter.kt:183",
+                                message = "Before when statement",
+                                data = mapOf(
+                                    "viewNull" to (view == null),
+                                    "preferenceId" to preference.id.toString()
+                                ),
+                                hypothesisId = "H3"
+                            )
+                            // #endregion
+                            when (preference.id) {
                         R.id.theme -> view.showThemePicker()
 
                         R.id.night -> view.showNightModeDialog()
@@ -176,9 +222,13 @@ class SettingsPresenter @Inject constructor(
                             view.showEndTimePicker(date.get(Calendar.HOUR_OF_DAY), date.get(Calendar.MINUTE))
                         }
 
-                        R.id.black -> prefs.black.set(!prefs.black.get())
+                        R.id.black -> {
+                            prefs.black.set(!prefs.black.get())
+                        }
 
-                        R.id.autoEmoji -> prefs.autoEmoji.set(!prefs.autoEmoji.get())
+                        R.id.autoEmoji -> {
+                            prefs.autoEmoji.set(!prefs.autoEmoji.get())
+                        }
 
                         R.id.notifications -> navigator.showNotificationSettings()
 
@@ -186,7 +236,9 @@ class SettingsPresenter @Inject constructor(
 
                         R.id.delayed -> view.showDelayDurationDialog()
 
-                        R.id.delivery -> prefs.delivery.set(!prefs.delivery.get())
+                        R.id.delivery -> {
+                            prefs.delivery.set(!prefs.delivery.get())
+                        }
 
                         R.id.signature -> view.showSignatureDialog(prefs.signature.get())
 
@@ -212,17 +264,58 @@ class SettingsPresenter @Inject constructor(
                         R.id.sync -> syncMessages.execute(Unit)
 
                         R.id.trial -> navigator.showQksmsPlusActivity("settings")
-                        
+
                         R.id.about -> view.showAbout()
 
-                        R.id.aiSettings -> view.showAiSettings()
+                        R.id.aiSettings -> {
+                            // #region agent log
+                            com.charles.messenger.util.DebugLogger.log(
+                                location = "SettingsPresenter.kt:243",
+                                message = "About to call showAiSettings",
+                                data = mapOf("viewNull" to (view == null)),
+                                hypothesisId = "H3"
+                            )
+                            // #endregion
+                            view?.showAiSettings() ?: run {
+                                Timber.e("View is null when trying to show AI Settings")
+                            }
+                        }
+                            }
+                            // #region agent log
+                            com.charles.messenger.util.DebugLogger.log(
+                                location = "SettingsPresenter.kt:236",
+                                message = "Preference click handled successfully",
+                                hypothesisId = "H3"
+                            )
+                            // #endregion
+                        } catch (e: Exception) {
+                            // #region agent log
+                            com.charles.messenger.util.DebugLogger.log(
+                                location = "SettingsPresenter.kt:238",
+                                message = "Error handling preference click",
+                                data = mapOf("error" to e.message, "errorType" to e.javaClass.simpleName),
+                                hypothesisId = "H3"
+                            )
+                            // #endregion
+                            Timber.e(e, "Error handling preference click")
+                        }
+                    },
+                    { error ->
+                        // #region agent log
+                        com.charles.messenger.util.DebugLogger.log(
+                            location = "SettingsPresenter.kt:247",
+                            message = "Error in preferenceClicks stream",
+                            data = mapOf("error" to error.message, "errorType" to error.javaClass.simpleName),
+                            hypothesisId = "H3"
+                        )
+                        // #endregion
+                        Timber.e(error, "Error in preferenceClicks stream")
                     }
-                }
+                )
 
-        view.aboutLongClicks()
+        disposables += view.aboutLongClicks()
                 .map { !prefs.logging.get() }
                 .doOnNext { enabled -> prefs.logging.set(enabled) }
-                .autoDisposable(view.scope())
                 .subscribe { enabled ->
                     context.makeToast(when (enabled) {
                         true -> R.string.settings_logging_enabled
@@ -230,7 +323,7 @@ class SettingsPresenter @Inject constructor(
                     })
                 }
 
-        view.nightModeSelected()
+        disposables += view.nightModeSelected()
                 .withLatestFrom(billingManager.upgradeStatus) { mode, upgraded ->
                     if (!upgraded && mode == Preferences.NIGHT_MODE_AUTO) {
                         view.showQksmsPlusSnackbar()
@@ -238,26 +331,21 @@ class SettingsPresenter @Inject constructor(
                         nightModeManager.updateNightMode(mode)
                     }
                 }
-                .autoDisposable(view.scope())
                 .subscribe()
 
-        view.viewQksmsPlusClicks()
-                .autoDisposable(view.scope())
+        disposables += view.viewQksmsPlusClicks()
                 .subscribe { navigator.showQksmsPlusActivity("settings_night") }
 
-        view.nightStartSelected()
-                .autoDisposable(view.scope())
+        disposables += view.nightStartSelected()
                 .subscribe { nightModeManager.setNightStart(it.first, it.second) }
 
-        view.nightEndSelected()
-                .autoDisposable(view.scope())
+        disposables += view.nightEndSelected()
                 .subscribe { nightModeManager.setNightEnd(it.first, it.second) }
 
-        view.textSizeSelected()
-                .autoDisposable(view.scope())
+        disposables += view.textSizeSelected()
                 .subscribe(prefs.textSize::set)
 
-        view.sendDelaySelected()
+        disposables += view.sendDelaySelected()
                 .withLatestFrom(billingManager.upgradeStatus) { duration, upgraded ->
                     if (!upgraded && duration != 0) {
                         view.showQksmsPlusSnackbar()
@@ -265,15 +353,13 @@ class SettingsPresenter @Inject constructor(
                         prefs.sendDelay.set(duration)
                     }
                 }
-                .autoDisposable(view.scope())
                 .subscribe()
 
-        view.signatureChanged()
+        disposables += view.signatureChanged()
                 .doOnNext(prefs.signature::set)
-                .autoDisposable(view.scope())
                 .subscribe()
 
-        view.autoDeleteChanged()
+        disposables += view.autoDeleteChanged()
                 .observeOn(Schedulers.io())
                 .filter { maxAge ->
                     if (maxAge == 0) {
@@ -297,11 +383,9 @@ class SettingsPresenter @Inject constructor(
                     }
                 }
                 .doOnNext(prefs.autoDelete::set)
-                .autoDisposable(view.scope())
                 .subscribe()
 
-        view.mmsSizeSelected()
-                .autoDisposable(view.scope())
+        disposables += view.mmsSizeSelected()
                 .subscribe(prefs.mmsSize::set)
     }
 

@@ -31,14 +31,18 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_marginStart="24dp"
+        android:clickable="false"
         android:duplicateParentState="true"
+        android:focusable="false"
         android:visibility="invisible" />
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:clickable="false"
         android:duplicateParentState="true"
+        android:focusable="false"
         android:orientation="vertical"
         android:paddingLeft="24dp"
         android:paddingTop="16dp"
@@ -50,7 +54,9 @@
             style="@style/TextPrimary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:clickable="false"
             android:duplicateParentState="true"
+            android:focusable="false"
             tools:text="Default SMS App" />
 
         <com.charles.messenger.common.widget.QkTextView
@@ -59,7 +65,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
+            android:clickable="false"
             android:duplicateParentState="true"
+            android:focusable="false"
             tools:text="QKSMS is your default SMS app" />
 
     </LinearLayout>
@@ -69,6 +77,8 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_marginEnd="16dp"
-        android:duplicateParentState="true" />
+        android:clickable="false"
+        android:duplicateParentState="true"
+        android:focusable="false" />
 
 </merge>

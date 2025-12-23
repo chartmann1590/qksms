@@ -22,6 +22,8 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.LinearLayoutCompat
 import com.charles.messenger.R
@@ -29,11 +31,15 @@ import com.charles.messenger.common.util.extensions.resolveThemeAttribute
 import com.charles.messenger.common.util.extensions.resolveThemeColorStateList
 import com.charles.messenger.common.util.extensions.setVisible
 import com.charles.messenger.injection.appComponent
-import kotlinx.android.synthetic.main.preference_view.view.*
 
 class PreferenceView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : LinearLayoutCompat(context, attrs) {
+
+    private lateinit var titleView: TextView
+    private lateinit var summaryView: TextView
+    private lateinit var widgetFrame: ViewGroup
+    private lateinit var icon: ImageView
 
     var title: String? = null
         set(value) {
@@ -62,7 +68,7 @@ class PreferenceView @JvmOverloads constructor(
             }
         }
 
-    val widget: android.view.ViewGroup get() = widgetFrame
+    val widget: ViewGroup get() = widgetFrame
 
     init {
         if (!isInEditMode) {
@@ -73,6 +79,14 @@ class PreferenceView @JvmOverloads constructor(
         setBackgroundResource(context.resolveThemeAttribute(R.attr.selectableItemBackground))
         orientation = HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
+        isClickable = true
+        isFocusable = true
+        descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
+
+        titleView = findViewById(R.id.titleView)
+        summaryView = findViewById(R.id.summaryView)
+        widgetFrame = findViewById(R.id.widgetFrame)
+        icon = findViewById(R.id.icon)
 
         icon.imageTintList = context.resolveThemeColorStateList(android.R.attr.textColorSecondary)
 

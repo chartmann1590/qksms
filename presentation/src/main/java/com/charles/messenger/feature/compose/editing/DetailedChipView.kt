@@ -21,23 +21,38 @@ package com.charles.messenger.feature.compose.editing
 import android.content.Context
 import android.view.View
 import android.view.animation.AlphaAnimation
+import android.widget.ImageView
 import android.widget.RelativeLayout
+import android.widget.TextView
+import androidx.cardview.widget.CardView
 import com.charles.messenger.R
 import com.charles.messenger.common.util.Colors
 import com.charles.messenger.common.util.extensions.setBackgroundTint
 import com.charles.messenger.common.util.extensions.setTint
+import com.charles.messenger.common.widget.AvatarView
 import com.charles.messenger.injection.appComponent
 import com.charles.messenger.model.Recipient
-import kotlinx.android.synthetic.main.contact_chip_detailed.view.*
 import javax.inject.Inject
 
 class DetailedChipView(context: Context) : RelativeLayout(context) {
 
     @Inject lateinit var colors: Colors
 
+    private lateinit var avatar: AvatarView
+    private lateinit var name: TextView
+    private lateinit var info: TextView
+    private lateinit var card: CardView
+    private lateinit var delete: ImageView
+
     init {
         View.inflate(context, R.layout.contact_chip_detailed, this)
         appComponent.inject(this)
+
+        avatar = findViewById(R.id.avatar)
+        name = findViewById(R.id.name)
+        info = findViewById(R.id.info)
+        card = findViewById(R.id.card)
+        delete = findViewById(R.id.delete)
 
         setOnClickListener { hide() }
 

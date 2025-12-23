@@ -32,10 +32,13 @@ This project follows open source best practices. Please be respectful and constr
 
 ### Prerequisites
 
-- **Android Studio** (latest stable version recommended)
-- **JDK 8 or higher**
+- **Android Studio** (latest stable version recommended, Arctic Fox or newer)
+- **JDK 8 or higher** (JDK 11 recommended)
 - **Git**
-- **Android SDK** with API level 21+ (Android 5.0+)
+- **Android SDK** with:
+  - API level 21+ (Android 5.0+) for minimum SDK
+  - API level 34+ (Android 14) for compile SDK
+  - Build Tools 34.0.0 or higher
 
 ### Initial Setup
 
@@ -83,7 +86,7 @@ QKSMS has two product flavors:
 ### Common Build Commands
 
 ```bash
-# Build debug APK (no analytics)
+# Build debug APK (no analytics - recommended for development)
 ./gradlew :presentation:assembleNoAnalyticsDebug
 
 # Build debug APK (with analytics)
@@ -92,14 +95,24 @@ QKSMS has two product flavors:
 # Install on connected device
 ./gradlew :presentation:installNoAnalyticsDebug
 
-# Build release APK (requires signing config)
+# Build release APK (requires signing config in local.properties)
 ./gradlew :presentation:assembleNoAnalyticsRelease
+./gradlew :presentation:assembleWithAnalyticsRelease
+
+# Build Android App Bundle for Play Store
+./gradlew :presentation:bundleWithAnalyticsRelease
 
 # Clean build
 ./gradlew clean
 
-# Run lint checks
+# Run lint checks (all modules)
 ./gradlew lint
+
+# Run unit tests
+./gradlew test
+
+# Run instrumented tests (requires emulator/device)
+./gradlew :presentation:connectedNoAnalyticsDebugAndroidTest
 ```
 
 **On Windows**, use `gradlew.bat` instead of `./gradlew`
@@ -110,35 +123,67 @@ QKSMS follows **Clean Architecture** with clear separation of concerns:
 
 ### Module Structure
 
-1. **presentation** - UI layer (Android app module)
+1. **presentation/** - UI layer (Android app module)
    - Activities and Controllers using Conductor framework
    - MVP pattern with unidirectional state flow
-   - Feature-based organization
+   - Feature-based organization under `com.charles.messenger.feature`
+   - Product flavors: `withAnalytics`, `noAnalytics`
+   - Depends on: `domain`, `data`, `common`, `android-smsmms`
 
-2. **domain** - Business logic layer (pure Kotlin)
-   - Use cases/Interactors
+2. **domain/** - Business logic layer (pure Kotlin)
+   - Use cases/Interactors (extending `Interactor<Params>`)
    - Repository interfaces
-   - Domain models
-   - No Android dependencies
+   - Domain models and business rules
+   - No Android dependencies - only Kotlin, RxJava, and Realm
+   - Depends on: `common`
 
-3. **data** - Data access layer
+3. **data/** - Data access layer (Android library)
    - Repository implementations
-   - Database (Realm) and ContentProvider access
-   - Data mappers
+   - Database (Realm) and ContentProvider access for SMS/MMS
+   - Data mappers between data models and domain models
+   - Product flavors: `withAnalytics` (includes Amplitude), `noAnalytics`
+   - Depends on: `domain`, `common`, `android-smsmms`
 
-4. **common** - Shared utilities
-   - Extension functions
-   - Common utilities
+4. **common/** - Shared utilities (Android library)
+   - Extension functions and null-safety helpers
+   - Common models and utilities
+   - No module dependencies
 
-5. **android-smsmms** - SMS/MMS handling library
+5. **android-smsmms/** - SMS/MMS handling library
+   - Forked from klinker41/android-smsmms
+   - Handles low-level SMS/MMS protocol operations
+   - Used by other modules for telephony operations
 
 ### Key Patterns
 
 - **MVP (Model-View-Presenter)** with unidirectional state flow
+  - Views implement `QkView<State>` with `render(state: State)` method
+  - Presenters extend `QkPresenter<View, State>` managing state with RxJava BehaviorSubject
+  - State flow: User Intent → Presenter → State Reducer → View Render
+
+- **Interactor Pattern**
+  - All use cases extend `Interactor<Params>` from domain module
+  - Execute on IO thread, observe on main thread
+  - Located in `domain/src/main/java/com/charles/messenger/interactor/`
+
 - **Dependency Injection** using Dagger 2
+  - Activity/Service/BroadcastReceiver modules in `presentation/src/main/java/com/charles/messenger/injection/`
+  - Scopes: `@ActivityScope`, `@ControllerScope`, `@ServiceScope`
+
 - **Reactive Programming** using RxJava 2
+  - Heavy use for asynchronous operations and data streams
+  - Realm reactive queries for database observation
+  - AutoDispose for lifecycle-aware subscription management
+
 - **Database** using Realm
+  - Fast, efficient local data persistence
+  - Reactive queries using Realm's Flowable support
+  - **IMPORTANT:** Realm plugin must be applied BEFORE Kotlin plugin in build.gradle
+
 - **Navigation** using Conductor
+  - Bluelinelabs Conductor library for Controller-based navigation
+  - Lightweight, non-Activity view controllers
+  - Located in feature modules (e.g., `feature/settings/about/AboutController.kt`)
 
 For detailed architecture documentation, see [CLAUDE.md](CLAUDE.md).
 
@@ -180,7 +225,7 @@ For detailed architecture documentation, see [CLAUDE.md](CLAUDE.md).
 ### Running Tests
 
 ```bash
-# Run all unit tests
+# Run all unit tests (where present)
 ./gradlew test
 
 # Run instrumented tests (requires emulator or device)
@@ -190,6 +235,8 @@ For detailed architecture documentation, see [CLAUDE.md](CLAUDE.md).
 ./gradlew :domain:test
 ./gradlew :data:test
 ```
+
+**Note:** Most tests are instrumented tests located in `*/src/androidTest/java/...` as Kotlin `*Test.kt` files. Unit tests are less common but may exist in some modules.
 
 ### Test Guidelines
 

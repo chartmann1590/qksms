@@ -22,12 +22,11 @@ import android.content.Context
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.ImageView
 import com.charles.messenger.R
 import com.charles.messenger.common.base.QkAdapter
 import com.charles.messenger.common.base.QkViewHolder
 import com.charles.messenger.util.GlideApp
-import kotlinx.android.synthetic.main.attachment_image_list_item.view.*
-import kotlinx.android.synthetic.main.scheduled_message_image_list_item.*
 import javax.inject.Inject
 
 class ScheduledMessageAttachmentAdapter @Inject constructor(
@@ -36,15 +35,17 @@ class ScheduledMessageAttachmentAdapter @Inject constructor(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): QkViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.scheduled_message_image_list_item, parent, false)
-        view.thumbnail.clipToOutline = true
+        val thumbnail = view.findViewById<ImageView>(R.id.thumbnail)
+        thumbnail.clipToOutline = true
 
         return QkViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: QkViewHolder, position: Int) {
         val attachment = getItem(position)
+        val thumbnail = holder.itemView.findViewById<ImageView>(R.id.thumbnail)
 
-        GlideApp.with(context).load(attachment).into(holder.thumbnail)
+        GlideApp.with(context).load(attachment).into(thumbnail)
     }
 
 }

@@ -24,6 +24,8 @@ import android.graphics.drawable.GradientDrawable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.widget.FrameLayout
+import android.widget.ImageView
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.charles.messenger.R
 import com.charles.messenger.common.util.extensions.setBackgroundTint
@@ -31,7 +33,6 @@ import com.charles.messenger.common.util.extensions.setTint
 import com.charles.messenger.common.util.extensions.within
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
-import kotlinx.android.synthetic.main.hsv_picker_view.view.*
 
 class HSVPickerView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
@@ -51,8 +52,20 @@ class HSVPickerView @JvmOverloads constructor(
             updateHue()
         }
 
+    private lateinit var saturation: View
+    private lateinit var swatch: ImageView
+    private lateinit var hueGroup: FrameLayout
+    private lateinit var hueThumb: View
+    private lateinit var hueTrack: ImageView
+
     init {
         View.inflate(context, R.layout.hsv_picker_view, this)
+
+        saturation = findViewById(R.id.saturation)
+        swatch = findViewById(R.id.swatch)
+        hueGroup = findViewById(R.id.hueGroup)
+        hueThumb = findViewById(R.id.hueThumb)
+        hueTrack = findViewById(R.id.hueTrack)
 
         var swatchX = 0f
         var swatchY = 0f

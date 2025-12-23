@@ -22,7 +22,9 @@ import android.Manifest
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
@@ -38,7 +40,6 @@ import dagger.android.AndroidInjection
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
-import kotlinx.android.synthetic.main.gallery_activity.*
 import javax.inject.Inject
 
 class GalleryActivity : QkActivity(), GalleryView {
@@ -46,6 +47,11 @@ class GalleryActivity : QkActivity(), GalleryView {
     @Inject lateinit var dateFormatter: DateFormatter
     @Inject lateinit var viewModelFactory: ViewModelProvider.Factory
     @Inject lateinit var pagerAdapter: GalleryPagerAdapter
+
+    private lateinit var pager: ViewPager2
+    private lateinit var toolbar: Toolbar
+    private lateinit var toolbarTitle: TextView
+    private lateinit var toolbarSubtitle: TextView
 
     val partId by lazy { intent.getLongExtra("partId", 0L) }
 
@@ -58,6 +64,12 @@ class GalleryActivity : QkActivity(), GalleryView {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.gallery_activity)
+
+        pager = findViewById(R.id.pager)
+        toolbar = findViewById(R.id.toolbar)
+        toolbarTitle = findViewById(R.id.toolbarTitle)
+        toolbarSubtitle = findViewById(R.id.toolbarSubtitle)
+
         showBackButton(true)
         viewModel.bindView(this)
 

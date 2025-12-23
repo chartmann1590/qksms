@@ -30,7 +30,8 @@ import com.charles.messenger.common.util.extensions.setTint
 import com.charles.messenger.injection.appComponent
 import com.charles.messenger.model.Recipient
 import com.charles.messenger.util.GlideApp
-import kotlinx.android.synthetic.main.avatar_view.view.*
+import android.widget.TextView
+import android.widget.ImageView
 import javax.inject.Inject
 
 class AvatarView @JvmOverloads constructor(
@@ -46,6 +47,10 @@ class AvatarView @JvmOverloads constructor(
     private var lastUpdated: Long? = null
     private var theme: Colors.Theme
 
+    private lateinit var initial: TextView
+    private lateinit var icon: ImageView
+    private lateinit var photo: ImageView
+
     init {
         if (!isInEditMode) {
             appComponent.inject(this)
@@ -56,6 +61,10 @@ class AvatarView @JvmOverloads constructor(
         View.inflate(context, R.layout.avatar_view, this)
         setBackgroundResource(R.drawable.circle)
         clipToOutline = true
+
+        initial = findViewById(R.id.initial)
+        icon = findViewById(R.id.icon)
+        photo = findViewById(R.id.photo)
     }
 
     /**

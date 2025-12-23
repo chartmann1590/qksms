@@ -33,12 +33,19 @@ import android.provider.MediaStore
 import android.text.format.DateFormat
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.SwitchCompat
+import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.jakewharton.rxbinding2.view.clicks
@@ -48,6 +55,7 @@ import com.charles.messenger.common.base.QkThemedActivity
 import com.charles.messenger.common.util.DateFormatter
 import com.charles.messenger.common.util.InterstitialAdManager
 import com.charles.messenger.common.util.extensions.*
+import com.charles.messenger.common.widget.QkEditText
 import com.charles.messenger.feature.compose.editing.ChipsAdapter
 import com.charles.messenger.feature.contacts.ContactsActivity
 import com.charles.messenger.model.Attachment
@@ -59,7 +67,6 @@ import dagger.android.AndroidInjection
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
-import kotlinx.android.synthetic.main.compose_activity.*
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
@@ -83,6 +90,42 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     @Inject lateinit var messageAdapter: MessagesAdapter
     @Inject lateinit var navigator: Navigator
     @Inject lateinit var viewModelFactory: ViewModelProvider.Factory
+
+    private lateinit var contentView: ViewGroup
+    private lateinit var toolbar: Toolbar
+    private lateinit var toolbarTitle: TextView
+    private lateinit var toolbarSubtitle: TextView
+    private lateinit var chips: RecyclerView
+    private lateinit var composeBar: View
+    private lateinit var sendAsGroup: View
+    private lateinit var sendAsGroupBackground: View
+    private lateinit var sendAsGroupSwitch: SwitchCompat
+    private lateinit var messageList: RecyclerView
+    private lateinit var messagesEmpty: View
+    private lateinit var loading: android.widget.ProgressBar
+    private lateinit var messageBackground: View
+    private lateinit var scheduledGroup: View
+    private lateinit var scheduledTime: TextView
+    private lateinit var scheduledCancel: View
+    private lateinit var attachments: RecyclerView
+    private lateinit var attaching: View
+    private lateinit var attachingBackground: View
+    private lateinit var camera: View
+    private lateinit var cameraLabel: View
+    private lateinit var gallery: View
+    private lateinit var galleryLabel: View
+    private lateinit var schedule: View
+    private lateinit var scheduleLabel: View
+    private lateinit var contact: View
+    private lateinit var contactLabel: View
+    private lateinit var message: QkEditText
+    private lateinit var attach: ImageView
+    private lateinit var counter: TextView
+    private lateinit var sim: View
+    private lateinit var simIndex: TextView
+    private lateinit var send: ImageView
+    private lateinit var smartReply: ImageView
+    private lateinit var suggestionsChips: RecyclerView
 
     override val activityVisibleIntent: Subject<Boolean> = PublishSubject.create()
     override val chipsSelectedIntent: Subject<HashMap<String, String?>> = PublishSubject.create()
@@ -127,6 +170,43 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.compose_activity)
+
+        contentView = findViewById(R.id.contentView)
+        toolbar = findViewById(R.id.toolbar)
+        toolbarTitle = findViewById(R.id.toolbarTitle)
+        toolbarSubtitle = findViewById(R.id.toolbarSubtitle)
+        chips = findViewById(R.id.chips)
+        composeBar = findViewById(R.id.composeBar)
+        sendAsGroup = findViewById(R.id.sendAsGroup)
+        sendAsGroupBackground = findViewById(R.id.sendAsGroupBackground)
+        sendAsGroupSwitch = findViewById(R.id.sendAsGroupSwitch)
+        messageList = findViewById(R.id.messageList)
+        messagesEmpty = findViewById(R.id.messagesEmpty)
+        loading = findViewById(R.id.loading)
+        messageBackground = findViewById(R.id.messageBackground)
+        scheduledGroup = findViewById(R.id.scheduledGroup)
+        scheduledTime = findViewById(R.id.scheduledTime)
+        scheduledCancel = findViewById(R.id.scheduledCancel)
+        attachments = findViewById(R.id.attachments)
+        attaching = findViewById(R.id.attaching)
+        attachingBackground = findViewById(R.id.attachingBackground)
+        camera = findViewById(R.id.camera)
+        cameraLabel = findViewById(R.id.cameraLabel)
+        gallery = findViewById(R.id.gallery)
+        galleryLabel = findViewById(R.id.galleryLabel)
+        schedule = findViewById(R.id.schedule)
+        scheduleLabel = findViewById(R.id.scheduleLabel)
+        contact = findViewById(R.id.contact)
+        contactLabel = findViewById(R.id.contactLabel)
+        message = findViewById(R.id.message)
+        attach = findViewById(R.id.attach)
+        counter = findViewById(R.id.counter)
+        sim = findViewById(R.id.sim)
+        simIndex = findViewById(R.id.simIndex)
+        send = findViewById(R.id.send)
+        smartReply = findViewById(R.id.smartReply)
+        suggestionsChips = findViewById(R.id.suggestionsChips)
+
         showBackButton(true)
         viewModel.bindView(this)
 

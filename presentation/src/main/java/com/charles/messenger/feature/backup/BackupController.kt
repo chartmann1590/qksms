@@ -23,10 +23,17 @@ import android.app.Activity
 import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.view.children
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.jakewharton.rxbinding2.view.clicks
 import com.charles.messenger.R
 import com.charles.messenger.common.base.QkController
@@ -42,9 +49,6 @@ import com.charles.messenger.repository.BackupRepository
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
-import kotlinx.android.synthetic.main.backup_controller.*
-import kotlinx.android.synthetic.main.backup_list_dialog.view.*
-import kotlinx.android.synthetic.main.preference_view.view.*
 import javax.inject.Inject
 
 class BackupController : QkController<BackupView, BackupState, BackupPresenter>(), BackupView {
@@ -53,16 +57,31 @@ class BackupController : QkController<BackupView, BackupState, BackupPresenter>(
     @Inject lateinit var dateFormatter: DateFormatter
     @Inject override lateinit var presenter: BackupPresenter
 
+    private lateinit var progressBar: ProgressBar
+    private lateinit var fab: FloatingActionButton
+    private lateinit var fabIcon: ImageView
+    private lateinit var fabLabel: TextView
+    private lateinit var linearLayout: ViewGroup
+    private lateinit var progressIcon: ImageView
+    private lateinit var progressTitle: TextView
+    private lateinit var progressSummary: TextView
+    private lateinit var progressCancel: Button
+    private lateinit var progress: View
+    private lateinit var backup: PreferenceView
+    private lateinit var restore: PreferenceView
+
     private val activityVisibleSubject: Subject<Unit> = PublishSubject.create()
     private val confirmRestoreSubject: Subject<Unit> = PublishSubject.create()
     private val stopRestoreSubject: Subject<Unit> = PublishSubject.create()
 
     private val backupFilesDialog by lazy {
-        val view = View.inflate(activity, R.layout.backup_list_dialog, null)
-                .apply { files.adapter = adapter.apply { emptyView = empty } }
+        val dialogView = View.inflate(activity, R.layout.backup_list_dialog, null)
+        val files = dialogView.findViewById<RecyclerView>(R.id.files)
+        val empty = dialogView.findViewById<TextView>(R.id.empty)
+        files.adapter = adapter.apply { emptyView = empty }
 
         AlertDialog.Builder(activity!!)
-                .setView(view)
+                .setView(dialogView)
                 .setCancelable(true)
                 .create()
     }
@@ -97,8 +116,24 @@ class BackupController : QkController<BackupView, BackupState, BackupPresenter>(
         showBackButton(true)
     }
 
-    override fun onViewCreated() {
-        super.onViewCreated()
+    override fun onViewCreated(view: View) {
+        super.onViewCreated(view)
+
+        val view = getView() ?: return
+        if (view.parent == null) return
+
+        progressBar = view.findViewById(R.id.progressBar)
+        fab = view.findViewById(R.id.fab)
+        fabIcon = view.findViewById(R.id.fabIcon)
+        fabLabel = view.findViewById(R.id.fabLabel)
+        linearLayout = view.findViewById(R.id.linearLayout)
+        progressIcon = view.findViewById(R.id.progressIcon)
+        progressTitle = view.findViewById(R.id.progressTitle)
+        progressSummary = view.findViewById(R.id.progressSummary)
+        progressCancel = view.findViewById(R.id.progressCancel)
+        progress = view.findViewById(R.id.progress)
+        backup = view.findViewById(R.id.backup)
+        restore = view.findViewById(R.id.restore)
 
         themedActivity?.colors?.theme()?.let { theme ->
             progressBar.indeterminateTintList = ColorStateList.valueOf(theme.theme)
@@ -111,7 +146,10 @@ class BackupController : QkController<BackupView, BackupState, BackupPresenter>(
         // Make the list titles bold
         linearLayout.children
                 .mapNotNull { it as? PreferenceView }
-                .map { it.titleView }
+                .map { preference ->
+                    val titleView = preference.findViewById<TextView>(R.id.titleView)
+                    titleView
+                }
                 .forEach { it.setTypeface(it.typeface, Typeface.BOLD) }
     }
 

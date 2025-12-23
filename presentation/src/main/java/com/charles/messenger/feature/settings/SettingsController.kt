@@ -24,12 +24,12 @@ import android.content.Context
 import android.os.Build
 import android.text.format.DateFormat
 import android.view.View
+import android.widget.LinearLayout
+import android.widget.ProgressBar
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import com.bluelinelabs.conductor.RouterTransaction
 import com.google.android.material.snackbar.Snackbar
-import com.jakewharton.rxbinding2.view.clicks
-import com.jakewharton.rxbinding2.view.longClicks
 import com.charles.messenger.BuildConfig
 import com.charles.messenger.R
 import com.charles.messenger.manager.BillingManager
@@ -42,6 +42,7 @@ import com.charles.messenger.common.util.extensions.animateLayoutChanges
 import com.charles.messenger.common.util.extensions.setBackgroundTint
 import com.charles.messenger.common.util.extensions.setVisible
 import com.charles.messenger.common.widget.PreferenceView
+import com.charles.messenger.common.widget.QkSwitch
 import com.charles.messenger.common.widget.TextInputDialog
 import com.charles.messenger.feature.settings.about.AboutController
 import com.charles.messenger.feature.settings.autodelete.AutoDeleteDialog
@@ -53,15 +54,12 @@ import com.charles.messenger.util.Preferences
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
+import timber.log.Timber
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import kotlinx.android.synthetic.main.settings_controller.*
-import kotlinx.android.synthetic.main.settings_controller.view.*
-import kotlinx.android.synthetic.main.settings_switch_widget.view.*
-import kotlinx.android.synthetic.main.settings_theme_widget.*
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
@@ -76,6 +74,30 @@ class SettingsController : QkController<SettingsView, SettingsState, SettingsPre
 
     @Inject override lateinit var presenter: SettingsPresenter
 
+    private lateinit var preferences: LinearLayout
+    private lateinit var contentView: View
+    private lateinit var theme: PreferenceView
+    private lateinit var themePreview: View
+    private lateinit var night: PreferenceView
+    private lateinit var nightStart: PreferenceView
+    private lateinit var nightEnd: PreferenceView
+    private lateinit var black: PreferenceView
+    private lateinit var autoEmoji: PreferenceView
+    private lateinit var delayed: PreferenceView
+    private lateinit var delivery: PreferenceView
+    private lateinit var signature: PreferenceView
+    private lateinit var textSize: PreferenceView
+    private lateinit var autoColor: PreferenceView
+    private lateinit var systemFont: PreferenceView
+    private lateinit var unicode: PreferenceView
+    private lateinit var mobileOnly: PreferenceView
+    private lateinit var autoDelete: PreferenceView
+    private lateinit var longAsMms: PreferenceView
+    private lateinit var mmsSize: PreferenceView
+    private lateinit var syncingProgress: ProgressBar
+    private lateinit var trial: PreferenceView
+    private lateinit var about: PreferenceView
+
     private val signatureDialog: TextInputDialog by lazy {
         TextInputDialog(activity!!, context.getString(R.string.settings_signature_title), signatureSubject::onNext)
     }
@@ -88,6 +110,8 @@ class SettingsController : QkController<SettingsView, SettingsState, SettingsPre
     private val endTimeSelectedSubject: Subject<Pair<Int, Int>> = PublishSubject.create()
     private val signatureSubject: Subject<String> = PublishSubject.create()
     private val autoDeleteSubject: Subject<Int> = PublishSubject.create()
+    private val preferenceClickSubject: Subject<PreferenceView> = PublishSubject.create()
+    private val aboutLongClickSubject: Subject<Unit> = PublishSubject.create()
 
     private val progressAnimator by lazy { ObjectAnimator.ofInt(syncingProgress, "progress", 0, 0) }
 
@@ -101,8 +125,50 @@ class SettingsController : QkController<SettingsView, SettingsState, SettingsPre
                 .subscribe { activity?.recreate() }
     }
 
-    override fun onViewCreated() {
-        preferences.postDelayed({ preferences?.animateLayoutChanges = true }, 100)
+    override fun onViewCreated(view: View) {
+        // Initialize all views - they should all exist in the layout
+        preferences = view.findViewById(R.id.preferences)!!
+        contentView = view.findViewById(R.id.contentView)!!
+        theme = view.findViewById(R.id.theme)!!
+        themePreview = theme.findViewById(R.id.themePreview)!!
+        night = view.findViewById(R.id.night)!!
+        nightStart = view.findViewById(R.id.nightStart)!!
+        nightEnd = view.findViewById(R.id.nightEnd)!!
+        black = view.findViewById(R.id.black)!!
+        autoEmoji = view.findViewById(R.id.autoEmoji)!!
+        delayed = view.findViewById(R.id.delayed)!!
+        delivery = view.findViewById(R.id.delivery)!!
+        signature = view.findViewById(R.id.signature)!!
+        textSize = view.findViewById(R.id.textSize)!!
+        autoColor = view.findViewById(R.id.autoColor)!!
+        systemFont = view.findViewById(R.id.systemFont)!!
+        unicode = view.findViewById(R.id.unicode)!!
+        mobileOnly = view.findViewById(R.id.mobileOnly)!!
+        autoDelete = view.findViewById(R.id.autoDelete)!!
+        longAsMms = view.findViewById(R.id.longAsMms)!!
+        mmsSize = view.findViewById(R.id.mmsSize)!!
+        syncingProgress = view.findViewById(R.id.syncingProgress)!!
+        trial = view.findViewById(R.id.trial)!!
+        about = view.findViewById(R.id.about)!!
+
+        (0 until preferences.childCount)
+                .mapNotNull { index -> preferences.getChildAt(index) as? PreferenceView }
+                .forEach { preference ->
+                    // Make switches non-clickable so clicks pass through to parent
+                    preference.widget.findViewById<com.charles.messenger.common.widget.QkSwitch>(R.id.checkbox)?.let { switch ->
+                        switch.isClickable = false
+                        switch.isFocusable = false
+                    }
+                    preference.setOnClickListener { 
+                        preferenceClickSubject.onNext(preference)
+                    }
+                }
+        about.setOnLongClickListener {
+            aboutLongClickSubject.onNext(Unit)
+            true
+        }
+
+        // preferences.postDelayed({ preferences.animateLayoutChanges = true }, 100)
 
         when (Build.VERSION.SDK_INT >= 29) {
             true -> nightModeDialog.adapter.setData(R.array.night_modes)
@@ -115,22 +181,49 @@ class SettingsController : QkController<SettingsView, SettingsState, SettingsPre
         mmsSizeDialog.adapter.setData(R.array.mms_sizes, R.array.mms_sizes_ids)
 
         about.summary = context.getString(R.string.settings_version, BuildConfig.VERSION_NAME)
+        
+        // Bind intents AFTER all views are initialized
+        presenter.bindIntents(this)
     }
 
     override fun onAttach(view: View) {
         super.onAttach(view)
-        presenter.bindIntents(this)
         setTitle(R.string.title_settings)
         showBackButton(true)
     }
 
-    override fun preferenceClicks(): Observable<PreferenceView> = (0 until preferences.childCount)
-            .map { index -> preferences.getChildAt(index) }
-            .mapNotNull { view -> view as? PreferenceView }
-            .map { preference -> preference.clicks().map { preference } }
-            .let { preferences -> Observable.merge(preferences) }
+    override fun preferenceClicks(): Observable<PreferenceView> {
+        // #region agent log
+        com.charles.messenger.util.DebugLogger.log(
+            location = "SettingsController.kt:194",
+            message = "preferenceClicks called",
+            data = mapOf("preferencesInitialized" to ::preferences.isInitialized),
+            hypothesisId = "H1"
+        )
+        // #endregion
+        if (!::preferences.isInitialized) {
+            // #region agent log
+            com.charles.messenger.util.DebugLogger.log(
+                location = "SettingsController.kt:197",
+                message = "preferences not initialized, returning empty",
+                hypothesisId = "H1"
+            )
+            // #endregion
+            return Observable.empty()
+        }
+        // #region agent log
+        com.charles.messenger.util.DebugLogger.log(
+            location = "SettingsController.kt:199",
+            message = "preferences initialized, returning subject",
+            hypothesisId = "H1"
+        )
+        // #endregion
+        return preferenceClickSubject
+    }
 
-    override fun aboutLongClicks(): Observable<*> = about.longClicks()
+    override fun aboutLongClicks(): Observable<*> {
+        return if (::about.isInitialized) aboutLongClickSubject else Observable.empty<Any>()
+    }
 
     override fun viewQksmsPlusClicks(): Observable<*> = viewQksmsPlusSubject
 
@@ -151,6 +244,17 @@ class SettingsController : QkController<SettingsView, SettingsState, SettingsPre
     override fun mmsSizeSelected(): Observable<Int> = mmsSizeDialog.adapter.menuItemClicks
 
     override fun render(state: SettingsState) {
+        // Check if all views are initialized before using them
+        if (!::themePreview.isInitialized || !::night.isInitialized || !::nightStart.isInitialized ||
+            !::nightEnd.isInitialized || !::black.isInitialized || !::autoEmoji.isInitialized ||
+            !::delayed.isInitialized || !::delivery.isInitialized || !::signature.isInitialized ||
+            !::textSize.isInitialized || !::autoColor.isInitialized || !::systemFont.isInitialized ||
+            !::unicode.isInitialized || !::mobileOnly.isInitialized || !::autoDelete.isInitialized ||
+            !::longAsMms.isInitialized || !::mmsSize.isInitialized || !::syncingProgress.isInitialized ||
+            !::trial.isInitialized) {
+            return
+        }
+            
         themePreview.setBackgroundTint(state.theme)
         night.summary = state.nightModeSummary
         nightModeDialog.adapter.selectedItem = state.nightModeId
@@ -160,14 +264,14 @@ class SettingsController : QkController<SettingsView, SettingsState, SettingsPre
         nightEnd.summary = state.nightEnd
 
         black.setVisible(state.nightModeId != Preferences.NIGHT_MODE_OFF)
-        black.checkbox.isChecked = state.black
+        black.findViewById<QkSwitch>(R.id.checkbox)?.isChecked = state.black
 
-        autoEmoji.checkbox.isChecked = state.autoEmojiEnabled
+        autoEmoji.findViewById<QkSwitch>(R.id.checkbox)?.isChecked = state.autoEmojiEnabled
 
         delayed.summary = state.sendDelaySummary
         sendDelayDialog.adapter.selectedItem = state.sendDelayId
 
-        delivery.checkbox.isChecked = state.deliveryEnabled
+        delivery.findViewById<QkSwitch>(R.id.checkbox)?.isChecked = state.deliveryEnabled
 
         signature.summary = state.signature.takeIf { it.isNotBlank() }
                 ?: context.getString(R.string.settings_signature_summary)
@@ -175,12 +279,12 @@ class SettingsController : QkController<SettingsView, SettingsState, SettingsPre
         textSize.summary = state.textSizeSummary
         textSizeDialog.adapter.selectedItem = state.textSizeId
 
-        autoColor.checkbox.isChecked = state.autoColor
+        autoColor.findViewById<QkSwitch>(R.id.checkbox)?.isChecked = state.autoColor
 
-        systemFont.checkbox.isChecked = state.systemFontEnabled
+        systemFont.findViewById<QkSwitch>(R.id.checkbox)?.isChecked = state.systemFontEnabled
 
-        unicode.checkbox.isChecked = state.stripUnicodeEnabled
-        mobileOnly.checkbox.isChecked = state.mobileOnly
+        unicode.findViewById<QkSwitch>(R.id.checkbox)?.isChecked = state.stripUnicodeEnabled
+        mobileOnly.findViewById<QkSwitch>(R.id.checkbox)?.isChecked = state.mobileOnly
 
         autoDelete.summary = when (state.autoDelete) {
             0 -> context.getString(R.string.settings_auto_delete_never)
@@ -188,7 +292,7 @@ class SettingsController : QkController<SettingsView, SettingsState, SettingsPre
                     R.plurals.settings_auto_delete_summary, state.autoDelete, state.autoDelete)
         }
 
-        longAsMms.checkbox.isChecked = state.longAsMms
+        longAsMms.findViewById<QkSwitch>(R.id.checkbox)?.isChecked = state.longAsMms
 
         mmsSize.summary = state.maxMmsSizeSummary
         mmsSizeDialog.adapter.selectedItem = state.maxMmsSizeId
@@ -203,7 +307,7 @@ class SettingsController : QkController<SettingsView, SettingsState, SettingsPre
                 syncingProgress.isIndeterminate = state.syncProgress.indeterminate
             }
         }
-        
+
         // Show/hide and update trial preference
         val fdroid = BuildConfig.FLAVOR == "noAnalytics"
         trial.isVisible = !fdroid && !state.upgraded
@@ -286,9 +390,29 @@ class SettingsController : QkController<SettingsView, SettingsState, SettingsPre
     }
 
     override fun showAiSettings() {
-        router.pushController(RouterTransaction.with(com.charles.messenger.feature.settings.ai.AiSettingsController())
-                .pushChangeHandler(QkChangeHandler())
-                .popChangeHandler(QkChangeHandler()))
+        // #region agent log
+        com.charles.messenger.util.DebugLogger.log(
+            location = "SettingsController.kt:391",
+            message = "showAiSettings called",
+            data = mapOf("routerNull" to (router == null)),
+            hypothesisId = "H3"
+        )
+        // #endregion
+        try {
+            router?.pushController(RouterTransaction.with(com.charles.messenger.feature.settings.ai.AiSettingsController())
+                    .pushChangeHandler(QkChangeHandler())
+                    .popChangeHandler(QkChangeHandler()))
+        } catch (e: Exception) {
+            // #region agent log
+            com.charles.messenger.util.DebugLogger.log(
+                location = "SettingsController.kt:395",
+                message = "Error in showAiSettings",
+                data = mapOf("error" to e.message, "errorType" to e.javaClass.simpleName),
+                hypothesisId = "H3"
+            )
+            // #endregion
+            Timber.e(e, "Error showing AI Settings")
+        }
     }
 
 }

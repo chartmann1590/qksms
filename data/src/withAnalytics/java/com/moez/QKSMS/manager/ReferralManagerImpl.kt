@@ -61,8 +61,18 @@ class ReferralManagerImpl @Inject constructor(
 
         when (responseCode) {
             InstallReferrerClient.InstallReferrerResponse.OK -> {
-                analytics.setUserProperty("Referrer", referrerClient.installReferrer.installReferrer)
-                prefs.didSetReferrer.set(true)
+                try {
+                    val referrerResponse = referrerClient.installReferrer
+                    analytics.setUserProperty("Referrer", referrerResponse.installReferrer)
+                    prefs.didSetReferrer.set(true)
+                } catch (e: android.os.DeadObjectException) {
+                    // Service connection lost, mark as done to avoid retrying
+                    prefs.didSetReferrer.set(true)
+                } catch (e: Exception) {
+                    // Other exceptions, log and mark as done
+                    android.util.Log.e("ReferralManager", "Error getting install referrer", e)
+                    prefs.didSetReferrer.set(true)
+                }
             }
 
             InstallReferrerClient.InstallReferrerResponse.FEATURE_NOT_SUPPORTED -> {
@@ -70,7 +80,12 @@ class ReferralManagerImpl @Inject constructor(
             }
         }
 
-        referrerClient.endConnection()
+        try {
+            referrerClient.endConnection()
+        } catch (e: Exception) {
+            // Ignore errors when ending connection
+            android.util.Log.d("ReferralManager", "Error ending referrer client connection", e)
+        }
     }
 
 }

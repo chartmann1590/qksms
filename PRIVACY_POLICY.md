@@ -1,6 +1,6 @@
 # Privacy Policy for QKSMS
 
-**Last Updated:** December 19, 2025
+**Last Updated:** January 2025
 
 ## Introduction
 
@@ -37,8 +37,12 @@ QKSMS is available in two variants:
    - Firebase Analytics for app usage statistics
    - Firebase Crashlytics for crash reporting
    - Firebase Performance Monitoring
+   - Amplitude for analytics (in data module)
+   - Google Play Billing for in-app purchases
 
 If you use the WithAnalytics variant, Google's privacy policies apply to the data collected by these services. You can review Google's privacy policy at: https://policies.google.com/privacy
+
+**Note:** The NoAnalytics variant contains zero tracking or analytics services and is recommended for privacy-focused users.
 
 ## Permissions
 
@@ -53,11 +57,14 @@ QKSMS requires the following permissions to function:
 
 ## AI Smart Reply Feature
 
-If you enable the AI Smart Reply feature:
-- Your messages are sent to your own locally-hosted Ollama server
-- The Ollama server runs on your own hardware (e.g., your computer)
-- No data is sent to external AI services or cloud providers
-- You control where your data goes
+If you enable the AI Smart Reply or Auto-Reply features:
+- Your messages are sent **only** to your own locally-hosted Ollama server
+- The Ollama server runs on your own hardware (e.g., your computer or local network)
+- **No data is sent to external AI services or cloud providers**
+- You configure the Ollama API URL yourself (typically your local network IP)
+- You control where your data goes - it never leaves your network
+- The app connects directly to your Ollama instance via HTTP
+- No third-party AI services (OpenAI, Google, etc.) are involved
 
 ## Third-Party Services
 
@@ -65,6 +72,10 @@ QKSMS may integrate with:
 - **Your mobile carrier:** For sending SMS/MMS (standard carrier policies apply)
 - **Optional blocking apps:** Call Blocker, Call Control, Should I Answer (their privacy policies apply)
 - **Your Ollama server:** If you enable AI Smart Reply (self-hosted, you control the data)
+- **Google Play Services:** Only in the WithAnalytics variant for Firebase services and billing
+- **F-Droid:** For distribution of the NoAnalytics variant (no tracking)
+
+**Note:** All integrations are optional except for carrier services required for SMS/MMS functionality.
 
 ## Data Security
 
@@ -95,5 +106,13 @@ If you have questions about this Privacy Policy, please contact:
 
 ## Summary
 
-**Your privacy is protected.** QKSMS stores all your data locally on your device. We do not collect, transmit, or sell your personal information. The NoAnalytics variant contains zero tracking. You are in complete control of your data.
+**Your privacy is protected.** QKSMS stores all your data locally on your device. We do not collect, transmit, or sell your personal information. The NoAnalytics variant contains zero tracking or analytics. You are in complete control of your data.
+
+**Key Privacy Points:**
+- All messages stored locally on your device
+- No cloud sync or external servers
+- NoAnalytics variant has zero tracking
+- AI Smart Reply uses your own local Ollama server
+- Optional local backups stored on your device
+- Open source code - you can verify everything yourself
 

@@ -22,6 +22,9 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.view.Gravity
 import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.cardview.widget.CardView
 import com.charles.messenger.R
 import com.charles.messenger.common.base.QkViewHolder
 import com.charles.messenger.common.util.Colors
@@ -34,7 +37,6 @@ import com.charles.messenger.model.MmsPart
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.mms_file_list_item.*
 import javax.inject.Inject
 
 class FileBinder @Inject constructor(colors: Colors, private val context: Context) : PartBinder() {
@@ -53,10 +55,15 @@ class FileBinder @Inject constructor(colors: Colors, private val context: Contex
         canGroupWithPrevious: Boolean,
         canGroupWithNext: Boolean
     ) {
-        BubbleUtils.getBubble(false, canGroupWithPrevious, canGroupWithNext, message.isMe())
-                .let(holder.fileBackground::setBackgroundResource)
+        val fileBackground = holder.itemView.findViewById<CardView>(R.id.fileBackground)
+        val filename = holder.itemView.findViewById<TextView>(R.id.filename)
+        val size = holder.itemView.findViewById<TextView>(R.id.size)
+        val icon = holder.itemView.findViewById<ImageView>(R.id.icon)
 
-        holder.containerView.setOnClickListener { clicks.onNext(part.id) }
+        BubbleUtils.getBubble(false, canGroupWithPrevious, canGroupWithNext, message.isMe())
+                .let(fileBackground::setBackgroundResource)
+
+        holder.itemView.setOnClickListener { clicks.onNext(part.id) }
 
         Observable.just(part.getUri())
                 .map(context.contentResolver::openInputStream)
@@ -71,23 +78,23 @@ class FileBinder @Inject constructor(colors: Colors, private val context: Contex
                 }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { size -> holder.size.text = size }
+                .subscribe { sizeText -> size.text = sizeText }
 
-        holder.filename.text = part.name
+        filename.text = part.name
 
-        val params = holder.fileBackground.layoutParams as FrameLayout.LayoutParams
+        val params = fileBackground.layoutParams as FrameLayout.LayoutParams
         if (!message.isMe()) {
-            holder.fileBackground.layoutParams = params.apply { gravity = Gravity.START }
-            holder.fileBackground.setBackgroundTint(theme.theme)
-            holder.icon.setTint(theme.textPrimary)
-            holder.filename.setTextColor(theme.textPrimary)
-            holder.size.setTextColor(theme.textTertiary)
+            fileBackground.layoutParams = params.apply { gravity = Gravity.START }
+            fileBackground.setBackgroundTint(theme.theme)
+            icon.setTint(theme.textPrimary)
+            filename.setTextColor(theme.textPrimary)
+            size.setTextColor(theme.textTertiary)
         } else {
-            holder.fileBackground.layoutParams = params.apply { gravity = Gravity.END }
-            holder.fileBackground.setBackgroundTint(holder.containerView.context.resolveThemeColor(R.attr.bubbleColor))
-            holder.icon.setTint(holder.containerView.context.resolveThemeColor(android.R.attr.textColorSecondary))
-            holder.filename.setTextColor(holder.containerView.context.resolveThemeColor(android.R.attr.textColorPrimary))
-            holder.size.setTextColor(holder.containerView.context.resolveThemeColor(android.R.attr.textColorTertiary))
+            fileBackground.layoutParams = params.apply { gravity = Gravity.END }
+            fileBackground.setBackgroundTint(holder.itemView.context.resolveThemeColor(R.attr.bubbleColor))
+            icon.setTint(holder.itemView.context.resolveThemeColor(android.R.attr.textColorSecondary))
+            filename.setTextColor(holder.itemView.context.resolveThemeColor(android.R.attr.textColorPrimary))
+            size.setTextColor(holder.itemView.context.resolveThemeColor(android.R.attr.textColorTertiary))
         }
     }
 

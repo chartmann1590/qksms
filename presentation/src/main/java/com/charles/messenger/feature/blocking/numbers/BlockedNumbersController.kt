@@ -20,7 +20,12 @@ package com.charles.messenger.feature.blocking.numbers
 
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.jakewharton.rxbinding2.view.clicks
 import com.charles.messenger.R
 import com.charles.messenger.common.base.QkController
@@ -32,8 +37,6 @@ import com.charles.messenger.util.PhoneNumberUtils
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
-import kotlinx.android.synthetic.main.blocked_numbers_add_dialog.view.*
-import kotlinx.android.synthetic.main.blocked_numbers_controller.*
 import javax.inject.Inject
 
 class BlockedNumbersController : QkController<BlockedNumbersView, BlockedNumbersState, BlockedNumbersPresenter>(),
@@ -42,6 +45,10 @@ class BlockedNumbersController : QkController<BlockedNumbersView, BlockedNumbers
     @Inject override lateinit var presenter: BlockedNumbersPresenter
     @Inject lateinit var colors: Colors
     @Inject lateinit var phoneNumberUtils: PhoneNumberUtils
+
+    private lateinit var add: FloatingActionButton
+    private lateinit var empty: TextView
+    private lateinit var numbers: RecyclerView
 
     private val adapter = BlockedNumbersAdapter()
     private val saveAddressSubject: Subject<String> = PublishSubject.create()
@@ -59,8 +66,12 @@ class BlockedNumbersController : QkController<BlockedNumbersView, BlockedNumbers
         showBackButton(true)
     }
 
-    override fun onViewCreated() {
-        super.onViewCreated()
+    override fun onViewCreated(view: View) {
+        super.onViewCreated(view)
+        add = view.findViewById(R.id.add)
+        empty = view.findViewById(R.id.empty)
+        numbers = view.findViewById(R.id.numbers)
+
         add.setBackgroundTint(colors.theme().theme)
         add.setTint(colors.theme().textPrimary)
         adapter.emptyView = empty
@@ -77,11 +88,12 @@ class BlockedNumbersController : QkController<BlockedNumbersView, BlockedNumbers
 
     override fun showAddDialog() {
         val layout = LayoutInflater.from(activity).inflate(R.layout.blocked_numbers_add_dialog, null)
-        val textWatcher = BlockedNumberTextWatcher(layout.input, phoneNumberUtils)
+        val input = layout.findViewById<EditText>(R.id.input)
+        val textWatcher = BlockedNumberTextWatcher(input, phoneNumberUtils)
         val dialog = AlertDialog.Builder(activity!!)
                 .setView(layout)
                 .setPositiveButton(R.string.blocked_numbers_dialog_block) { _, _ ->
-                    saveAddressSubject.onNext(layout.input.text.toString())
+                    saveAddressSubject.onNext(input.text.toString())
                 }
                 .setNegativeButton(R.string.button_cancel) { _, _ -> }
                 .setOnDismissListener { textWatcher.dispose() }

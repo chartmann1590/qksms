@@ -19,6 +19,8 @@
 package com.charles.messenger.feature.blocking
 
 import android.view.View
+import android.view.ViewGroup
+import android.widget.CheckBox
 import com.bluelinelabs.conductor.RouterTransaction
 import com.jakewharton.rxbinding2.view.clicks
 import com.charles.messenger.R
@@ -26,20 +28,34 @@ import com.charles.messenger.common.QkChangeHandler
 import com.charles.messenger.common.base.QkController
 import com.charles.messenger.common.util.Colors
 import com.charles.messenger.common.util.extensions.animateLayoutChanges
+import com.charles.messenger.common.widget.PreferenceView
 import com.charles.messenger.feature.blocking.manager.BlockingManagerController
 import com.charles.messenger.feature.blocking.messages.BlockedMessagesController
 import com.charles.messenger.feature.blocking.numbers.BlockedNumbersController
 import com.charles.messenger.injection.appComponent
-import kotlinx.android.synthetic.main.blocking_controller.*
-import kotlinx.android.synthetic.main.settings_switch_widget.view.*
+import io.reactivex.Observable
 import javax.inject.Inject
 
 class BlockingController : QkController<BlockingView, BlockingState, BlockingPresenter>(), BlockingView {
 
-    override val blockingManagerIntent by lazy { blockingManager.clicks() }
-    override val blockedNumbersIntent by lazy { blockedNumbers.clicks() }
-    override val blockedMessagesIntent by lazy { blockedMessages.clicks() }
-    override val dropClickedIntent by lazy { drop.clicks() }
+    private lateinit var parent: ViewGroup
+    private lateinit var blockingManager: PreferenceView
+    private lateinit var blockedNumbers: PreferenceView
+    private lateinit var blockedMessages: PreferenceView
+    private lateinit var drop: PreferenceView
+
+    override val blockingManagerIntent: Observable<*> by lazy { 
+        if (::blockingManager.isInitialized) blockingManager.clicks() else Observable.never()
+    }
+    override val blockedNumbersIntent: Observable<*> by lazy { 
+        if (::blockedNumbers.isInitialized) blockedNumbers.clicks() else Observable.never()
+    }
+    override val blockedMessagesIntent: Observable<*> by lazy { 
+        if (::blockedMessages.isInitialized) blockedMessages.clicks() else Observable.never()
+    }
+    override val dropClickedIntent: Observable<*> by lazy { 
+        if (::drop.isInitialized) drop.clicks() else Observable.never()
+    }
 
     @Inject lateinit var colors: Colors
     @Inject override lateinit var presenter: BlockingPresenter
@@ -50,21 +66,42 @@ class BlockingController : QkController<BlockingView, BlockingState, BlockingPre
         layoutRes = R.layout.blocking_controller
     }
 
-    override fun onViewCreated() {
-        super.onViewCreated()
-        parent.postDelayed({ parent?.animateLayoutChanges = true }, 100)
-    }
 
     override fun onAttach(view: View) {
         super.onAttach(view)
-        presenter.bindIntents(this)
+        // Ensure views are initialized before binding intents
+        if (::blockingManager.isInitialized && ::blockedNumbers.isInitialized && 
+            ::blockedMessages.isInitialized && ::drop.isInitialized) {
+            presenter.bindIntents(this)
+        }
         setTitle(R.string.blocking_title)
         showBackButton(true)
+    }
+    
+    override fun onViewCreated(view: View) {
+        super.onViewCreated(view)
+        parent = view.findViewById(R.id.parent)
+        blockingManager = view.findViewById(R.id.blockingManager)
+        blockedNumbers = view.findViewById(R.id.blockedNumbers)
+        blockedMessages = view.findViewById(R.id.blockedMessages)
+        drop = view.findViewById(R.id.drop)
+
+        parent.postDelayed({ parent.animateLayoutChanges = true }, 100)
+        
+        // Bind intents after views are initialized
+        if (::presenter.isInitialized) {
+            presenter.bindIntents(this)
+        }
     }
 
     override fun render(state: BlockingState) {
         blockingManager.summary = state.blockingManager
-        drop.checkbox.isChecked = state.dropEnabled
+        // Handle both CheckBox and QkSwitch widgets
+        val checkbox = drop.findViewById<View>(R.id.checkbox)
+        when (checkbox) {
+            is CheckBox -> checkbox.isChecked = state.dropEnabled
+            is com.charles.messenger.common.widget.QkSwitch -> checkbox.isChecked = state.dropEnabled
+        }
         blockedMessages.isEnabled = !state.dropEnabled
     }
 

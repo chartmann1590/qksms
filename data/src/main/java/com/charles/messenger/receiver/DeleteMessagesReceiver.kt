@@ -34,8 +34,8 @@ class DeleteMessagesReceiver : BroadcastReceiver() {
 
         val pendingResult = goAsync()
         val threadId = intent.getLongExtra("threadId", 0)
-        val messageIds = intent.getLongArrayExtra("messageIds")
-        deleteMessages.execute(DeleteMessages.Params(messageIds.toList(), threadId)) { pendingResult.finish() }
+        val messageIds = intent.getLongArrayExtra("messageIds")?.toList() ?: emptyList()
+        deleteMessages.execute(DeleteMessages.Params(messageIds, threadId)) { pendingResult.finish() }
     }
 
 }

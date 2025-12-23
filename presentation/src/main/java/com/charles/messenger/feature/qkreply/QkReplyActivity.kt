@@ -22,13 +22,18 @@ import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import com.jakewharton.rxbinding2.view.clicks
+import com.jakewharton.rxbinding2.widget.textChanges
 import com.charles.messenger.R
 import com.charles.messenger.common.base.QkThemedActivity
 import com.charles.messenger.common.util.InterstitialAdManager
@@ -36,12 +41,12 @@ import com.charles.messenger.common.util.extensions.autoScrollToStart
 import com.charles.messenger.common.util.extensions.resolveThemeColor
 import com.charles.messenger.common.util.extensions.setBackgroundTint
 import com.charles.messenger.common.util.extensions.setVisible
+import com.charles.messenger.common.widget.QkEditText
 import com.charles.messenger.feature.compose.MessagesAdapter
-import com.jakewharton.rxbinding2.widget.textChanges
+import com.charles.messenger.feature.compose.SuggestionChipsAdapter
 import dagger.android.AndroidInjection
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
-import kotlinx.android.synthetic.main.qkreply_activity.*
 import javax.inject.Inject
 
 class QkReplyActivity : QkThemedActivity(), QkReplyView {
@@ -50,10 +55,32 @@ class QkReplyActivity : QkThemedActivity(), QkReplyView {
     @Inject lateinit var interstitialAdManager: InterstitialAdManager
     @Inject lateinit var viewModelFactory: ViewModelProvider.Factory
 
+    private lateinit var toolbar: Toolbar
+    private lateinit var background: View
+    private lateinit var messageBackground: View
+    private lateinit var composeBackgroundGradient: View
+    private lateinit var composeBackgroundSolid: View
+    private lateinit var messages: RecyclerView
+    private lateinit var counter: TextView
+    private lateinit var sim: ImageView
+    private lateinit var simIndex: TextView
+    private lateinit var message: QkEditText
+    private lateinit var send: ImageView
+    private lateinit var smartReply: ImageView
+    private lateinit var suggestionsChips: RecyclerView
+
     override val menuItemIntent: Subject<Int> = PublishSubject.create()
     override val textChangedIntent by lazy { message.textChanges() }
     override val changeSimIntent by lazy { sim.clicks() }
     override val sendIntent by lazy { send.clicks() }
+    override val smartReplyIntent by lazy { smartReply.clicks() }
+    override val selectSuggestionIntent: Subject<String> = PublishSubject.create()
+
+    private val suggestionsAdapter by lazy {
+        SuggestionChipsAdapter { suggestion ->
+            selectSuggestionIntent.onNext(suggestion)
+        }
+    }
 
     private val viewModel by lazy { ViewModelProviders.of(this, viewModelFactory)[QkReplyViewModel::class.java] }
 
@@ -67,7 +94,33 @@ class QkReplyActivity : QkThemedActivity(), QkReplyView {
         window.setBackgroundDrawable(null)
         window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
         window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+
+        toolbar = findViewById(R.id.toolbar)
+        background = findViewById(R.id.background)
+        messageBackground = findViewById(R.id.messageBackground)
+        composeBackgroundGradient = findViewById(R.id.composeBackgroundGradient)
+        composeBackgroundSolid = findViewById(R.id.composeBackgroundSolid)
+        messages = findViewById(R.id.messages)
+        counter = findViewById(R.id.counter)
+        sim = findViewById(R.id.sim)
+        simIndex = findViewById(R.id.simIndex)
+        message = findViewById(R.id.message)
+        send = findViewById(R.id.send)
+        smartReply = findViewById(R.id.smartReply)
+        suggestionsChips = findViewById(R.id.suggestionsChips)
+
+        suggestionsChips.adapter = suggestionsAdapter
+
         viewModel.bindView(this)
+
+        // Auto-trigger smart reply if opened from notification action
+        val triggerSmartReply = intent.getBooleanExtra("triggerSmartReply", false)
+        if (triggerSmartReply && prefs.aiReplyEnabled.get() && prefs.ollamaModel.get().isNotEmpty()) {
+            // Delay slightly to ensure view is fully initialized
+            smartReply.postDelayed({
+                smartReply.performClick()
+            }, 300)
+        }
 
         // Preload interstitial ad
         interstitialAdManager.loadAd(this)
@@ -113,6 +166,14 @@ class QkReplyActivity : QkThemedActivity(), QkReplyView {
 
         send.isEnabled = state.canSend
         send.imageAlpha = if (state.canSend) 255 else 128
+
+        // Smart Reply UI
+        smartReply.setVisible(prefs.aiReplyEnabled.get())
+        smartReply.alpha = if (state.loadingSuggestions) 0.5f else 1.0f
+        smartReply.isEnabled = !state.loadingSuggestions
+
+        suggestionsChips.setVisible(state.showingSuggestions && state.suggestedReplies.isNotEmpty())
+        suggestionsAdapter.suggestions = state.suggestedReplies
     }
 
     override fun setDraft(draft: String) {

@@ -22,6 +22,8 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.util.AttributeSet
 import android.view.View
+import android.view.ViewGroup
+import android.widget.RadioButton
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.charles.messenger.R
@@ -31,7 +33,6 @@ import com.charles.messenger.common.util.extensions.resolveThemeAttribute
 import com.charles.messenger.common.util.extensions.resolveThemeColor
 import com.charles.messenger.common.util.extensions.setVisible
 import com.charles.messenger.injection.appComponent
-import kotlinx.android.synthetic.main.radio_preference_view.view.*
 import javax.inject.Inject
 
 class RadioPreferenceView @JvmOverloads constructor(
@@ -39,6 +40,11 @@ class RadioPreferenceView @JvmOverloads constructor(
 ) : ConstraintLayout(context, attrs) {
 
     @Inject lateinit var colors: Colors
+
+    internal lateinit var titleView: TextView
+    internal lateinit var summaryView: TextView
+    internal lateinit var radioButton: RadioButton
+    private lateinit var widgetFrame: ViewGroup
 
     var title: String? = null
         set(value) {
@@ -74,6 +80,13 @@ class RadioPreferenceView @JvmOverloads constructor(
 
         View.inflate(context, R.layout.radio_preference_view, this)
         setBackgroundResource(context.resolveThemeAttribute(R.attr.selectableItemBackground))
+        isClickable = true
+        isFocusable = true
+
+        titleView = findViewById(R.id.titleView)
+        summaryView = findViewById(R.id.summaryView)
+        radioButton = findViewById(R.id.radioButton)
+        widgetFrame = findViewById(R.id.widgetFrame)
 
         val states = arrayOf(
                 intArrayOf(android.R.attr.state_checked),

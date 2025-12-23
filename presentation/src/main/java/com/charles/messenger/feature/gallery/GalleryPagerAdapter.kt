@@ -22,10 +22,12 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.ui.StyledPlayerView
 import com.google.android.exoplayer2.util.Util
 import com.google.android.mms.ContentType
 import com.charles.messenger.R
@@ -35,11 +37,9 @@ import com.charles.messenger.extensions.isImage
 import com.charles.messenger.extensions.isVideo
 import com.charles.messenger.model.MmsPart
 import com.charles.messenger.util.GlideApp
+import com.github.chrisbanes.photoview.PhotoView
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
-import kotlinx.android.synthetic.main.gallery_image_page.*
-import kotlinx.android.synthetic.main.gallery_image_page.view.*
-import kotlinx.android.synthetic.main.gallery_video_page.*
 import java.util.*
 import javax.inject.Inject
 
@@ -60,6 +60,7 @@ class GalleryPagerAdapter @Inject constructor(private val context: Context) : Qk
         val inflater = LayoutInflater.from(parent.context)
         return QkViewHolder(when (viewType) {
             VIEW_TYPE_IMAGE -> inflater.inflate(R.layout.gallery_image_page, parent, false).apply {
+                val image = findViewById<PhotoView>(R.id.image)
 
                 // When calling the public setter, it doesn't allow the midscale to be the same as the
                 // maxscale or the minscale. We don't want 3 levels and we don't want to modify the library
@@ -91,26 +92,28 @@ class GalleryPagerAdapter @Inject constructor(private val context: Context) : Qk
         val part = getItem(position) ?: return
         when (getItemViewType(position)) {
             VIEW_TYPE_IMAGE -> {
+                val image = holder.itemView.findViewById<PhotoView>(R.id.image)
                 // We need to explicitly request a gif from glide for animations to work
                 when (part.getUri().let(contentResolver::getType)) {
                     ContentType.IMAGE_GIF -> GlideApp.with(context)
                             .asGif()
                             .load(part.getUri())
-                            .into(holder.image)
+                            .into(image)
 
                     else -> GlideApp.with(context)
                             .asBitmap()
                             .load(part.getUri())
-                            .into(holder.image)
+                            .into(image)
                 }
             }
 
             VIEW_TYPE_VIDEO -> {
+                val video = holder.itemView.findViewById<StyledPlayerView>(R.id.video)
                 val trackSelector = DefaultTrackSelector(context)
                 val exoPlayer = ExoPlayer.Builder(context)
                     .setTrackSelector(trackSelector)
                     .build()
-                holder.video.player = exoPlayer
+                video.player = exoPlayer
                 exoPlayers.add(exoPlayer)
 
                 val mediaItem = MediaItem.fromUri(part.getUri())

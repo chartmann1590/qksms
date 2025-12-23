@@ -25,6 +25,11 @@ proguard/
 
 # Log Files
 *.log
+*_log.txt
+log*.txt
+error_log.txt
+current_log.txt
+full_log.txt
 
 # Android Studio Navigation editor temp files
 .navigation/
@@ -66,5 +71,22 @@ icon.png
 # Windows artifacts
 nul
 
+# Temporary debug/test files
+*_dump.xml
+window_dump.xml
+*_fixed.png
+settings_fixed.png
+
 # Release artifacts
 app-release.apk
+*.aab
+
+# Encrypted secrets
+secrets.tar.enc
+*.enc
+
+# AI/Agent documentation files
+CLAUDE.md
+AGENTS.md
+*claude*
+*agent*

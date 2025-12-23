@@ -3,6 +3,7 @@ package com.charles.messenger.feature.conversationinfo
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.core.view.isVisible
 import com.jakewharton.rxbinding2.view.clicks
 import com.charles.messenger.R
@@ -11,14 +12,14 @@ import com.charles.messenger.common.base.QkViewHolder
 import com.charles.messenger.common.util.Colors
 import com.charles.messenger.common.util.extensions.setTint
 import com.charles.messenger.common.util.extensions.setVisible
+import com.charles.messenger.common.widget.AvatarView
+import com.charles.messenger.common.widget.PreferenceView
+import com.charles.messenger.common.widget.QkTextView
 import com.charles.messenger.extensions.isVideo
 import com.charles.messenger.feature.conversationinfo.ConversationInfoItem.*
 import com.charles.messenger.util.GlideApp
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
-import kotlinx.android.synthetic.main.conversation_info_settings.*
-import kotlinx.android.synthetic.main.conversation_media_list_item.*
-import kotlinx.android.synthetic.main.conversation_recipient_list_item.*
 import javax.inject.Inject
 
 class ConversationInfoAdapter @Inject constructor(
@@ -40,6 +41,8 @@ class ConversationInfoAdapter @Inject constructor(
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
             0 -> QkViewHolder(inflater.inflate(R.layout.conversation_recipient_list_item, parent, false)).apply {
+                val theme = itemView.findViewById<ImageView>(R.id.theme)
+
                 itemView.setOnClickListener {
                     val item = getItem(adapterPosition) as? ConversationInfoRecipient
                     item?.value?.id?.run(recipientClicks::onNext)
@@ -58,6 +61,12 @@ class ConversationInfoAdapter @Inject constructor(
             }
 
             1 -> QkViewHolder(inflater.inflate(R.layout.conversation_info_settings, parent, false)).apply {
+                val groupName = itemView.findViewById<PreferenceView>(R.id.groupName)
+                val notifications = itemView.findViewById<PreferenceView>(R.id.notifications)
+                val archive = itemView.findViewById<PreferenceView>(R.id.archive)
+                val block = itemView.findViewById<PreferenceView>(R.id.block)
+                val delete = itemView.findViewById<PreferenceView>(R.id.delete)
+
                 groupName.clicks().subscribe(nameClicks)
                 notifications.clicks().subscribe(notificationClicks)
                 archive.clicks().subscribe(archiveClicks)
@@ -80,32 +89,43 @@ class ConversationInfoAdapter @Inject constructor(
         when (val item = getItem(position)) {
             is ConversationInfoRecipient -> {
                 val recipient = item.value
-                holder.avatar.setRecipient(recipient)
+                val avatar = holder.itemView.findViewById<AvatarView>(R.id.avatar)
+                val name = holder.itemView.findViewById<QkTextView>(R.id.name)
+                val address = holder.itemView.findViewById<QkTextView>(R.id.address)
+                val add = holder.itemView.findViewById<ImageView>(R.id.add)
+                val theme = holder.itemView.findViewById<ImageView>(R.id.theme)
 
-                holder.name.text = recipient.contact?.name ?: recipient.address
+                avatar.setRecipient(recipient)
 
-                holder.address.text = recipient.address
-                holder.address.setVisible(recipient.contact != null)
+                name.text = recipient.contact?.name ?: recipient.address
 
-                holder.add.setVisible(recipient.contact == null)
+                address.text = recipient.address
+                address.setVisible(recipient.contact != null)
 
-                val theme = colors.theme(recipient)
-                holder.theme.setTint(theme.theme)
+                add.setVisible(recipient.contact == null)
+
+                val recipientTheme = colors.theme(recipient)
+                theme.setTint(recipientTheme.theme)
             }
 
             is ConversationInfoSettings -> {
-                holder.groupName.isVisible = item.recipients.size > 1
-                holder.groupName.summary = item.name
+                val groupName = holder.itemView.findViewById<PreferenceView>(R.id.groupName)
+                val notifications = holder.itemView.findViewById<PreferenceView>(R.id.notifications)
+                val archive = holder.itemView.findViewById<PreferenceView>(R.id.archive)
+                val block = holder.itemView.findViewById<PreferenceView>(R.id.block)
 
-                holder.notifications.isEnabled = !item.blocked
+                groupName.isVisible = item.recipients.size > 1
+                groupName.summary = item.name
 
-                holder.archive.isEnabled = !item.blocked
-                holder.archive.title = context.getString(when (item.archived) {
+                notifications.isEnabled = !item.blocked
+
+                archive.isEnabled = !item.blocked
+                archive.title = context.getString(when (item.archived) {
                     true -> R.string.info_unarchive
                     false -> R.string.info_archive
                 })
 
-                holder.block.title = context.getString(when (item.blocked) {
+                block.title = context.getString(when (item.blocked) {
                     true -> R.string.info_unblock
                     false -> R.string.info_block
                 })
@@ -113,13 +133,15 @@ class ConversationInfoAdapter @Inject constructor(
 
             is ConversationInfoMedia -> {
                 val part = item.value
+                val thumbnail = holder.itemView.findViewById<ImageView>(R.id.thumbnail)
+                val video = holder.itemView.findViewById<ImageView>(R.id.video)
 
                 GlideApp.with(context)
                         .load(part.getUri())
                         .fitCenter()
-                        .into(holder.thumbnail)
+                        .into(thumbnail)
 
-                holder.video.isVisible = part.isVideo()
+                video.isVisible = part.isVideo()
             }
         }
     }

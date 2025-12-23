@@ -20,9 +20,15 @@ package com.charles.messenger.feature.plus
 
 import android.graphics.Typeface
 import android.os.Bundle
+import android.view.View
+import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.core.view.children
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.jakewharton.rxbinding2.view.clicks
 import com.charles.messenger.BuildConfig
 import com.charles.messenger.R
@@ -37,9 +43,6 @@ import com.charles.messenger.common.widget.PreferenceView
 import com.charles.messenger.feature.plus.experiment.UpgradeButtonExperiment
 import com.charles.messenger.manager.BillingManager
 import dagger.android.AndroidInjection
-import kotlinx.android.synthetic.main.collapsing_toolbar.*
-import kotlinx.android.synthetic.main.preference_view.view.*
-import kotlinx.android.synthetic.main.qksms_plus_activity.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -53,6 +56,24 @@ class PlusActivity : QkThemedActivity(), PlusView {
     @Inject lateinit var viewModelFactory: ViewModelProvider.Factory
 
     private val viewModel by lazy { ViewModelProviders.of(this, viewModelFactory)[PlusViewModel::class.java] }
+
+    private lateinit var collapsingToolbar: CollapsingToolbarLayout
+    private lateinit var linearLayout: ViewGroup
+    private lateinit var free: LinearLayout
+    private lateinit var toUpgrade: LinearLayout
+    private lateinit var description: TextView
+    private lateinit var trialStatus: TextView
+    private lateinit var startTrial: TextView
+    private lateinit var upgrade: TextView
+    private lateinit var upgradeDonate: TextView
+    private lateinit var upgraded: ViewGroup
+    private lateinit var thanksIcon: ImageView
+    private lateinit var donate: TextView
+    private lateinit var themes: PreferenceView
+    private lateinit var schedule: PreferenceView
+    private lateinit var backup: PreferenceView
+    private lateinit var delayed: PreferenceView
+    private lateinit var night: PreferenceView
 
     override val upgradeIntent by lazy { upgrade.clicks() }
     override val upgradeDonateIntent by lazy { upgradeDonate.clicks() }
@@ -70,6 +91,52 @@ class PlusActivity : QkThemedActivity(), PlusView {
         setContentView(R.layout.qksms_plus_activity)
         setTitle(R.string.title_qksms_plus)
         showBackButton(true)
+
+        collapsingToolbar = findViewById(R.id.collapsingToolbar)
+        linearLayout = findViewById(R.id.plusContentLayout)
+        free = findViewById(R.id.free)
+        toUpgrade = findViewById(R.id.toUpgrade)
+        // Safe cast to handle potential layout issues - description is a QkTextView in the layout
+        // Find it within the toUpgrade LinearLayout first to avoid conflicts with other views
+        val descriptionViewFound = try {
+            toUpgrade.findViewById<View>(R.id.description) ?: findViewById<View>(R.id.description)
+        } catch (e: Exception) {
+            Timber.e(e, "Error finding description view")
+            null
+        }
+        description = when {
+            descriptionViewFound is TextView -> descriptionViewFound
+            descriptionViewFound is com.charles.messenger.common.widget.QkTextView -> descriptionViewFound as TextView
+            descriptionViewFound != null -> {
+                val foundType = descriptionViewFound.javaClass.simpleName
+                Timber.e("Description view (id: description) is not a TextView. Found: $foundType")
+                // Try to find it as TextView directly, or create a dummy TextView to prevent crash
+                findViewById<TextView>(R.id.description) ?: TextView(this).apply {
+                    text = ""
+                    visibility = View.GONE
+                }
+            }
+            else -> {
+                Timber.e("Description view (id: description) not found, trying direct findViewById")
+                findViewById<TextView>(R.id.description) ?: TextView(this).apply {
+                    text = ""
+                    visibility = View.GONE
+                }
+            }
+        }
+        trialStatus = findViewById(R.id.trialStatus)
+        startTrial = findViewById(R.id.startTrial)
+        upgrade = findViewById(R.id.upgrade)
+        upgradeDonate = findViewById(R.id.upgradeDonate)
+        upgraded = findViewById(R.id.upgraded)
+        thanksIcon = findViewById(R.id.thanksIcon)
+        donate = findViewById(R.id.donate)
+        themes = findViewById(R.id.themes)
+        schedule = findViewById(R.id.schedule)
+        backup = findViewById(R.id.backup)
+        delayed = findViewById(R.id.delayed)
+        night = findViewById(R.id.night)
+
         viewModel.bindView(this)
 
         free.setVisible(false)
@@ -85,7 +152,7 @@ class PlusActivity : QkThemedActivity(), PlusView {
         // Make the list titles bold
         linearLayout.children
                 .mapNotNull { it as? PreferenceView }
-                .map { it.titleView }
+                .map { it.findViewById<TextView>(R.id.titleView) }
                 .forEach { it.setTypeface(it.typeface, Typeface.BOLD) }
 
         val textPrimary = resolveThemeColor(android.R.attr.textColorPrimary)
@@ -140,10 +207,62 @@ class PlusActivity : QkThemedActivity(), PlusView {
     }
 
     override fun initiatePurchaseFlow(billingManager: BillingManager, sku: String) {
+        // #region agent log
+        com.charles.messenger.util.DebugLogger.log(
+            location = "PlusActivity.kt:209",
+            message = "initiatePurchaseFlow called",
+            data = mapOf("sku" to sku),
+            hypothesisId = "H1"
+        )
+        // #endregion
         GlobalScope.launch(Dispatchers.Main) {
             try {
+                // #region agent log
+                com.charles.messenger.util.DebugLogger.log(
+                    location = "PlusActivity.kt:212",
+                    message = "About to call billingManager.initiatePurchaseFlow",
+                    hypothesisId = "H1"
+                )
+                // #endregion
                 billingManager.initiatePurchaseFlow(this@PlusActivity, sku)
+                // #region agent log
+                com.charles.messenger.util.DebugLogger.log(
+                    location = "PlusActivity.kt:212",
+                    message = "billingManager.initiatePurchaseFlow completed",
+                    hypothesisId = "H1"
+                )
+                // #endregion
+            } catch (e: com.charles.messenger.common.util.BillingUnavailableException) {
+                // #region agent log
+                com.charles.messenger.util.DebugLogger.log(
+                    location = "PlusActivity.kt:214",
+                    message = "Billing unavailable exception",
+                    data = mapOf("error" to e.message, "errorType" to e.javaClass.simpleName),
+                    hypothesisId = "H1"
+                )
+                // #endregion
+                Timber.w(e)
+                makeToast(R.string.qksms_plus_error_billing_unavailable)
+            } catch (e: com.charles.messenger.common.util.BillingTimeoutException) {
+                // #region agent log
+                com.charles.messenger.util.DebugLogger.log(
+                    location = "PlusActivity.kt:214",
+                    message = "Billing timeout exception",
+                    data = mapOf("error" to e.message, "errorType" to e.javaClass.simpleName),
+                    hypothesisId = "H1"
+                )
+                // #endregion
+                Timber.w(e)
+                makeToast(R.string.qksms_plus_error_billing_timeout)
             } catch (e: Exception) {
+                // #region agent log
+                com.charles.messenger.util.DebugLogger.log(
+                    location = "PlusActivity.kt:214",
+                    message = "Exception in initiatePurchaseFlow",
+                    data = mapOf("error" to e.message, "errorType" to e.javaClass.simpleName),
+                    hypothesisId = "H1"
+                )
+                // #endregion
                 Timber.w(e)
                 makeToast(R.string.qksms_plus_error)
             }

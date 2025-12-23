@@ -23,17 +23,22 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.charles.messenger.R
 import com.charles.messenger.common.util.extensions.resolveThemeAttribute
 import com.charles.messenger.common.util.extensions.setVisible
-import kotlinx.android.synthetic.main.blocking_manager_preference_view.view.*
 
 class BlockingManagerPreferenceView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : ConstraintLayout(context, attrs) {
+
+    private lateinit var iconView: ImageView
+    private lateinit var titleView: TextView
+    private lateinit var summaryView: TextView
+    private lateinit var widgetFrame: ViewGroup
 
     var icon: Drawable? = null
         set(value) {
@@ -75,6 +80,14 @@ class BlockingManagerPreferenceView @JvmOverloads constructor(
     init {
         View.inflate(context, R.layout.blocking_manager_preference_view, this)
         setBackgroundResource(context.resolveThemeAttribute(R.attr.selectableItemBackground))
+        isClickable = true
+        isFocusable = true
+        descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
+
+        iconView = findViewById(R.id.iconView)
+        titleView = findViewById(R.id.titleView)
+        summaryView = findViewById(R.id.summaryView)
+        widgetFrame = findViewById(R.id.widgetFrame)
 
         context.obtainStyledAttributes(attrs, R.styleable.BlockingManagerPreferenceView).run {
             icon = getDrawable(R.styleable.BlockingManagerPreferenceView_icon)

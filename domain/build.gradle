@@ -19,11 +19,10 @@
 apply plugin: 'com.android.library'
 apply plugin: 'realm-android' // Realm needs to be before Kotlin or the build will fail
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion 35
+    compileSdkVersion 34
 
     compileOptions {
         sourceCompatibility 1.8

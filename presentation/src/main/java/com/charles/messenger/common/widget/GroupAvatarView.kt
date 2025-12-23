@@ -21,6 +21,7 @@ package com.charles.messenger.common.widget
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
+import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -29,11 +30,14 @@ import com.charles.messenger.common.util.extensions.getColorCompat
 import com.charles.messenger.common.util.extensions.resolveThemeColor
 import com.charles.messenger.common.util.extensions.setBackgroundTint
 import com.charles.messenger.model.Recipient
-import kotlinx.android.synthetic.main.group_avatar_view.view.*
 
 class GroupAvatarView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : ConstraintLayout(context, attrs) {
+
+    private lateinit var avatar1Frame: FrameLayout
+    private lateinit var avatar1: AvatarView
+    private lateinit var avatar2: AvatarView
 
     var recipients: List<Recipient> = ArrayList()
         set(value) {
@@ -43,6 +47,9 @@ class GroupAvatarView @JvmOverloads constructor(
 
     init {
         View.inflate(context, R.layout.group_avatar_view, this)
+        avatar1Frame = findViewById(R.id.avatar1Frame)
+        avatar1 = findViewById(R.id.avatar1)
+        avatar2 = findViewById(R.id.avatar2)
     }
 
     override fun onFinishInflate() {

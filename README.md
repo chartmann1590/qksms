@@ -150,33 +150,82 @@ QKSMS is built with modern Android development practices:
 - **Dependency Injection** - Dagger 2 for modular, testable code
 - **Realm Database** - Fast, efficient local data storage
 - **Conductor Framework** - Lightweight view controllers for smooth navigation
+- **Kotlin** - Primary language with Java interop for legacy code
+- **Material Design Components** - Modern UI components following Material Design guidelines
+
+### Module Structure
+
+- **presentation/** - Android app module (UI, activities, controllers, resources)
+- **domain/** - Business logic layer (pure Kotlin, no Android dependencies)
+- **data/** - Data access layer (repositories, database, networking)
+- **common/** - Shared utilities and extensions
+- **android-smsmms/** - SMS/MMS handling library
 
 ### Build Variants
 
-- **WithAnalytics** - Includes Firebase Analytics, Crashlytics, and Performance monitoring (Google Play)
-- **NoAnalytics** - Clean build without any tracking for privacy-focused users (F-Droid)
+QKSMS is available in two product flavors:
+
+- **withAnalytics** - Includes Firebase Analytics, Crashlytics, Performance monitoring, Google Play Billing, and Amplitude (for Google Play Store)
+- **noAnalytics** - Clean build without any tracking or analytics (for F-Droid and privacy-focused users)
+
+The `noAnalytics` variant is recommended for development and testing as it builds faster and has no external dependencies.
 
 ## Building from Source
+
+### Prerequisites
+
+- **Android Studio** (latest stable version recommended)
+- **JDK 8 or higher**
+- **Android SDK** with API level 21+ (Android 5.0+)
+- **Git**
+
+### Build Commands
 
 ```bash
 # Clone the repository
 git clone https://github.com/chartmann1590/qksms.git
 cd qksms
 
-# Build debug APK
-./gradlew assembleDebug
-
-# Build without analytics (F-Droid variant)
+# Build debug APK without analytics (F-Droid variant - recommended for development)
 ./gradlew :presentation:assembleNoAnalyticsDebug
 
-# Build with analytics (Google Play variant)
+# Build debug APK with analytics (Google Play variant)
 ./gradlew :presentation:assembleWithAnalyticsDebug
 
-# Run tests
+# Install on connected device
+./gradlew :presentation:installNoAnalyticsDebug
+
+# Build release APK (requires signing configuration in local.properties)
+./gradlew :presentation:assembleNoAnalyticsRelease
+./gradlew :presentation:assembleWithAnalyticsRelease
+
+# Build Android App Bundle for Play Store
+./gradlew :presentation:bundleWithAnalyticsRelease
+
+# Run all tests
 ./gradlew test
+
+# Run lint checks
+./gradlew lint
+
+# Clean build
+./gradlew clean
 ```
 
-See [CLAUDE.md](CLAUDE.md) for detailed build instructions and architecture documentation.
+**On Windows**, use `gradlew.bat` instead of `./gradlew`
+
+### Signing Configuration
+
+For release builds, create a `local.properties` file in the project root with:
+
+```properties
+STORE_FILE=/path/to/keystore.jks
+STORE_PASSWORD=your_store_password
+KEY_ALIAS=your_key_alias
+KEY_PASSWORD=your_key_password
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed build instructions and [CLAUDE.md](CLAUDE.md) for architecture documentation.
 
 ## Contributing
 

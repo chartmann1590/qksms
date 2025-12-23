@@ -26,6 +26,7 @@ import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
 import io.reactivex.rxkotlin.plusAssign
+import timber.log.Timber
 import javax.inject.Inject
 
 class PlusViewModel @Inject constructor(
@@ -64,9 +65,42 @@ class PlusViewModel @Inject constructor(
         Observable.merge(
                 view.upgradeIntent.map { BillingManager.SKU_PLUS },
                 view.upgradeDonateIntent.map { BillingManager.SKU_PLUS_DONATE })
-                .doOnNext { sku -> analyticsManager.track("Clicked Upgrade", Pair("sku", sku)) }
+                .doOnNext { sku -> 
+                    // #region agent log
+                    com.charles.messenger.util.DebugLogger.log(
+                        location = "PlusViewModel.kt:64",
+                        message = "Upgrade button clicked",
+                        data = mapOf("sku" to sku),
+                        hypothesisId = "H1"
+                    )
+                    // #endregion
+                    analyticsManager.track("Clicked Upgrade", Pair("sku", sku))
+                }
                 .autoDisposable(view.scope())
-                .subscribe { sku -> view.initiatePurchaseFlow(billingManager, sku) }
+                .subscribe(
+                    { sku -> 
+                        // #region agent log
+                        com.charles.messenger.util.DebugLogger.log(
+                            location = "PlusViewModel.kt:69",
+                            message = "Calling view.initiatePurchaseFlow",
+                            data = mapOf("sku" to sku),
+                            hypothesisId = "H1"
+                        )
+                        // #endregion
+                        view.initiatePurchaseFlow(billingManager, sku)
+                    },
+                    { error ->
+                        // #region agent log
+                        com.charles.messenger.util.DebugLogger.log(
+                            location = "PlusViewModel.kt:69",
+                            message = "Error in upgrade intent stream",
+                            data = mapOf("error" to error.message, "errorType" to error.javaClass.simpleName),
+                            hypothesisId = "H1"
+                        )
+                        // #endregion
+                        Timber.e(error, "Error in upgrade intent")
+                    }
+                )
 
         view.startTrialIntent
                 .doOnNext { analyticsManager.track("Started Trial") }

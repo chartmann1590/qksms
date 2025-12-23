@@ -24,6 +24,7 @@ import android.text.Spanned
 import android.text.style.BackgroundColorSpan
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.constraintlayout.widget.Group
 import com.charles.messenger.R
 import com.charles.messenger.common.Navigator
 import com.charles.messenger.common.base.QkAdapter
@@ -31,10 +32,10 @@ import com.charles.messenger.common.base.QkViewHolder
 import com.charles.messenger.common.util.Colors
 import com.charles.messenger.common.util.DateFormatter
 import com.charles.messenger.common.util.extensions.setVisible
+import com.charles.messenger.common.widget.GroupAvatarView
+import com.charles.messenger.common.widget.QkTextView
 import com.charles.messenger.extensions.removeAccents
 import com.charles.messenger.model.SearchResult
-import kotlinx.android.synthetic.main.search_list_item.*
-import kotlinx.android.synthetic.main.search_list_item.view.*
 import javax.inject.Inject
 
 class SearchAdapter @Inject constructor(
@@ -61,33 +62,39 @@ class SearchAdapter @Inject constructor(
         val previous = data.getOrNull(position - 1)
         val result = getItem(position)
 
-        holder.resultsHeader.setVisible(result.messages > 0 && previous?.messages == 0)
+        val resultsHeader = holder.itemView.findViewById<Group>(R.id.resultsHeader)
+        val title = holder.itemView.findViewById<QkTextView>(R.id.title)
+        val avatars = holder.itemView.findViewById<GroupAvatarView>(R.id.avatars)
+        val date = holder.itemView.findViewById<QkTextView>(R.id.date)
+        val snippet = holder.itemView.findViewById<QkTextView>(R.id.snippet)
+
+        resultsHeader.setVisible(result.messages > 0 && previous?.messages == 0)
 
         val query = result.query
-        val title = SpannableString(result.conversation.getTitle())
-        var index = title.removeAccents().indexOf(query, ignoreCase = true)
+        val titleText = SpannableString(result.conversation.getTitle())
+        var index = titleText.removeAccents().indexOf(query, ignoreCase = true)
 
         while (index >= 0) {
-            title.setSpan(BackgroundColorSpan(highlightColor), index, index + query.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            index = title.indexOf(query, index + query.length, true)
+            titleText.setSpan(BackgroundColorSpan(highlightColor), index, index + query.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            index = titleText.indexOf(query, index + query.length, true)
         }
-        holder.title.text = title
+        title.text = titleText
 
-        holder.avatars.recipients = result.conversation.recipients
+        avatars.recipients = result.conversation.recipients
 
         when (result.messages == 0) {
             true -> {
-                holder.date.setVisible(true)
-                holder.date.text = dateFormatter.getConversationTimestamp(result.conversation.date)
-                holder.snippet.text = when (result.conversation.me) {
+                date.setVisible(true)
+                date.text = dateFormatter.getConversationTimestamp(result.conversation.date)
+                snippet.text = when (result.conversation.me) {
                     true -> context.getString(R.string.main_sender_you, result.conversation.snippet)
                     false -> result.conversation.snippet
                 }
             }
 
             false -> {
-                holder.date.setVisible(false)
-                holder.snippet.text = context.getString(R.string.main_message_results, result.messages)
+                date.setVisible(false)
+                snippet.text = context.getString(R.string.main_message_results, result.messages)
             }
         }
     }

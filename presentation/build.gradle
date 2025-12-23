@@ -19,13 +19,11 @@
 apply plugin: 'com.android.application'
 apply plugin: 'realm-android' // Realm needs to be before Kotlin or the build will fail
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 // Google services plugins are conditionally applied at the bottom of this file
 
 android {
-    compileSdkVersion 35
-    buildToolsVersion "35.0.0"
+    compileSdkVersion 34
     flavorDimensions "analytics"
 
     def localProperties = new Properties()
@@ -43,7 +41,7 @@ android {
         applicationId "com.charles.messenger.v2"
         minSdkVersion 21
         targetSdkVersion 35
-        versionCode 2220
+        versionCode 2223
         versionName "3.9.6"
         setProperty("archivesBaseName", "messenger-v${versionName}")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -86,9 +84,17 @@ android {
 
     kotlinOptions {
         jvmTarget = "1.8"
+        // Allow using libraries compiled with a newer Kotlin metadata version (Firebase 21.5.0)
+        freeCompilerArgs += "-Xskip-metadata-version-check"
+    }
+
+    buildFeatures {
+        viewBinding true
     }
 
     lintOptions {
+        // Skip lint in release builds to avoid blocking on tooling mismatches
+        checkReleaseBuilds false
         abortOnError false
     }
 
@@ -108,10 +114,6 @@ android {
         signingConfigs.release.keyAlias = localProperties['KEY_ALIAS']
         signingConfigs.release.keyPassword = localProperties['KEY_PASSWORD']
     }
-}
-
-androidExtensions {
-    experimental = true
 }
 
 configurations {
@@ -140,7 +142,7 @@ dependencies {
 
     // glide
     implementation "com.github.bumptech.glide:glide:$glide_version"
-    implementation 'com.google.android.gms:play-services-basement:18.0.0'
+    implementation 'com.google.android.gms:play-services-basement:18.3.0'
     kapt "com.github.bumptech.glide:compiler:$glide_version"
 
     // exoplayer
@@ -220,7 +222,6 @@ dependencies {
     implementation project(':data')
     implementation project(':domain')
 
-    withAnalyticsImplementation 'com.google.firebase:firebase-crashlytics:17.3.0'
     withAnalyticsImplementation "com.android.billingclient:billing:$billing_version"
     withAnalyticsImplementation "com.android.billingclient:billing-ktx:$billing_version"
     noAnalyticsDebug project(path: ':data', configuration: 'noAnalyticsDebug')
@@ -228,13 +229,13 @@ dependencies {
     withAnalyticsDebug project(path: ':data', configuration: 'withAnalyticsDebug')
     withAnalyticsRelease project(path: ':data', configuration: 'withAnalyticsRelease')
 
-    withAnalyticsImplementation platform('com.google.firebase:firebase-bom:29.0.3')
+    withAnalyticsImplementation platform('com.google.firebase:firebase-bom:32.7.1')
     withAnalyticsImplementation 'com.google.firebase:firebase-analytics-ktx'
     withAnalyticsImplementation 'com.google.firebase:firebase-crashlytics-ktx'
     withAnalyticsImplementation 'com.google.firebase:firebase-perf-ktx'
-    withAnalyticsImplementation 'com.google.firebase:firebase-analytics-ktx:20.0.2'
+    // withAnalyticsImplementation 'com.google.firebase:firebase-analytics-ktx:20.0.2'
 
-    implementation 'com.google.android.gms:play-services-ads:20.5.0'
+    implementation 'com.google.android.gms:play-services-ads:23.0.0'
 }
 
 // Only apply Google services plugins for withAnalytics flavor

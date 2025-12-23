@@ -22,15 +22,17 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.viewbinding.ViewBinding
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
-import kotlinx.android.synthetic.main.toolbar.*
 import com.charles.messenger.*
 
 abstract class QkActivity : AppCompatActivity() {
 
     protected val menu: Subject<Menu> = BehaviorSubject.create()
+    private var toolbarTitle: TextView? = null
 
     @SuppressLint("InlinedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,8 +52,19 @@ abstract class QkActivity : AppCompatActivity() {
 
     override fun setContentView(layoutResID: Int) {
         super.setContentView(layoutResID)
-        setSupportActionBar(toolbar)
-        title = title // The title may have been set before layout inflation
+        // Find and bind toolbar if it exists
+        try {
+            val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+            if (toolbar != null) {
+                // Only set toolbarTitle if it exists (not all toolbars have toolbarTitle)
+                // Do NOT use ToolbarBinding.bind() here as it requires toolbarTitle to exist
+                toolbarTitle = toolbar.findViewById(R.id.toolbarTitle)
+                setSupportActionBar(toolbar)
+                title = title // The title may have been set before layout inflation
+            }
+        } catch (e: Exception) {
+            // Ignore any toolbar binding errors
+        }
     }
 
     override fun setTitle(titleId: Int) {

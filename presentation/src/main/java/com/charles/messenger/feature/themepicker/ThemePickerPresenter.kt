@@ -29,6 +29,7 @@ import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import io.reactivex.rxkotlin.Observables
 import io.reactivex.rxkotlin.withLatestFrom
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -56,7 +57,14 @@ class ThemePickerPresenter @Inject constructor(
                 .subscribe { color ->
                     theme.set(color)
                     if (recipientId == 0L) {
-                        widgetManager.updateTheme()
+                        try {
+                            widgetManager.updateTheme()
+                        } catch (e: SecurityException) {
+                            // Widget update may fail due to security restrictions
+                            Timber.w(e, "Failed to update widget theme")
+                        } catch (e: Exception) {
+                            Timber.w(e, "Error updating widget theme")
+                        }
                     }
                 }
 
@@ -82,7 +90,14 @@ class ThemePickerPresenter @Inject constructor(
                     } else {
                         theme.set(color)
                         if (recipientId == 0L) {
-                            widgetManager.updateTheme()
+                            try {
+                                widgetManager.updateTheme()
+                            } catch (e: SecurityException) {
+                                // Widget update may fail due to security restrictions
+                                Timber.w(e, "Failed to update widget theme")
+                            } catch (e: Exception) {
+                                Timber.w(e, "Error updating widget theme")
+                            }
                         }
                     }
                 }

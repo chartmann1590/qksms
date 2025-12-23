@@ -26,16 +26,12 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
-import com.android.billingclient.api.SkuDetails
-import com.android.billingclient.api.SkuDetailsParams
-import com.android.billingclient.api.PurchasesResult
+import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchaseHistoryParams
-import com.android.billingclient.api.acknowledgePurchase
-import com.android.billingclient.api.queryPurchaseHistory
-import com.android.billingclient.api.queryPurchases
-import com.android.billingclient.api.querySkuDetails
+import com.android.billingclient.api.QueryPurchasesParams
 import com.charles.messenger.manager.AnalyticsManager
 import com.charles.messenger.manager.BillingManager
 import com.charles.messenger.util.Preferences
@@ -44,15 +40,28 @@ import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
+
+/**
+ * Exception thrown when Google Play Billing is unavailable on the device
+ */
+class BillingUnavailableException(message: String) : Exception(message)
+
+/**
+ * Exception thrown when billing service connection times out
+ */
+class BillingTimeoutException(message: String) : Exception(message)
 
 @Singleton
 class BillingManagerImpl @Inject constructor(
@@ -61,11 +70,14 @@ class BillingManagerImpl @Inject constructor(
     private val prefs: Preferences
 ) : BillingManager, BillingClientStateListener, PurchasesUpdatedListener {
 
-    private val productsSubject: Subject<List<SkuDetails>> = BehaviorSubject.create()
+    private val productsSubject: Subject<List<ProductDetails>> = BehaviorSubject.create()
     override val products: Observable<List<BillingManager.Product>> = productsSubject
-            .map { skuDetailsList ->
-                skuDetailsList.map { skuDetails ->
-                    BillingManager.Product(skuDetails.sku, skuDetails.price, skuDetails.priceCurrencyCode)
+            .map { productDetailsList ->
+                productDetailsList.map { productDetails ->
+                    val productId = productDetails.productId
+                    val price = productDetails.oneTimePurchaseOfferDetails?.formattedPrice ?: ""
+                    val currencyCode = productDetails.oneTimePurchaseOfferDetails?.priceCurrencyCode ?: ""
+                    BillingManager.Product(productId, price, currencyCode)
                 }
             }
 
@@ -79,7 +91,7 @@ class BillingManagerImpl @Inject constructor(
             .map { purchases ->
                 purchases
                         .filter { it.purchaseState == Purchase.PurchaseState.PURCHASED }
-                        .any { it.sku in skus }
+                        .any { it.products.any { productId -> productId in skus } }
             }
             .distinctUntilChanged()
             .doOnNext { upgraded -> analyticsManager.setUserProperty("Upgraded", upgraded) }
@@ -112,35 +124,187 @@ class BillingManagerImpl @Inject constructor(
 
         // On a fresh device, the purchase might not be cached, and so we'll need to force a refresh
         val historyParams = QueryPurchaseHistoryParams.newBuilder()
-                .setProductType(com.android.billingclient.api.ProductType.INAPP)
+                .setProductType(BillingClient.ProductType.INAPP)
                 .build()
-        billingClient.queryPurchaseHistory(historyParams)
+        billingClient.queryPurchaseHistoryAsync(historyParams) { _, _ -> }
         queryPurchases()
     }
 
     override suspend fun queryProducts() = executeServiceRequest {
-        val params = SkuDetailsParams.newBuilder()
-                .setSkusList(skus)
-                .setType(BillingClient.SkuType.INAPP)
+        // #region agent log
+        com.charles.messenger.util.DebugLogger.log(
+            location = "BillingManagerImpl.kt:121",
+            message = "queryProducts called",
+            data = mapOf("skuCount" to skus.size.toString()),
+            hypothesisId = "H4"
+        )
+        // #endregion
+        val productList = skus.map { sku ->
+            QueryProductDetailsParams.Product.newBuilder()
+                    .setProductId(sku)
+                    .setProductType(BillingClient.ProductType.INAPP)
+                    .build()
+        }
+        val params = QueryProductDetailsParams.newBuilder()
+                .setProductList(productList)
+                .build()
 
-        val (billingResult, skuDetailsList) = billingClient.querySkuDetails(params.build())
-        if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-            productsSubject.onNext(skuDetailsList.orEmpty())
+        billingClient.queryProductDetailsAsync(params) { billingResult, productDetailsList ->
+            // #region agent log
+            com.charles.messenger.util.DebugLogger.log(
+                location = "BillingManagerImpl.kt:132",
+                message = "queryProducts callback",
+                data = mapOf(
+                    "responseCode" to billingResult.responseCode.toString(),
+                    "productCount" to (productDetailsList?.size ?: 0).toString(),
+                    "debugMessage" to (billingResult.debugMessage ?: "null")
+                ),
+                hypothesisId = "H4"
+            )
+            // #endregion
+            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                productsSubject.onNext(productDetailsList.orEmpty())
+            }
         }
     }
 
     override suspend fun initiatePurchaseFlow(activity: Activity, sku: String) = executeServiceRequest {
-        val skuDetails = withContext(Dispatchers.IO) {
-            val params = SkuDetailsParams.newBuilder()
-                    .setType(BillingClient.SkuType.INAPP)
-                    .setSkusList(listOf(sku))
-                    .build()
+        // #region agent log
+        com.charles.messenger.util.DebugLogger.log(
+            location = "BillingManagerImpl.kt:139",
+            message = "initiatePurchaseFlow called",
+            data = mapOf("sku" to sku),
+            hypothesisId = "H1"
+        )
+        // #endregion
+        val product = QueryProductDetailsParams.Product.newBuilder()
+                .setProductId(sku)
+                .setProductType(BillingClient.ProductType.INAPP)
+                .build()
+        val params = QueryProductDetailsParams.newBuilder()
+                .setProductList(listOf(product))
+                .build()
 
-            billingClient.querySkuDetails(params).skuDetailsList?.firstOrNull()!!
+        var productDetails: ProductDetails? = null
+        var callbackCompleted = false
+
+        // #region agent log
+        com.charles.messenger.util.DebugLogger.log(
+            location = "BillingManagerImpl.kt:151",
+            message = "Calling queryProductDetailsAsync",
+            data = mapOf("sku" to sku),
+            hypothesisId = "H3"
+        )
+        // #endregion
+        billingClient.queryProductDetailsAsync(params) { billingResult, productDetailsList ->
+            // #region agent log
+            com.charles.messenger.util.DebugLogger.log(
+                location = "BillingManagerImpl.kt:152",
+                message = "queryProductDetailsAsync callback",
+                data = mapOf(
+                    "responseCode" to billingResult.responseCode.toString(),
+                    "productDetailsCount" to (productDetailsList?.size ?: 0).toString()
+                ),
+                hypothesisId = "H3"
+            )
+            // #endregion
+            productDetails = productDetailsList?.firstOrNull()
+            callbackCompleted = true
         }
 
-        val params = BillingFlowParams.newBuilder().setSkuDetails(skuDetails)
-        billingClient.launchBillingFlow(activity, params.build())
+        // Wait for async callback to complete (with timeout)
+        var waitCount = 0
+        while (!callbackCompleted && waitCount < 50) {
+            kotlinx.coroutines.delay(100)
+            waitCount++
+        }
+
+        // #region agent log
+        com.charles.messenger.util.DebugLogger.log(
+            location = "BillingManagerImpl.kt:163",
+            message = "After waiting for callback",
+            data = mapOf(
+                "callbackCompleted" to callbackCompleted.toString(),
+                "waitCount" to waitCount.toString(),
+                "productDetailsFound" to (productDetails != null).toString()
+            ),
+            hypothesisId = "H3"
+        )
+        // #endregion
+
+        productDetails?.let { details ->
+            // Ensure product details has required offer details
+            val offerDetails = details.oneTimePurchaseOfferDetails
+            // #region agent log
+            com.charles.messenger.util.DebugLogger.log(
+                location = "BillingManagerImpl.kt:165",
+                message = "Product details found",
+                data = mapOf(
+                    "hasOfferDetails" to (offerDetails != null).toString(),
+                    "productId" to details.productId
+                ),
+                hypothesisId = "H4"
+            )
+            // #endregion
+            if (offerDetails != null) {
+                try {
+                    // #region agent log
+                    com.charles.messenger.util.DebugLogger.log(
+                        location = "BillingManagerImpl.kt:176",
+                        message = "About to launch billing flow",
+                        hypothesisId = "H5"
+                    )
+                    // #endregion
+                    val productDetailsParamsList = listOf(
+                        BillingFlowParams.ProductDetailsParams.newBuilder()
+                                .setProductDetails(details)
+                                .build()
+                    )
+                    val flowParams = BillingFlowParams.newBuilder()
+                            .setProductDetailsParamsList(productDetailsParamsList)
+                            .build()
+                    val result = billingClient.launchBillingFlow(activity, flowParams)
+                    // #region agent log
+                    com.charles.messenger.util.DebugLogger.log(
+                        location = "BillingManagerImpl.kt:176",
+                        message = "launchBillingFlow result",
+                        data = mapOf("responseCode" to result.responseCode.toString()),
+                        hypothesisId = "H5"
+                    )
+                    // #endregion
+                } catch (e: Exception) {
+                    // #region agent log
+                    com.charles.messenger.util.DebugLogger.log(
+                        location = "BillingManagerImpl.kt:178",
+                        message = "Error launching billing flow",
+                        data = mapOf("error" to e.message, "errorType" to e.javaClass.simpleName),
+                        hypothesisId = "H5"
+                    )
+                    // #endregion
+                    Timber.e(e, "Error launching billing flow")
+                }
+            } else {
+                // #region agent log
+                com.charles.messenger.util.DebugLogger.log(
+                    location = "BillingManagerImpl.kt:181",
+                    message = "Product details missing offer details",
+                    data = mapOf("sku" to sku),
+                    hypothesisId = "H4"
+                )
+                // #endregion
+                Timber.w("Product details missing oneTimePurchaseOfferDetails for SKU: $sku")
+            }
+        } ?: run {
+            // #region agent log
+            com.charles.messenger.util.DebugLogger.log(
+                location = "BillingManagerImpl.kt:184",
+                message = "Product details not found",
+                data = mapOf("sku" to sku),
+                hypothesisId = "H4"
+            )
+            // #endregion
+            Timber.w("Product details not found for SKU: $sku")
+        }
     }
 
     override fun onPurchasesUpdated(result: BillingResult, purchases: MutableList<Purchase>?) {
@@ -152,12 +316,15 @@ class BillingManagerImpl @Inject constructor(
     }
 
     private suspend fun queryPurchases() {
-        val params = com.android.billingclient.api.QueryPurchasesParams.newBuilder()
-                .setProductType(com.android.billingclient.api.ProductType.INAPP)
+        val params = QueryPurchasesParams.newBuilder()
+                .setProductType(BillingClient.ProductType.INAPP)
                 .build()
-        val result = billingClient.queryPurchases(params)
-        if (result.billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-            handlePurchases(result.purchases)
+        billingClient.queryPurchasesAsync(params) { billingResult, purchasesList ->
+            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                GlobalScope.launch(Dispatchers.IO) {
+                    handlePurchases(purchasesList)
+                }
+            }
         }
     }
 
@@ -169,8 +336,9 @@ class BillingManagerImpl @Inject constructor(
                         .build()
 
                 Timber.i("Acknowledging purchase ${purchase.orderId}")
-                val result = billingClient.acknowledgePurchase(params)
-                Timber.i("Acknowledgement result: ${result.responseCode}, ${result.debugMessage}")
+                billingClient.acknowledgePurchase(params) { billingResult ->
+                    Timber.i("Acknowledgement result: ${billingResult.responseCode}, ${billingResult.debugMessage}")
+                }
             }
         }
 
@@ -178,16 +346,100 @@ class BillingManagerImpl @Inject constructor(
     }
 
     private suspend fun executeServiceRequest(runnable: suspend () -> Unit) {
-        if (billingClientState.first() != BillingClient.BillingResponseCode.OK) {
+        val currentState = billingClientState.first()
+        // #region agent log
+        com.charles.messenger.util.DebugLogger.log(
+            location = "BillingManagerImpl.kt:226",
+            message = "executeServiceRequest called",
+            data = mapOf("currentState" to currentState.toString()),
+            hypothesisId = "H2"
+        )
+        // #endregion
+        if (currentState != BillingClient.BillingResponseCode.OK) {
+            // #region agent log
+            com.charles.messenger.util.DebugLogger.log(
+                location = "BillingManagerImpl.kt:229",
+                message = "Starting billing service connection",
+                hypothesisId = "H2"
+            )
+            // #endregion
             Timber.i("Starting billing service")
             billingClient.startConnection(this)
         }
 
-        billingClientState.first { state -> state == BillingClient.BillingResponseCode.OK }
-        runnable()
+        // #region agent log
+        com.charles.messenger.util.DebugLogger.log(
+            location = "BillingManagerImpl.kt:232",
+            message = "Waiting for billing client to be ready (with 10s timeout)",
+            hypothesisId = "H2"
+        )
+        // #endregion
+        try {
+            val readyState = withTimeout(10000) {
+                billingClientState.first { state -> state == BillingClient.BillingResponseCode.OK }
+            }
+            // #region agent log
+            com.charles.messenger.util.DebugLogger.log(
+                location = "BillingManagerImpl.kt:232",
+                message = "Billing client ready",
+                data = mapOf("state" to readyState.toString()),
+                hypothesisId = "H2"
+            )
+            // #endregion
+            runnable()
+        } catch (e: TimeoutCancellationException) {
+            // #region agent log
+            com.charles.messenger.util.DebugLogger.log(
+                location = "BillingManagerImpl.kt:232",
+                message = "Timeout waiting for billing client",
+                hypothesisId = "H2"
+            )
+            // #endregion
+            Timber.e("Timeout waiting for billing client to connect")
+            // Check if billing is unavailable (response code 3) by checking the current state
+            // Since billingClientState is a SharedFlow with replay=1, we can get the current value
+            try {
+                val finalState = withContext(Dispatchers.IO) {
+                    kotlinx.coroutines.withTimeout(50) {
+                        billingClientState.first()
+                    }
+                }
+                // #region agent log
+                com.charles.messenger.util.DebugLogger.log(
+                    location = "BillingManagerImpl.kt:400",
+                    message = "Final billing state after timeout",
+                    data = mapOf("finalState" to finalState.toString()),
+                    hypothesisId = "H2"
+                )
+                // #endregion
+                if (finalState == BillingClient.BillingResponseCode.BILLING_UNAVAILABLE) {
+                    throw BillingUnavailableException("Billing service unavailable on device")
+                }
+            } catch (e2: kotlinx.coroutines.TimeoutCancellationException) {
+                // Couldn't get state quickly, assume general timeout
+            } catch (e2: BillingUnavailableException) {
+                // Re-throw billing unavailable exception
+                throw e2
+            } catch (e2: Exception) {
+                // Other exception, assume timeout
+                Timber.w(e2, "Error checking final billing state")
+            }
+            throw BillingTimeoutException("Billing service connection timeout")
+        }
     }
 
     override fun onBillingSetupFinished(result: BillingResult) {
+        // #region agent log
+        com.charles.messenger.util.DebugLogger.log(
+            location = "BillingManagerImpl.kt:236",
+            message = "onBillingSetupFinished",
+            data = mapOf(
+                "responseCode" to result.responseCode.toString(),
+                "debugMessage" to (result.debugMessage ?: "null")
+            ),
+            hypothesisId = "H2"
+        )
+        // #endregion
         Timber.i("Billing response: ${result.responseCode}")
         billingClientState.tryEmit(result.responseCode)
     }
