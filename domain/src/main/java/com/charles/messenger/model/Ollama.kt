@@ -42,7 +42,10 @@ data class OllamaModelsResponse(
 data class OllamaGenerateRequest(
     @Json(name = "model") val model: String,
     @Json(name = "prompt") val prompt: String,
-    @Json(name = "stream") val stream: Boolean = false
+    @Json(name = "stream") val stream: Boolean = false,
+    @Json(name = "temperature") val temperature: Double? = null,
+    @Json(name = "top_p") val topP: Double? = null,
+    @Json(name = "num_predict") val numPredict: Int? = null
 )
 
 /**
@@ -51,5 +54,34 @@ data class OllamaGenerateRequest(
 data class OllamaGenerateResponse(
     @Json(name = "model") val model: String,
     @Json(name = "response") val response: String,
+    @Json(name = "done") val done: Boolean
+)
+
+/**
+ * Chat message for Ollama /api/chat endpoint
+ */
+data class OllamaChatMessage(
+    @Json(name = "role") val role: String, // "system", "user", or "assistant"
+    @Json(name = "content") val content: String
+)
+
+/**
+ * Request to Ollama /api/chat endpoint
+ */
+data class OllamaChatRequest(
+    @Json(name = "model") val model: String,
+    @Json(name = "messages") val messages: List<OllamaChatMessage>,
+    @Json(name = "stream") val stream: Boolean = false,
+    @Json(name = "temperature") val temperature: Double? = null,
+    @Json(name = "top_p") val topP: Double? = null,
+    @Json(name = "num_predict") val numPredict: Int? = null
+)
+
+/**
+ * Response from Ollama /api/chat endpoint
+ */
+data class OllamaChatResponse(
+    @Json(name = "model") val model: String,
+    @Json(name = "message") val message: OllamaChatMessage,
     @Json(name = "done") val done: Boolean
 )

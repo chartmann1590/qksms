@@ -35,6 +35,10 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
+import android.graphics.Rect
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -45,6 +49,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.material.snackbar.Snackbar
@@ -169,6 +174,10 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
+        
+        // Ensure window soft input mode is set for proper keyboard handling
+        window.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        
         setContentView(R.layout.compose_activity)
 
         contentView = findViewById(R.id.contentView)
@@ -227,6 +236,44 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
 
         messageList.setHasFixedSize(true)
         messageList.adapter = messageAdapter
+        
+        // Auto-scroll to bottom when new messages arrive (if user is already near the bottom)
+        messageAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                val layoutManager = messageList.layoutManager as? LinearLayoutManager ?: return
+                if (layoutManager.stackFromEnd) {
+                    val lastVisiblePosition = layoutManager.findLastVisibleItemPosition()
+                    val totalItemCount = messageAdapter.itemCount
+                    // Scroll if new items were added at the end and user is already near the bottom (within 3 items)
+                    if (totalItemCount > 0 && positionStart + itemCount - 1 >= totalItemCount - itemCount && 
+                        lastVisiblePosition >= totalItemCount - itemCount - 3) {
+                        val targetPosition = totalItemCount - 1
+                        if (targetPosition >= 0 && targetPosition < totalItemCount) {
+                            messageList.post {
+                                messageList.smoothScrollToPosition(targetPosition)
+                            }
+                        }
+                    }
+                }
+            }
+            
+            override fun onChanged() {
+                val layoutManager = messageList.layoutManager as? LinearLayoutManager ?: return
+                if (layoutManager.stackFromEnd) {
+                    val lastVisiblePosition = layoutManager.findLastVisibleItemPosition()
+                    val totalItemCount = messageAdapter.itemCount
+                    // Scroll if user is already near the bottom (within 3 items) and there are items
+                    if (totalItemCount > 0 && lastVisiblePosition >= totalItemCount - 3) {
+                        val targetPosition = totalItemCount - 1
+                        if (targetPosition >= 0 && targetPosition < totalItemCount) {
+                            messageList.post {
+                                messageList.smoothScrollToPosition(targetPosition)
+                            }
+                        }
+                    }
+                }
+            }
+        })
 
         attachments.adapter = attachmentAdapter
 
@@ -245,10 +292,112 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
 
         window.callback = ComposeWindowCallback(window.callback, this)
 
+        // Handle keyboard visibility to ensure proper resizing and scrolling
+        setupKeyboardListener()
+
         // These theme attributes don't apply themselves on API 21
         if (Build.VERSION.SDK_INT <= 22) {
             messageBackground.setBackgroundTint(resolveThemeColor(R.attr.bubbleColor))
         }
+    }
+    
+    override fun setupWindowInsets() {
+        val rootView = window.decorView.findViewById<View>(android.R.id.content)
+        rootView?.let { root ->
+            ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
+                val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                val navigationBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+                
+                // Apply system bar padding (top, left, right only)
+                // Bottom padding is handled by keyboard listener, but we need to account for navigation bar
+                contentView.setPadding(
+                    systemBars.left,
+                    systemBars.top,
+                    systemBars.right,
+                    0 // Bottom padding handled by keyboard listener
+                )
+                
+                // Position adView above navigation bar by setting bottom margin
+                val adView = findViewById<com.google.android.gms.ads.AdView>(R.id.adView)
+                adView?.let { ad ->
+                    val layoutParams = ad.layoutParams as? androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+                    layoutParams?.let { params ->
+                        params.bottomMargin = navigationBar.bottom
+                        ad.layoutParams = params
+                    }
+                }
+                
+                insets
+            }
+        }
+    }
+    
+    private fun setupKeyboardListener() {
+        val rootView = window.decorView.rootView
+        var lastKeyboardHeight = 0
+        
+        rootView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                val rect = Rect()
+                rootView.getWindowVisibleDisplayFrame(rect)
+                val screenHeight = rootView.height
+                val keypadHeight = screenHeight - rect.bottom
+                
+                // Get navigation bar height
+                val navigationBarHeight = ViewCompat.getRootWindowInsets(rootView)
+                    ?.getInsets(WindowInsetsCompat.Type.navigationBars())?.bottom ?: 0
+                
+                // Consider keyboard visible if it takes up more than 15% of the screen
+                val isKeyboardVisible = keypadHeight > screenHeight * 0.15
+                
+                // Update adView margin to account for navigation bar (always, not just when keyboard is visible)
+                val adView = findViewById<com.google.android.gms.ads.AdView>(R.id.adView)
+                adView?.let { ad ->
+                    val layoutParams = ad.layoutParams as? androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+                    layoutParams?.let { params ->
+                        if (params.bottomMargin != navigationBarHeight) {
+                            params.bottomMargin = navigationBarHeight
+                            ad.layoutParams = params
+                        }
+                    }
+                }
+                
+                if (isKeyboardVisible && keypadHeight != lastKeyboardHeight) {
+                    lastKeyboardHeight = keypadHeight
+                    
+                    // Keyboard is visible - add bottom padding to contentView to push content up
+                    val currentPadding = contentView.paddingBottom
+                    if (currentPadding != keypadHeight) {
+                        contentView.setPadding(
+                            contentView.paddingLeft,
+                            contentView.paddingTop,
+                            contentView.paddingRight,
+                            keypadHeight
+                        )
+                        
+                        // Scroll to show the input field
+                        messageList.postDelayed({
+                            val layoutManager = messageList.layoutManager as? LinearLayoutManager
+                            if (layoutManager != null && messageAdapter.itemCount > 0) {
+                                val lastPosition = messageAdapter.itemCount - 1
+                                if (lastPosition >= 0) {
+                                    messageList.smoothScrollToPosition(lastPosition)
+                                }
+                            }
+                        }, 100)
+                    }
+                } else if (!isKeyboardVisible && lastKeyboardHeight > 0) {
+                    // Keyboard is hidden - remove padding
+                    lastKeyboardHeight = 0
+                    contentView.setPadding(
+                        contentView.paddingLeft,
+                        contentView.paddingTop,
+                        contentView.paddingRight,
+                        0
+                    )
+                }
+            }
+        })
     }
 
     override fun onStart() {

@@ -25,8 +25,7 @@ import android.widget.Button
 import androidx.recyclerview.widget.RecyclerView
 import com.charles.messenger.R
 import com.charles.messenger.common.util.Colors
-import com.charles.messenger.common.util.extensions.resolveThemeColor
-import com.charles.messenger.common.util.extensions.setBackgroundTint
+import com.charles.messenger.common.util.extensions.getColorCompat
 
 class SuggestionChipsAdapter(
     private val onChipClicked: (String) -> Unit
@@ -62,15 +61,19 @@ class SuggestionChipsAdapter(
         fun bind(suggestion: String, theme: Colors.Theme?) {
             chip.text = suggestion
             
-            // Apply theme colors - use bubble color for background to match the compose area
-            chip.setBackgroundTint(itemView.context.resolveThemeColor(R.attr.bubbleColor))
+            val context = itemView.context
+            val isDarkMode = (context.resources.configuration.uiMode and 
+                android.content.res.Configuration.UI_MODE_NIGHT_MASK) == 
+                android.content.res.Configuration.UI_MODE_NIGHT_YES
             
-            // Set text color based on theme
-            theme?.let { theme ->
-                chip.setTextColor(theme.textPrimary)
-            } ?: run {
-                // Fallback to theme attribute if theme not set yet
-                chip.setTextColor(itemView.context.resolveThemeColor(android.R.attr.textColorPrimary))
+            if (isDarkMode) {
+                // Dark theme: dark background, white text
+                chip.setBackgroundColor(context.getColorCompat(R.color.bubbleDark))
+                chip.setTextColor(context.getColorCompat(R.color.textPrimaryDark))
+            } else {
+                // Light theme: light background, dark text
+                chip.setBackgroundColor(context.getColorCompat(R.color.bubbleLight))
+                chip.setTextColor(context.getColorCompat(R.color.textPrimary))
             }
             
             chip.setOnClickListener {

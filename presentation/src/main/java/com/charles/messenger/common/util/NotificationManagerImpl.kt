@@ -337,9 +337,11 @@ class NotificationManagerImpl @Inject constructor(
         val ollamaModel = prefs.ollamaModel.get()
         // #region agent log
         try {
-            val logFile = java.io.File("h:\\qksms\\.cursor\\debug.log")
+            android.util.Log.d("DEBUG_HYP_B", "Checking QK popup conditions: threadId=$threadId, aiAutoReplyToAll=$aiAutoReplyToAll, aiReplyEnabled=$aiReplyEnabled, qkreply=$qkreply, ollamaModel=$ollamaModel")
+            val logFile = java.io.File(context.getExternalFilesDir(null), "debug.log")
+            logFile.parentFile?.mkdirs()
             val logEntry = """{"timestamp":${System.currentTimeMillis()},"location":"NotificationManagerImpl.kt:320","message":"Checking QK popup conditions","data":{"threadId":$threadId,"aiAutoReplyToAll":$aiAutoReplyToAll,"aiReplyEnabled":$aiReplyEnabled,"qkreply":$qkreply,"ollamaModel":"$ollamaModel"},"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}""" + "\n"
-            logFile.appendText(logEntry)
+            java.io.FileWriter(logFile, true).use { it.append(logEntry) }
             Timber.d("QK Popup check: aiAutoReplyToAll=$aiAutoReplyToAll, aiReplyEnabled=$aiReplyEnabled, qkreply=$qkreply, ollamaModel=$ollamaModel")
         } catch (e: Exception) {
             Timber.e(e, "Failed to write debug log")
@@ -352,9 +354,11 @@ class NotificationManagerImpl @Inject constructor(
         }
         // #region agent log
         try {
-            val logFile = java.io.File("h:\\qksms\\.cursor\\debug.log")
+            android.util.Log.d("DEBUG_HYP_C", "QK popup decision: threadId=$threadId, shouldShowQkPopup=$shouldShowQkPopup")
+            val logFile = java.io.File(context.getExternalFilesDir(null), "debug.log")
+            logFile.parentFile?.mkdirs()
             val logEntry = """{"timestamp":${System.currentTimeMillis()},"location":"NotificationManagerImpl.kt:330","message":"QK popup decision","data":{"threadId":$threadId,"shouldShowQkPopup":$shouldShowQkPopup},"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}""" + "\n"
-            logFile.appendText(logEntry)
+            java.io.FileWriter(logFile, true).use { it.append(logEntry) }
             Timber.d("QK Popup decision: shouldShowQkPopup=$shouldShowQkPopup for threadId=$threadId")
         } catch (e: Exception) {
             Timber.e(e, "Failed to write debug log")
@@ -365,9 +369,11 @@ class NotificationManagerImpl @Inject constructor(
         if (aiReplyEnabled && ollamaModel.isNotEmpty() && !aiAutoReplyToAll) {
             // #region agent log
             try {
-                val logFile = java.io.File("h:\\qksms\\.cursor\\debug.log")
+                android.util.Log.d("DEBUG_HYP_A", "Adding smart reply action: threadId=$threadId, aiReplyEnabled=$aiReplyEnabled, ollamaModel=$ollamaModel, aiAutoReplyToAll=$aiAutoReplyToAll")
+                val logFile = java.io.File(context.getExternalFilesDir(null), "debug.log")
+                logFile.parentFile?.mkdirs()
                 val logEntry = """{"timestamp":${System.currentTimeMillis()},"location":"NotificationManagerImpl.kt:300","message":"Adding smart reply action to notification","data":{"threadId":$threadId,"aiReplyEnabled":$aiReplyEnabled,"ollamaModel":"$ollamaModel","aiAutoReplyToAll":$aiAutoReplyToAll},"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}""" + "\n"
-                logFile.appendText(logEntry)
+                java.io.FileWriter(logFile, true).use { it.append(logEntry) }
                 Timber.d("Adding smart reply action to notification for threadId=$threadId")
             } catch (e: Exception) {
                 Timber.e(e, "Failed to write debug log")
@@ -397,27 +403,10 @@ class NotificationManagerImpl @Inject constructor(
             val intent = Intent(context, QkReplyActivity::class.java)
                     .putExtra("threadId", threadId)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            // #region agent log
-            try {
-                val logFile = java.io.File("h:\\qksms\\.cursor\\debug.log")
-                val logEntry = """{"timestamp":${System.currentTimeMillis()},"location":"NotificationManagerImpl.kt:340","message":"Starting QK popup activity","data":{"threadId":$threadId},"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}""" + "\n"
-                logFile.appendText(logEntry)
-                Timber.d("Starting QK popup activity for threadId=$threadId")
-            } catch (e: Exception) {
-                Timber.e(e, "Failed to write debug log")
-            }
-            // #endregion
             try {
                 context.startActivity(intent)
             } catch (e: Exception) {
-                // #region agent log
-                try {
-                    val logFile = java.io.File("h:\\qksms\\.cursor\\debug.log")
-                    val logEntry = """{"timestamp":${System.currentTimeMillis()},"location":"NotificationManagerImpl.kt:350","message":"Failed to start QK popup activity","data":{"threadId":$threadId,"error":"${e.message}"},"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}""" + "\n"
-                    logFile.appendText(logEntry)
-                    Timber.e(e, "Failed to start QK popup activity")
-                } catch (e2: Exception) {}
-                // #endregion
+                Timber.e(e, "Failed to start QK popup activity")
             }
         }
 
@@ -480,7 +469,10 @@ class NotificationManagerImpl @Inject constructor(
     private fun getReplyAction(threadId: Long): NotificationCompat.Action {
         val replyIntent = Intent(context, RemoteMessagingReceiver::class.java).putExtra("threadId", threadId)
         val replyPI = PendingIntent.getBroadcast(context, threadId.toInt(), replyIntent,
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    // Android 12+ (API 31+) requires FLAG_MUTABLE for PendingIntents with RemoteInput
+                    PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
                 } else {
                     PendingIntent.FLAG_UPDATE_CURRENT

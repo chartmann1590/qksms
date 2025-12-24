@@ -524,6 +524,19 @@
     <string name="ai_settings_auto_reply_warning">⚠️ Warning: When enabled, AI will automatically reply to ALL incoming SMS messages until disabled. Disable at any time from this screen.</string>
     <string name="compose_smart_reply_cd">Generate smart reply suggestions</string>
     <string name="notification_smart_reply">Smart Reply</string>
+    <string name="ai_settings_persona">AI Persona</string>
+    <string name="ai_settings_persona_summary">Define how the AI should respond</string>
+    <string name="ai_settings_persona_dialog_title">AI Persona</string>
+    <string name="ai_settings_persona_dialog_hint">Enter a persona description (e.g., &quot;You are a friendly and professional assistant&quot;)</string>
+    <string name="ai_settings_signature_enable">Append AI Signature to Auto-Replies</string>
+    <string name="ai_settings_signature_enable_summary">Add a signature to AI-generated auto-replies</string>
+    <string name="ai_settings_signature_text">Signature Text</string>
+    <string name="ai_settings_signature_text_summary">Customize the signature text</string>
+    <string name="ai_settings_signature_dialog_title">AI Signature Text</string>
+    <string name="ai_settings_signature_dialog_hint">Enter the signature text to append to auto-replies</string>
+    <string name="ai_settings_signature_preview">Preview:</string>
+    <string name="ai_settings_signature_example">Example message text</string>
+    <string name="ai_settings_persona_not_set">Not set</string>
 
     <!-- Auto-Reply Notification -->
     <string name="ai_auto_reply_notification_title">AI Auto-Reply Active</string>

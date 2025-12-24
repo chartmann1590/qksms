@@ -41,11 +41,13 @@ interface OllamaRepository {
      * @param baseUrl The base URL of the Ollama API
      * @param model The name of the model to use (e.g., "llama2")
      * @param conversationContext Recent messages from the conversation (last 10)
+     * @param persona Optional persona description to guide AI responses
      * @return Single emitting list of 3-5 suggested reply strings
      */
     fun generateReplySuggestions(
         baseUrl: String,
         model: String,
-        conversationContext: List<Message>
+        conversationContext: List<Message>,
+        persona: String? = null
     ): Single<List<String>>
 }

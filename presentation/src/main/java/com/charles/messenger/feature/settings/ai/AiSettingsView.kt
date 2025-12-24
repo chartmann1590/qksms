@@ -30,8 +30,13 @@ interface AiSettingsView : QkViewContract<AiSettingsState> {
     fun ollamaUrlChanged(): Observable<String>
     fun modelSelected(): Observable<String>
     fun autoReplyToAllChanged(): Observable<Boolean>
+    fun personaChanged(): Observable<String>
+    fun signatureEnabledChanged(): Observable<Boolean>
+    fun signatureTextChanged(): Observable<String>
 
     fun showToast(message: String)
     fun showModelPicker(models: List<String>, selected: String)
     fun showUrlInputDialog(currentUrl: String)
+    fun showPersonaInputDialog(currentPersona: String)
+    fun showSignatureInputDialog(currentSignature: String)
 }

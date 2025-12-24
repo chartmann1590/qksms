@@ -159,6 +159,17 @@ class SettingsController : QkController<SettingsView, SettingsState, SettingsPre
                         switch.isClickable = false
                         switch.isFocusable = false
                     }
+                    // Make theme widget non-clickable so clicks pass through to parent PreferenceView
+                    if (preference.id == R.id.theme) {
+                        preference.widget?.isClickable = false
+                        preference.widget?.isFocusable = false
+                        preference.widget?.descendantFocusability = android.view.ViewGroup.FOCUS_BLOCK_DESCENDANTS
+                        // Also make the themePreview view non-clickable
+                        preference.widget?.findViewById<android.view.View>(R.id.themePreview)?.let { preview ->
+                            preview.isClickable = false
+                            preview.isFocusable = false
+                        }
+                    }
                     preference.setOnClickListener { 
                         preferenceClickSubject.onNext(preference)
                     }
@@ -170,12 +181,9 @@ class SettingsController : QkController<SettingsView, SettingsState, SettingsPre
 
         // preferences.postDelayed({ preferences.animateLayoutChanges = true }, 100)
 
-        when (Build.VERSION.SDK_INT >= 29) {
-            true -> nightModeDialog.adapter.setData(R.array.night_modes)
-            false -> nightModeDialog.adapter.data = context.resources.getStringArray(R.array.night_modes)
-                    .mapIndexed { index, title -> MenuItem(title, index) }
-                    .drop(1)
-        }
+        // Always show all night mode options (System, Disabled, Always on, Automatic)
+        // AppCompat supports MODE_NIGHT_FOLLOW_SYSTEM on all API levels
+        nightModeDialog.adapter.setData(R.array.night_modes)
         textSizeDialog.adapter.setData(R.array.text_sizes)
         sendDelayDialog.adapter.setData(R.array.delayed_sending_labels)
         mmsSizeDialog.adapter.setData(R.array.mms_sizes, R.array.mms_sizes_ids)
@@ -193,31 +201,9 @@ class SettingsController : QkController<SettingsView, SettingsState, SettingsPre
     }
 
     override fun preferenceClicks(): Observable<PreferenceView> {
-        // #region agent log
-        com.charles.messenger.util.DebugLogger.log(
-            location = "SettingsController.kt:194",
-            message = "preferenceClicks called",
-            data = mapOf("preferencesInitialized" to ::preferences.isInitialized),
-            hypothesisId = "H1"
-        )
-        // #endregion
         if (!::preferences.isInitialized) {
-            // #region agent log
-            com.charles.messenger.util.DebugLogger.log(
-                location = "SettingsController.kt:197",
-                message = "preferences not initialized, returning empty",
-                hypothesisId = "H1"
-            )
-            // #endregion
             return Observable.empty()
         }
-        // #region agent log
-        com.charles.messenger.util.DebugLogger.log(
-            location = "SettingsController.kt:199",
-            message = "preferences initialized, returning subject",
-            hypothesisId = "H1"
-        )
-        // #endregion
         return preferenceClickSubject
     }
 
@@ -390,27 +376,11 @@ class SettingsController : QkController<SettingsView, SettingsState, SettingsPre
     }
 
     override fun showAiSettings() {
-        // #region agent log
-        com.charles.messenger.util.DebugLogger.log(
-            location = "SettingsController.kt:391",
-            message = "showAiSettings called",
-            data = mapOf("routerNull" to (router == null)),
-            hypothesisId = "H3"
-        )
-        // #endregion
         try {
             router?.pushController(RouterTransaction.with(com.charles.messenger.feature.settings.ai.AiSettingsController())
                     .pushChangeHandler(QkChangeHandler())
                     .popChangeHandler(QkChangeHandler()))
         } catch (e: Exception) {
-            // #region agent log
-            com.charles.messenger.util.DebugLogger.log(
-                location = "SettingsController.kt:395",
-                message = "Error in showAiSettings",
-                data = mapOf("error" to e.message, "errorType" to e.javaClass.simpleName),
-                hypothesisId = "H3"
-            )
-            // #endregion
             Timber.e(e, "Error showing AI Settings")
         }
     }

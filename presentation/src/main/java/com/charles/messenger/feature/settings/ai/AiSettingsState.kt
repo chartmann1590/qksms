@@ -27,7 +27,10 @@ data class AiSettingsState(
     val availableModels: List<OllamaModel> = emptyList(),
     val loadingModels: Boolean = false,
     val connectionStatus: ConnectionStatus = ConnectionStatus.Unknown,
-    val autoReplyToAll: Boolean = false
+    val autoReplyToAll: Boolean = false,
+    val persona: String = "",
+    val signatureEnabled: Boolean = false,
+    val signatureText: String = ""
 )
 
 enum class ConnectionStatus {

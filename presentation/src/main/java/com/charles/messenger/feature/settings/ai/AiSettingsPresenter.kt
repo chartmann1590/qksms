@@ -36,7 +36,10 @@ class AiSettingsPresenter @Inject constructor(
         aiEnabled = false,
         ollamaUrl = "",
         selectedModel = "",
-        autoReplyToAll = false
+        autoReplyToAll = false,
+        persona = "",
+        signatureEnabled = false,
+        signatureText = ""
     )
 ) {
 
@@ -49,7 +52,10 @@ class AiSettingsPresenter @Inject constructor(
                 aiEnabled = prefs.aiReplyEnabled.get(),
                 ollamaUrl = prefs.ollamaApiUrl.get(),
                 selectedModel = prefs.ollamaModel.get(),
-                autoReplyToAll = prefs.aiAutoReplyToAll.get()
+                autoReplyToAll = prefs.aiAutoReplyToAll.get(),
+                persona = prefs.aiPersona.get(),
+                signatureEnabled = prefs.aiSignatureEnabled.get(),
+                signatureText = prefs.aiSignatureText.get()
             )
         }
 
@@ -107,6 +113,39 @@ class AiSettingsPresenter @Inject constructor(
                 } else {
                     view.showToast("Auto-reply disabled")
                 }
+            }
+
+        // Handle persona changes
+        view.personaChanged()
+            .doOnNext { persona ->
+                prefs.aiPersona.set(persona)
+                Timber.d("AI Persona updated")
+            }
+            .autoDisposable(view.scope())
+            .subscribe { persona ->
+                newState { copy(persona = persona) }
+            }
+
+        // Handle signature toggle
+        view.signatureEnabledChanged()
+            .doOnNext { enabled ->
+                prefs.aiSignatureEnabled.set(enabled)
+                Timber.d("AI Signature enabled: $enabled")
+            }
+            .autoDisposable(view.scope())
+            .subscribe { enabled ->
+                newState { copy(signatureEnabled = enabled) }
+            }
+
+        // Handle signature text changes
+        view.signatureTextChanged()
+            .doOnNext { text ->
+                prefs.aiSignatureText.set(text)
+                Timber.d("AI Signature text updated")
+            }
+            .autoDisposable(view.scope())
+            .subscribe { text ->
+                newState { copy(signatureText = text) }
             }
 
         // Handle test connection

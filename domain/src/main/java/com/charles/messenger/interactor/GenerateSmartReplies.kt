@@ -33,14 +33,16 @@ class GenerateSmartReplies @Inject constructor(
     data class Params(
         val baseUrl: String,
         val model: String,
-        val messages: List<Message>
+        val messages: List<Message>,
+        val persona: String? = null
     )
 
     override fun buildObservable(params: Params): Flowable<List<String>> {
         return ollamaRepository.generateReplySuggestions(
             baseUrl = params.baseUrl,
             model = params.model,
-            conversationContext = params.messages
+            conversationContext = params.messages,
+            persona = params.persona
         ).toFlowable()
     }
 }

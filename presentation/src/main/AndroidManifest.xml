@@ -70,7 +70,8 @@
         <activity
             android:name="com.charles.messenger.feature.compose.ComposeActivity"
             android:exported="true"
-            android:parentActivityName="com.charles.messenger.feature.main.MainActivity">
+            android:parentActivityName="com.charles.messenger.feature.main.MainActivity"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.MAIN" />

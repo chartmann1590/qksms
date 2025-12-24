@@ -84,6 +84,16 @@
 
         <View style="@style/Divider" />
 
+        <!-- AI Persona -->
+        <com.charles.messenger.common.widget.PreferenceView
+            android:id="@+id/aiPersona"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:title="@string/ai_settings_persona"
+            app:summary="@string/ai_settings_persona_summary" />
+
+        <View style="@style/Divider" />
+
         <!-- Auto-Reply to All Toggle -->
         <com.charles.messenger.common.widget.PreferenceView
             android:id="@+id/aiAutoReplyToAll"
@@ -102,6 +112,38 @@
             android:text="@string/ai_settings_auto_reply_warning"
             android:textColor="#D32F2F"
             android:textSize="12sp"
+            android:visibility="gone" />
+
+        <View style="@style/Divider" />
+
+        <!-- AI Signature Toggle -->
+        <com.charles.messenger.common.widget.PreferenceView
+            android:id="@+id/aiSignatureEnabled"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:title="@string/ai_settings_signature_enable"
+            app:summary="@string/ai_settings_signature_enable_summary"
+            app:widget="@layout/settings_switch_widget" />
+
+        <!-- Signature Text -->
+        <com.charles.messenger.common.widget.PreferenceView
+            android:id="@+id/aiSignatureText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:title="@string/ai_settings_signature_text"
+            app:summary="@string/ai_settings_signature_text_summary" />
+
+        <!-- Signature Preview -->
+        <TextView
+            android:id="@+id/signaturePreview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="16dp"
+            android:textSize="12sp"
+            android:textColor="?android:attr/textColorSecondary"
             android:visibility="gone" />
 
     </LinearLayout>

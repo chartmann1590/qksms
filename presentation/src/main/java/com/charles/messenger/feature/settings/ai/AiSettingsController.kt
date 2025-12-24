@@ -43,6 +43,8 @@ class AiSettingsController : QkController<AiSettingsView, AiSettingsState, AiSet
 
     private val urlChangedSubject: Subject<String> = PublishSubject.create()
     private val modelSelectedSubject: Subject<String> = PublishSubject.create()
+    private val personaChangedSubject: Subject<String> = PublishSubject.create()
+    private val signatureTextChangedSubject: Subject<String> = PublishSubject.create()
 
     private lateinit var preferences: LinearLayout
     private lateinit var aiEnabled: PreferenceView
@@ -52,6 +54,10 @@ class AiSettingsController : QkController<AiSettingsView, AiSettingsState, AiSet
     private lateinit var connectionStatus: TextView
     private lateinit var aiAutoReplyToAll: PreferenceView
     private lateinit var autoReplyWarning: TextView
+    private lateinit var aiPersona: PreferenceView
+    private lateinit var aiSignatureEnabled: PreferenceView
+    private lateinit var aiSignatureText: PreferenceView
+    private lateinit var signaturePreview: TextView
 
     init {
         appComponent.inject(this)
@@ -75,6 +81,10 @@ class AiSettingsController : QkController<AiSettingsView, AiSettingsState, AiSet
         connectionStatus = view.findViewById(R.id.connectionStatus)
         aiAutoReplyToAll = view.findViewById(R.id.aiAutoReplyToAll)
         autoReplyWarning = view.findViewById(R.id.autoReplyWarning)
+        aiPersona = view.findViewById(R.id.aiPersona)
+        aiSignatureEnabled = view.findViewById(R.id.aiSignatureEnabled)
+        aiSignatureText = view.findViewById(R.id.aiSignatureText)
+        signaturePreview = view.findViewById(R.id.signaturePreview)
         
         // #region agent log
         com.charles.messenger.util.DebugLogger.log(
@@ -101,6 +111,11 @@ class AiSettingsController : QkController<AiSettingsView, AiSettingsState, AiSet
 
         aiAutoReplyToAll.clicks().subscribe {
             val switch = aiAutoReplyToAll.widget?.findViewById<QkSwitch>(R.id.checkbox)
+            switch?.isChecked = !(switch?.isChecked ?: false)
+        }
+
+        aiSignatureEnabled.clicks().subscribe {
+            val switch = aiSignatureEnabled.widget?.findViewById<QkSwitch>(R.id.checkbox)
             switch?.isChecked = !(switch?.isChecked ?: false)
         }
     }
@@ -161,6 +176,18 @@ class AiSettingsController : QkController<AiSettingsView, AiSettingsState, AiSet
         } ?: Observable.empty()
     }
 
+    override fun personaChanged(): Observable<String> = personaChangedSubject
+
+    override fun signatureEnabledChanged(): Observable<Boolean> {
+        return aiSignatureEnabled.widget?.let { widget ->
+            (widget.findViewById<View>(R.id.checkbox) as? QkSwitch)
+                ?.checkedChanges()
+                ?.skipInitialValue()
+        } ?: Observable.empty()
+    }
+
+    override fun signatureTextChanged(): Observable<String> = signatureTextChangedSubject
+
     override fun showToast(message: String) {
         Toast.makeText(activity, message, Toast.LENGTH_SHORT).show()
     }
@@ -199,6 +226,44 @@ class AiSettingsController : QkController<AiSettingsView, AiSettingsState, AiSet
                 if (url.isNotEmpty()) {
                     urlChangedSubject.onNext(url)
                 }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    override fun showPersonaInputDialog(currentPersona: String) {
+        val editText = EditText(activity!!).apply {
+            setText(currentPersona)
+            hint = activity!!.getString(R.string.ai_settings_persona_dialog_hint)
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
+            minLines = 3
+            maxLines = 5
+        }
+
+        AlertDialog.Builder(activity!!)
+            .setTitle(R.string.ai_settings_persona_dialog_title)
+            .setView(editText)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                val persona = editText.text.toString().trim()
+                personaChangedSubject.onNext(persona)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    override fun showSignatureInputDialog(currentSignature: String) {
+        val editText = EditText(activity!!).apply {
+            setText(currentSignature)
+            hint = activity!!.getString(R.string.ai_settings_signature_dialog_hint)
+            setSingleLine()
+        }
+
+        AlertDialog.Builder(activity)
+            .setTitle(R.string.ai_settings_signature_dialog_title)
+            .setView(editText)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                val signature = editText.text.toString().trim()
+                signatureTextChangedSubject.onNext(signature)
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
@@ -255,5 +320,44 @@ class AiSettingsController : QkController<AiSettingsView, AiSettingsState, AiSet
 
         // Show/hide warning based on auto-reply state
         autoReplyWarning.visibility = if (state.autoReplyToAll) View.VISIBLE else View.GONE
+
+        // Update persona summary
+        aiPersona.summary = if (state.persona.isNotEmpty()) {
+            if (state.persona.length > 50) {
+                state.persona.take(50) + "..."
+            } else {
+                state.persona
+            }
+        } else {
+            activity!!.getString(R.string.ai_settings_persona_not_set)
+        }
+
+        // Handle persona click
+        aiPersona.clicks().subscribe {
+            showPersonaInputDialog(state.persona)
+        }
+
+        // Update signature toggle
+        aiSignatureEnabled.widget?.let { widget ->
+            (widget.findViewById<View>(R.id.checkbox) as? QkSwitch)?.isChecked = state.signatureEnabled
+        }
+
+        // Update signature text summary
+        aiSignatureText.summary = state.signatureText
+
+        // Handle signature text click
+        aiSignatureText.clicks().subscribe {
+            showSignatureInputDialog(state.signatureText)
+        }
+
+        // Update signature preview
+        if (state.signatureEnabled && state.signatureText.isNotEmpty()) {
+            val exampleText = activity!!.getString(R.string.ai_settings_signature_example)
+            signaturePreview.text = activity!!.getString(R.string.ai_settings_signature_preview) + "\n" +
+                    exampleText + "\n\n" + state.signatureText
+            signaturePreview.visibility = View.VISIBLE
+        } else {
+            signaturePreview.visibility = View.GONE
+        }
     }
 }

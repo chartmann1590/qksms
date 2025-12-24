@@ -237,17 +237,123 @@ class QkReplyViewModel @Inject constructor(
                 }
                 .withLatestFrom(conversation) { _, conv -> conv }
                 .map { conv ->
+                    // #region agent log
+                    try {
+                        val logFile = java.io.File("h:\\qksms\\.cursor\\debug.log")
+                        val logEntry = org.json.JSONObject().apply {
+                            put("timestamp", System.currentTimeMillis())
+                            put("location", "QkReplyViewModel.kt:238")
+                            put("message", "Entry to message retrieval map")
+                            put("data", org.json.JSONObject().apply {
+                                put("conversationNull", conv == null)
+                                put("conversationId", conv?.id ?: -1L)
+                            })
+                            put("sessionId", "debug-session")
+                            put("runId", "run1")
+                            put("hypothesisId", "H1")
+                        }
+                        java.io.FileWriter(logFile, true).use { it.append(logEntry.toString() + "\n") }
+                    } catch (e: Exception) {
+                        Timber.e(e, "Failed to write debug log")
+                    }
+                    // #endregion
+                    
                     // Get messages on main thread (Realm requires this)
-                    val recentMessages = messageRepo.getMessages(conv.id).toList().takeLast(10)
-                    Pair(conv, recentMessages)
+                    // Use a fresh Realm instance to get messages synchronously and copy them
+                    val realm = io.realm.Realm.getDefaultInstance()
+                    try {
+                        realm.refresh()
+                        val realmMessages = realm.where(com.charles.messenger.model.Message::class.java)
+                            .equalTo("threadId", conv.id)
+                            .sort("date")
+                            .findAll()
+                        
+                        // #region agent log
+                        try {
+                            val logFile = java.io.File("h:\\qksms\\.cursor\\debug.log")
+                            val logEntry = org.json.JSONObject().apply {
+                                put("timestamp", System.currentTimeMillis())
+                                put("location", "QkReplyViewModel.kt:247")
+                                put("message", "After Realm query")
+                                put("data", org.json.JSONObject().apply {
+                                    put("realmMessagesSize", realmMessages.size)
+                                    put("threadId", conv.id)
+                                })
+                                put("sessionId", "debug-session")
+                                put("runId", "run1")
+                                put("hypothesisId", "H2")
+                            }
+                            java.io.FileWriter(logFile, true).use { it.append(logEntry.toString() + "\n") }
+                        } catch (e: Exception) {
+                            Timber.e(e, "Failed to write debug log")
+                        }
+                        // #endregion
+                        
+                        // Copy to unmanaged list to use across threads
+                        val allMessages = realm.copyFromRealm(realmMessages)
+                        
+                        // #region agent log
+                        try {
+                            val logFile = java.io.File("h:\\qksms\\.cursor\\debug.log")
+                            val logEntry = org.json.JSONObject().apply {
+                                put("timestamp", System.currentTimeMillis())
+                                put("location", "QkReplyViewModel.kt:250")
+                                put("message", "After copyFromRealm")
+                                put("data", org.json.JSONObject().apply {
+                                    put("allMessagesSize", allMessages.size)
+                                    put("allMessagesNull", allMessages == null)
+                                })
+                                put("sessionId", "debug-session")
+                                put("runId", "run1")
+                                put("hypothesisId", "H3")
+                            }
+                            java.io.FileWriter(logFile, true).use { it.append(logEntry.toString() + "\n") }
+                        } catch (e: Exception) {
+                            Timber.e(e, "Failed to write debug log")
+                        }
+                        // #endregion
+                        
+                        val recentMessages = allMessages.takeLast(10)
+                        
+                        // #region agent log
+                        try {
+                            val logFile = java.io.File("h:\\qksms\\.cursor\\debug.log")
+                            val logEntry = org.json.JSONObject().apply {
+                                put("timestamp", System.currentTimeMillis())
+                                put("location", "QkReplyViewModel.kt:251")
+                                put("message", "Before returning Pair")
+                                put("data", org.json.JSONObject().apply {
+                                    put("recentMessagesSize", recentMessages.size)
+                                    put("recentMessagesNull", recentMessages == null)
+                                })
+                                put("sessionId", "debug-session")
+                                put("runId", "run1")
+                                put("hypothesisId", "H4")
+                            }
+                            java.io.FileWriter(logFile, true).use { it.append(logEntry.toString() + "\n") }
+                        } catch (e: Exception) {
+                            Timber.e(e, "Failed to write debug log")
+                        }
+                        // #endregion
+                        
+                        Timber.d("QkReplyViewModel: Retrieved ${allMessages.size} total messages, using last ${recentMessages.size} for smart reply")
+                        recentMessages.forEachIndexed { index, msg ->
+                            Timber.d("QkReplyViewModel: Message $index: isMe=${msg.isMe()}, body='${msg.body.take(50)}...'")
+                        }
+                        Pair(conv, recentMessages)
+                    } finally {
+                        realm.close()
+                    }
                 }
                 .observeOn(Schedulers.io())
                 .switchMap { (_, recentMessages) ->
+                    val persona = prefs.aiPersona.get().takeIf { it.isNotEmpty() }
                     generateSmartReplies.buildObservable(
                         GenerateSmartReplies.Params(
                             baseUrl = prefs.ollamaApiUrl.get(),
                             model = prefs.ollamaModel.get(),
-                            messages = recentMessages
+                            messages = recentMessages,
+                            persona = persona
                         )
                     ).toObservable()
                 }

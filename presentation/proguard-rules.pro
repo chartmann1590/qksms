@@ -125,3 +125,6 @@
 
 # Keep Application Code (Prevent aggressive shrinking destroying functionality)
 -keep class com.charles.messenger.** { *; }
+
+# Keep debug logging code for runtime debugging
+-keep class com.charles.messenger.feature.themepicker.ThemePickerController { *; }

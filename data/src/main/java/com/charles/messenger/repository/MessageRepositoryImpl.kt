@@ -445,13 +445,23 @@ class MessageRepositoryImpl @Inject constructor(
 
         val sentIntents = parts.map {
             val intent = Intent(context, SmsSentReceiver::class.java).putExtra("id", message.id)
-            PendingIntent.getBroadcast(context, message.id.toInt(), intent, PendingIntent.FLAG_UPDATE_CURRENT)
+            PendingIntent.getBroadcast(context, message.id.toInt(), intent,
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                    } else {
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                    })
         }
 
         val deliveredIntents = parts.map {
             val intent = Intent(context, SmsDeliveredReceiver::class.java).putExtra("id", message.id)
             val pendingIntent = PendingIntent
-                    .getBroadcast(context, message.id.toInt(), intent, PendingIntent.FLAG_UPDATE_CURRENT)
+                    .getBroadcast(context, message.id.toInt(), intent,
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                            } else {
+                                PendingIntent.FLAG_UPDATE_CURRENT
+                            })
             if (prefs.delivery.get()) pendingIntent else null
         }
 
@@ -465,6 +475,9 @@ class MessageRepositoryImpl @Inject constructor(
             )
         } catch (e: IllegalArgumentException) {
             Timber.w(e, "Message body lengths: ${parts.map { it?.length }}")
+            markFailed(message.id, Telephony.MmsSms.ERR_TYPE_GENERIC)
+        } catch (e: SecurityException) {
+            Timber.w(e, "SecurityException sending SMS")
             markFailed(message.id, Telephony.MmsSms.ERR_TYPE_GENERIC)
         }
     }
@@ -495,7 +508,12 @@ class MessageRepositoryImpl @Inject constructor(
 
     private fun getIntentForDelayedSms(id: Long): PendingIntent {
         val intent = Intent(context, SendSmsReceiver::class.java).putExtra("id", id)
-        return PendingIntent.getBroadcast(context, id.toInt(), intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        return PendingIntent.getBroadcast(context, id.toInt(), intent,
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                } else {
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                })
     }
 
     override fun insertSentSms(subId: Int, threadId: Long, address: String, body: String, date: Long): Message {

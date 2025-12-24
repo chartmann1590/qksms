@@ -122,11 +122,13 @@ class AiAutoReplyReceiver : BroadcastReceiver() {
                 val recipientAddress = recipient.address
 
                 // Generate smart replies on IO thread
+                val persona = prefs.aiPersona.get().takeIf { it.isNotEmpty() }
                 generateSmartReplies
                     .buildObservable(GenerateSmartReplies.Params(
                         baseUrl = prefs.ollamaApiUrl.get(),
                         model = prefs.ollamaModel.get(),
-                        messages = messages
+                        messages = messages,
+                        persona = persona
                     ))
                     .subscribeOn(Schedulers.io())
                     .firstOrError()
@@ -136,7 +138,14 @@ class AiAutoReplyReceiver : BroadcastReceiver() {
                             return@flatMap Single.error<Unit>(Exception("No suggestions available"))
                         }
 
-                        val replyText = suggestions.first()
+                        var replyText = suggestions.first()
+                        
+                        // Append signature if enabled
+                        if (prefs.aiSignatureEnabled.get() && prefs.aiSignatureText.get().isNotEmpty()) {
+                            replyText = "$replyText\n\n${prefs.aiSignatureText.get()}"
+                            Timber.d("Appended signature to auto-reply")
+                        }
+                        
                         Timber.d("Auto-replying with: $replyText")
 
                         sendMessage.buildObservable(SendMessage.Params(

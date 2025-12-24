@@ -24,6 +24,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?android:attr/windowBackground"
+    android:fitsSystemWindows="false"
     android:orientation="vertical"
     tools:context="com.charles.messenger.feature.compose.ComposeActivity">
 
