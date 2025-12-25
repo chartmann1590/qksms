@@ -38,6 +38,7 @@ import com.charles.messenger.feature.conversationinfo.ConversationInfoActivity
 import com.charles.messenger.feature.gallery.GalleryActivity
 import com.charles.messenger.feature.notificationprefs.NotificationPrefsActivity
 import com.charles.messenger.feature.plus.PlusActivity
+import com.charles.messenger.feature.rewards.RewardsActivity
 import com.charles.messenger.feature.scheduled.ScheduledActivity
 import com.charles.messenger.feature.settings.SettingsActivity
 import com.charles.messenger.manager.AnalyticsManager
@@ -169,6 +170,12 @@ class Navigator @Inject constructor(
 
     fun showBlockedConversations() {
         val intent = Intent(context, BlockingActivity::class.java)
+        startActivity(intent)
+    }
+
+    fun showRewards() {
+        analyticsManager.track("Viewed Rewards")
+        val intent = Intent(context, RewardsActivity::class.java)
         startActivity(intent)
     }
 

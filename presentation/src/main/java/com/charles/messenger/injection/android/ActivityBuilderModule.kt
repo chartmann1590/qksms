@@ -35,6 +35,8 @@ import com.charles.messenger.feature.plus.PlusActivity
 import com.charles.messenger.feature.plus.PlusActivityModule
 import com.charles.messenger.feature.qkreply.QkReplyActivity
 import com.charles.messenger.feature.qkreply.QkReplyActivityModule
+import com.charles.messenger.feature.rewards.RewardsActivity
+import com.charles.messenger.feature.rewards.RewardsActivityModule
 import com.charles.messenger.feature.scheduled.ScheduledActivity
 import com.charles.messenger.feature.scheduled.ScheduledActivityModule
 import com.charles.messenger.feature.settings.SettingsActivity
@@ -92,5 +94,9 @@ abstract class ActivityBuilderModule {
     @ActivityScope
     @ContributesAndroidInjector(modules = [])
     abstract fun bindBlockingActivity(): BlockingActivity
+
+    @ActivityScope
+    @ContributesAndroidInjector(modules = [RewardsActivityModule::class])
+    abstract fun bindRewardsActivity(): RewardsActivity
 
 }

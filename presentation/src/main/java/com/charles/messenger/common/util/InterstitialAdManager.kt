@@ -20,7 +20,8 @@ import com.charles.messenger.BuildConfig
 
 @Singleton
 class InterstitialAdManager @Inject constructor(
-    private val billingManager: BillingManager
+    private val billingManager: BillingManager,
+    private val rewardedAdManager: RewardedAdManager
 ) {
 
     companion object {
@@ -126,7 +127,8 @@ class InterstitialAdManager @Inject constructor(
             message = "maybeShowAd called",
             data = mapOf(
                 "isUpgraded" to isUpgraded.toString(),
-                "hasAd" to (interstitialAd != null).toString()
+                "hasAd" to (interstitialAd != null).toString(),
+                "isAdFree" to rewardedAdManager.isAdFree().toString()
             ),
             hypothesisId = "H7"
         )
@@ -141,6 +143,12 @@ class InterstitialAdManager @Inject constructor(
             )
             // #endregion
             Timber.d("User is upgraded, skipping interstitial ad")
+            return false
+        }
+
+        // Don't show ads during ad-free period from rewards
+        if (rewardedAdManager.isAdFree()) {
+            Timber.d("User is in ad-free period from rewards, skipping interstitial ad")
             return false
         }
 

@@ -302,6 +302,7 @@ class MainViewModel @Inject constructor(
                         NavItem.BACKUP -> navigator.showBackup()
                         NavItem.SCHEDULED -> navigator.showScheduled()
                         NavItem.BLOCKING -> navigator.showBlockedConversations()
+                        NavItem.REWARDS -> navigator.showRewards()
                         NavItem.SETTINGS -> navigator.showSettings()
                         NavItem.PLUS -> navigator.showQksmsPlusActivity("main_menu")
                         NavItem.HELP -> navigator.showSupport()

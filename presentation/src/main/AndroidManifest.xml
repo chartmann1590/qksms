@@ -58,7 +58,8 @@
         <activity
             android:name="com.charles.messenger.feature.main.MainActivity"
             android:exported="true"
-            android:launchMode="singleTask">
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -112,23 +113,42 @@
                 android:name="android.service.chooser.chooser_target_service"
                 android:value=".common.util.QkChooserTargetService" />
         </activity>
-        <activity android:name="com.charles.messenger.feature.settings.SettingsActivity" />
-        <activity android:name="com.charles.messenger.feature.plus.PlusActivity" />
+        <activity
+            android:name="com.charles.messenger.feature.settings.SettingsActivity"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name="com.charles.messenger.feature.plus.PlusActivity"
+            android:windowSoftInputMode="adjustPan" />
         <activity
             android:name="com.charles.messenger.feature.gallery.GalleryActivity"
             android:theme="@style/AppTheme.Black" />
-        <activity android:name="com.charles.messenger.feature.conversationinfo.ConversationInfoActivity" />
-        <activity android:name="com.charles.messenger.feature.notificationprefs.NotificationPrefsActivity" />
-        <activity android:name="com.charles.messenger.feature.blocking.BlockingActivity" />
+        <activity
+            android:name="com.charles.messenger.feature.conversationinfo.ConversationInfoActivity"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name="com.charles.messenger.feature.notificationprefs.NotificationPrefsActivity"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name="com.charles.messenger.feature.blocking.BlockingActivity"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name="com.charles.messenger.feature.rewards.RewardsActivity"
+            android:windowSoftInputMode="adjustPan" />
         <activity
             android:name="com.charles.messenger.feature.qkreply.QkReplyActivity"
             android:excludeFromRecents="true"
             android:taskAffinity=""
             android:theme="@style/AppThemeDialog"
             android:windowSoftInputMode="adjustResize" />
-        <activity android:name="com.charles.messenger.feature.scheduled.ScheduledActivity" />
-        <activity android:name="com.charles.messenger.feature.backup.BackupActivity" />
-        <activity android:name="com.charles.messenger.feature.contacts.ContactsActivity" />
+        <activity
+            android:name="com.charles.messenger.feature.scheduled.ScheduledActivity"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name="com.charles.messenger.feature.backup.BackupActivity"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name="com.charles.messenger.feature.contacts.ContactsActivity"
+            android:windowSoftInputMode="adjustPan" />
 
         <receiver android:name="com.charles.messenger.receiver.BootReceiver"
             android:exported="true">

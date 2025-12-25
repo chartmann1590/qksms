@@ -41,8 +41,8 @@ android {
         applicationId "com.charles.messenger.v2"
         minSdkVersion 21
         targetSdkVersion 35
-        versionCode 2226
-        versionName "3.9.9"
+        versionCode 2227
+        versionName "3.10.0"
         setProperty("archivesBaseName", "messenger-v${versionName}")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -50,6 +50,7 @@ android {
 
         // Use test ad IDs for debug builds, production IDs for release
         buildConfigField "String", "ADMOB_INTERSTITIAL_ID", "\"" + localProperties['ADMOB_INTERSTITIAL_ID'] + "\""
+        buildConfigField "String", "ADMOB_REWARDED_ID", "\"" + localProperties['ADMOB_REWARDED_ID'] + "\""
         buildConfigField "Boolean", "USE_TEST_ADS", "false"
         resValue "string", "admob_banner_id", localProperties['ADMOB_BANNER_ID']
         manifestPlaceholders = [ADMOB_APP_ID: localProperties['ADMOB_APP_ID']]
@@ -64,6 +65,7 @@ android {
             // Use Google's test ad IDs for debug builds
             buildConfigField "Boolean", "USE_TEST_ADS", "true"
             buildConfigField "String", "ADMOB_INTERSTITIAL_ID", "\"ca-app-pub-3940256099942544/1033173712\""
+            buildConfigField "String", "ADMOB_REWARDED_ID", "\"ca-app-pub-3940256099942544/5224354917\""
             resValue "string", "admob_banner_id", "ca-app-pub-3940256099942544/6300978111"
             manifestPlaceholders = [ADMOB_APP_ID: "ca-app-pub-3940256099942544~3347511713"]
         }

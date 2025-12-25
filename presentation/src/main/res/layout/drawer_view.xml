@@ -139,6 +139,22 @@
 
         </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/rewards"
+            style="@style/DrawerRow"
+            android:visibility="gone">
+
+            <ImageView
+                style="@style/DrawerIcon"
+                android:src="@drawable/ic_star_black_24dp"
+                android:tint="?android:attr/textColorSecondary" />
+
+            <com.charles.messenger.common.widget.QkTextView
+                style="@style/DrawerText"
+                android:text="@string/drawer_rewards" />
+
+        </LinearLayout>
+
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"

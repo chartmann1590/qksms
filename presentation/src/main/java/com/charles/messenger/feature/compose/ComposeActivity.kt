@@ -374,17 +374,17 @@ class ComposeActivity : QkThemedActivity(), ComposeView {
                             contentView.paddingRight,
                             keypadHeight
                         )
-                        
-                        // Scroll to show the input field
-                        messageList.postDelayed({
-                            val layoutManager = messageList.layoutManager as? LinearLayoutManager
-                            if (layoutManager != null && messageAdapter.itemCount > 0) {
-                                val lastPosition = messageAdapter.itemCount - 1
-                                if (lastPosition >= 0) {
-                                    messageList.smoothScrollToPosition(lastPosition)
-                                }
-                            }
-                        }, 100)
+
+                        // Don't auto-scroll when keyboard appears - it interferes with text selection
+                        // messageList.postDelayed({
+                        //     val layoutManager = messageList.layoutManager as? LinearLayoutManager
+                        //     if (layoutManager != null && messageAdapter.itemCount > 0) {
+                        //         val lastPosition = messageAdapter.itemCount - 1
+                        //         if (lastPosition >= 0) {
+                        //             messageList.smoothScrollToPosition(lastPosition)
+                        //         }
+                        //     }
+                        // }, 100)
                     }
                 } else if (!isKeyboardVisible && lastKeyboardHeight > 0) {
                     // Keyboard is hidden - remove padding

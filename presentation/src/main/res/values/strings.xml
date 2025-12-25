@@ -31,6 +31,34 @@
     <string name="title_conversations">Search inbox…</string>
     <string name="title_compose">Type a name or number</string>
     <string name="title_qksms_plus" translatable="false">Messenger+</string>
+    <string name="title_rewards">Earn Rewards</string>
+
+    <!-- Rewards feature strings -->
+    <string name="rewards_your_points">Your Points</string>
+    <string name="rewards_points_available">%d points available</string>
+    <string name="rewards_ad_free_status">Ad-free: %s remaining</string>
+    <string name="rewards_ad_free_hours_minutes">%d hours %d minutes</string>
+    <string name="rewards_ad_free_minutes">%d minutes</string>
+
+    <string name="rewards_earn_points_title">Earn Points</string>
+    <string name="rewards_earn_points_description">Watch a short video ad to earn 1 point</string>
+    <string name="rewards_watch_ad">Watch Ad</string>
+    <string name="rewards_loading_ad">Loading ad…</string>
+    <string name="rewards_ad_not_ready">Ad not ready</string>
+    <string name="rewards_ad_loading_error">Ad is loading, please wait…</string>
+    <string name="rewards_ad_earned">You earned 1 point!</string>
+
+    <string name="rewards_redeem_title">Redeem Points</string>
+    <string name="rewards_redeem_description">Use your points to disable full-screen interstitial ads temporarily (banner ads remain visible)</string>
+    <string name="rewards_redeem_1">Redeem 1 point (30 minutes ad-free)</string>
+    <string name="rewards_redeem_2">Redeem 2 points (1 hour ad-free)</string>
+    <string name="rewards_redeem_4">Redeem 4 points (2 hours ad-free)</string>
+    <string name="rewards_redeem_8">Redeem 8 points (4 hours ad-free)</string>
+    <string name="rewards_redeem_12">Redeem 12 points (6 hours ad-free)</string>
+
+    <string name="rewards_redemption_success_minutes">Full-screen ads disabled for %d minutes!</string>
+    <string name="rewards_redemption_success_hours">Full-screen ads disabled for %d hours!</string>
+    <string name="rewards_insufficient_points">Not enough points</string>
 
     <string name="setup_skip">Skip</string>
     <string name="setup_next">Continue</string>
@@ -76,6 +104,7 @@
     <string name="drawer_archived">Archived</string>
     <string name="drawer_scheduled">Scheduled</string>
     <string name="drawer_blocking">Blocking</string>
+    <string name="drawer_rewards">Earn Rewards</string>
     <string name="drawer_more">More</string>
     <string name="drawer_settings">Settings</string>
     <string name="drawer_plus" translatable="false">Upgrade to Messenger Plus</string>

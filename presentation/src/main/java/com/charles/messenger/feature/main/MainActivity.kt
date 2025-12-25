@@ -110,6 +110,7 @@ class MainActivity : QkThemedActivity(), MainView {
                 drawerBinding.backup.clicks().map { NavItem.BACKUP },
                 drawerBinding.scheduled.clicks().map { NavItem.SCHEDULED },
                 drawerBinding.blocking.clicks().map { NavItem.BLOCKING },
+                drawerBinding.rewards.clicks().map { NavItem.REWARDS },
                 drawerBinding.settings.clicks().map { NavItem.SETTINGS },
                 drawerBinding.plus.clicks().map { NavItem.PLUS },
                 drawerBinding.help.clicks().map { NavItem.HELP },
@@ -267,6 +268,8 @@ class MainActivity : QkThemedActivity(), MainView {
         drawerBinding.plus.isVisible = !state.upgraded
         // Show banner when not upgraded OR in trial mode
         drawerBinding.plusBanner.isVisible = !state.upgraded || state.trialState == com.charles.messenger.manager.BillingManager.TrialState.ACTIVE
+        // Show rewards only when not upgraded and not in trial
+        drawerBinding.rewards.isVisible = !state.upgraded && state.trialState != com.charles.messenger.manager.BillingManager.TrialState.ACTIVE
 
         // Update banner text based on trial state
         when (state.trialState) {
