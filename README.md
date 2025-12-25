@@ -179,8 +179,6 @@ Support development and unlock premium features with a one-time purchase:
 - Custom auto-emoji shortcuts
 - All future Messenger+ features
 
-**Note:** F-Droid users get Messenger+ features free! Optional PayPal donations welcome to support development.
-
 ## Technology & Architecture
 
 TextPilot AI Messaging is built with modern Android development practices:
@@ -210,7 +208,7 @@ TextPilot AI Messaging is available in two product flavors:
 - **withAnalytics** - Includes Firebase Analytics, Crashlytics, Performance monitoring, Google Play Billing, and Amplitude (for Google Play Store)
 - **noAnalytics** - Clean build without any tracking or analytics (for F-Droid and privacy-focused users)
 
-The `noAnalytics` variant is recommended for development and testing as it builds faster and has no external dependencies.
+The `noAnalytics` variant is still being updated to match the `withAnalytics` version, but anyone is welcome to fork and work on it themselves. The `noAnalytics` variant is recommended for development and testing as it builds faster and has no external dependencies.
 
 ## Building from Source
 
