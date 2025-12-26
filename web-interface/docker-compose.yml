@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: qksms-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-qksms}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${POSTGRES_DB:-qksms_web}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - qksms_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-qksms}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  server:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.server
+    container_name: qksms-server
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-qksms}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-qksms_web}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:8080}
+      PORT: 3000
+      MAX_FILE_SIZE: ${MAX_FILE_SIZE:-10485760}
+      UPLOAD_DIR: /app/uploads
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-60000}
+      RATE_LIMIT_MAX_REQUESTS: ${RATE_LIMIT_MAX_REQUESTS:-100}
+      INITIAL_USERNAME: ${INITIAL_USERNAME}
+      INITIAL_PASSWORD: ${INITIAL_PASSWORD}
+      INITIAL_DEVICE_ID: ${INITIAL_DEVICE_ID}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - qksms_network
+    volumes:
+      - attachments_data:/app/uploads
+    restart: unless-stopped
+
+  client:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.client
+    container_name: qksms-client
+    networks:
+      - qksms_network
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: qksms-nginx
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+      # Uncomment for HTTPS:
+      # - "${HTTPS_PORT:-8443}:443"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+      # Uncomment for HTTPS:
+      # - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - server
+      - client
+    networks:
+      - qksms_network
+    restart: unless-stopped
+
+networks:
+  qksms_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  attachments_data:
+    driver: local

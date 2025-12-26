@@ -41,10 +41,11 @@ android {
         applicationId "com.charles.messenger.v2"
         minSdkVersion 21
         targetSdkVersion 35
-        versionCode 2227
-        versionName "3.10.0"
+        versionCode 2228
+        versionName "3.10.1"
         setProperty("archivesBaseName", "messenger-v${versionName}")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
 
         setProperty("archivesBaseName", "messenger-v${versionName}")
 
@@ -137,6 +138,7 @@ dependencies {
     implementation "androidx.emoji:emoji-appcompat:$androidx_emoji_version"
     implementation "androidx.viewpager2:viewpager2:$androidx_viewpager_version"
     implementation "com.google.android.material:material:$material_version"
+    implementation "androidx.multidex:multidex:2.0.1"
 
     // conductor
     implementation "com.bluelinelabs:conductor:$conductor_version"
