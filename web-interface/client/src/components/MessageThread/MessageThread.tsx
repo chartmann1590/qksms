@@ -8,6 +8,8 @@ import {
 } from '../../store/slices/messagesSlice';
 import { clearUnreadCount } from '../../store/slices/conversationsSlice';
 import { AttachmentView } from './AttachmentView';
+import { SmartReplies } from './SmartReplies';
+import { apiClient } from '../../services/api';
 import type { Message } from '../../types';
 import './MessageThread.css';
 
@@ -20,6 +22,9 @@ export const MessageThread: React.FC = () => {
 
   const [messageText, setMessageText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [showSmartReplies, setShowSmartReplies] = useState(false);
+  const [smartReplySuggestions, setSmartReplySuggestions] = useState<string[]>([]);
+  const [loadingSmartReplies, setLoadingSmartReplies] = useState(false);
 
   const selectedConversation = conversations.find((c) => c.id === selectedConversationId);
   const messages = selectedConversationId ? messagesByConversation[selectedConversationId] || [] : [];
@@ -66,6 +71,33 @@ export const MessageThread: React.FC = () => {
     );
 
     setMessageText('');
+  };
+
+  const handleGenerateSmartReplies = async () => {
+    if (!selectedConversationId) return;
+
+    setLoadingSmartReplies(true);
+    setShowSmartReplies(true);
+    setSmartReplySuggestions([]);
+
+    try {
+      const response = await apiClient.generateSmartReplies(selectedConversationId);
+      if (response.success && response.suggestions) {
+        setSmartReplySuggestions(response.suggestions);
+      } else {
+        setSmartReplySuggestions([]);
+      }
+    } catch (error: any) {
+      console.error('Error generating smart replies:', error);
+      alert(`Failed to generate smart replies: ${error.response?.data?.error || error.message || 'Unknown error'}`);
+      setSmartReplySuggestions([]);
+    } finally {
+      setLoadingSmartReplies(false);
+    }
+  };
+
+  const handleSelectSuggestion = (suggestion: string) => {
+    setMessageText(suggestion);
   };
 
   const formatMessageTime = (dateString: string): string => {
@@ -143,7 +175,27 @@ export const MessageThread: React.FC = () => {
         )}
       </div>
 
+      {showSmartReplies && (
+        <SmartReplies
+          suggestions={smartReplySuggestions}
+          isLoading={loadingSmartReplies}
+          onSelect={handleSelectSuggestion}
+          onClose={() => setShowSmartReplies(false)}
+        />
+      )}
+
       <form className="message-thread-compose" onSubmit={handleSend}>
+        <button
+          type="button"
+          className="compose-ai-button"
+          onClick={handleGenerateSmartReplies}
+          disabled={loadingSmartReplies || !selectedConversationId}
+          title="Generate smart replies"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </button>
         <input
           type="text"
           value={messageText}

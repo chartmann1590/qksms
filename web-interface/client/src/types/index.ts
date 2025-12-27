@@ -103,3 +103,28 @@ export interface WebSocketMessage {
   type: 'NEW_MESSAGE' | 'MESSAGE_SENT' | 'MESSAGE_STATUS_CHANGED' | 'CONVERSATION_UPDATED';
   payload: any;
 }
+
+// AI types
+export interface AiSettings {
+  ollamaApiUrl: string;
+  ollamaModel: string | null;
+  aiPersona: string | null;
+  aiReplyEnabled: boolean;
+}
+
+export interface OllamaModel {
+  name: string;
+  size: number;
+  modifiedAt: string;
+}
+
+export interface TestConnectionResponse {
+  success: boolean;
+  models?: OllamaModel[];
+  error?: string;
+}
+
+export interface SmartReplyResponse {
+  success: boolean;
+  suggestions: string[];
+}

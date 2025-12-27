@@ -4,6 +4,7 @@ import { Message } from './Message';
 import { SyncState } from './SyncState';
 import { QueuedMessage } from './QueuedMessage';
 import { RefreshToken } from './RefreshToken';
+import { UserSettings } from './UserSettings';
 
 @Entity('users')
 export class User {
@@ -39,4 +40,7 @@ export class User {
 
   @OneToMany(() => RefreshToken, refreshToken => refreshToken.user)
   refreshTokens!: RefreshToken[];
+
+  @OneToOne(() => UserSettings, userSettings => userSettings.user)
+  userSettings!: UserSettings;
 }

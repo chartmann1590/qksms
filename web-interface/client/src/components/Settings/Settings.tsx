@@ -4,6 +4,7 @@ import { useAppDispatch } from '../../store';
 import { logout } from '../../store/slices/authSlice';
 import { apiClient } from '../../services/api';
 import type { SyncStatus } from '../../types';
+import { AiSettings } from './AiSettings';
 import './Settings.css';
 
 export const Settings: React.FC = () => {
@@ -152,6 +153,8 @@ export const Settings: React.FC = () => {
             </button>
           </div>
         </section>
+
+        <AiSettings />
 
         <section className="settings-section">
           <h2>Account</h2>

@@ -7,13 +7,15 @@ import { Attachment } from '../models/Attachment';
 import { SyncState } from '../models/SyncState';
 import { QueuedMessage } from '../models/QueuedMessage';
 import { RefreshToken } from '../models/RefreshToken';
+import { UserSettings } from '../models/UserSettings';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
   url: process.env.DATABASE_URL,
-  synchronize: process.env.NODE_ENV === 'development', // Auto-create tables in dev
+  // Enable synchronize in development, or if explicitly enabled via env var
+  synchronize: process.env.NODE_ENV === 'development' || process.env.DB_SYNCHRONIZE === 'true',
   logging: process.env.NODE_ENV === 'development',
-  entities: [User, Conversation, Recipient, Message, Attachment, SyncState, QueuedMessage, RefreshToken],
+  entities: [User, Conversation, Recipient, Message, Attachment, SyncState, QueuedMessage, RefreshToken, UserSettings],
   migrations: [],
   subscribers: [],
 });

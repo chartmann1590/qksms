@@ -1,0 +1,115 @@
+.smart-replies-container {
+  background: white;
+  border-top: 1px solid #e0e0e0;
+  padding: 16px;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.smart-replies-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.smart-replies-header h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.smart-replies-close {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.smart-replies-close:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.smart-replies-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.smart-reply-item {
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s;
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+.smart-reply-item:hover {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+}
+
+.smart-reply-item:active {
+  transform: translateY(0);
+}
+
+.smart-replies-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  gap: 12px;
+}
+
+.smart-replies-loading p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.smart-replies-empty {
+  padding: 24px;
+  text-align: center;
+}
+
+.smart-replies-empty p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+

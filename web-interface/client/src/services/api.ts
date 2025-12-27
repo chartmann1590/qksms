@@ -7,6 +7,9 @@ import type {
   SendMessageRequest,
   SendMessageResponse,
   SyncStatus,
+  AiSettings,
+  TestConnectionResponse,
+  SmartReplyResponse,
 } from '../types';
 
 class ApiClient {
@@ -201,6 +204,27 @@ class ApiClient {
 
   isAuthenticated(): boolean {
     return !!this.accessToken;
+  }
+
+  // AI endpoints
+  async getAiSettings(): Promise<AiSettings> {
+    const { data } = await this.client.get<AiSettings>('/ai/settings');
+    return data;
+  }
+
+  async updateAiSettings(settings: Partial<AiSettings>): Promise<{ success: boolean; settings: AiSettings }> {
+    const { data } = await this.client.put<{ success: boolean; settings: AiSettings }>('/ai/settings', settings);
+    return data;
+  }
+
+  async testOllamaConnection(url: string): Promise<TestConnectionResponse> {
+    const { data } = await this.client.post<TestConnectionResponse>('/ai/test-connection', { url });
+    return data;
+  }
+
+  async generateSmartReplies(conversationId: string): Promise<SmartReplyResponse> {
+    const { data } = await this.client.post<SmartReplyResponse>('/ai/generate-replies', { conversationId });
+    return data;
   }
 }
 

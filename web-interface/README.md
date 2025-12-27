@@ -9,6 +9,7 @@ Self-hosted web interface for TextPilot Android SMS app with real-time message s
 - ⚡ **Real-time**: WebSocket-based instant message updates (Socket.io)
 - 📱 **Two-way sync**: Send and receive messages from both phone and web
 - 🖼️ **MMS Support**: View and send multimedia messages with attachments
+- 🤖 **AI Smart Replies**: Generate intelligent reply suggestions using Ollama AI models
 - 🐳 **Easy deployment**: One-command Docker Compose setup
 - 🔄 **Automatic sync**: Android app syncs instantly on send/receive, plus periodic backup every minute
 - 📊 **Modern UI**: React/TypeScript client with Redux state management
@@ -136,6 +137,13 @@ The services will be available at:
 - `GET /api/attachments/:id/thumbnail` - Get image thumbnail
 - `GET /api/attachments/by-upload/:uploadId` - Get attachment by upload ID
 
+### AI Auto-Reply
+
+- `GET /api/ai/settings` - Get user's AI settings
+- `PUT /api/ai/settings` - Update AI settings
+- `POST /api/ai/test-connection` - Test Ollama server connection and fetch available models
+- `POST /api/ai/generate-replies` - Generate smart reply suggestions for a conversation
+
 ## Development
 
 ### Running Locally
@@ -180,6 +188,78 @@ docker-compose up -d server
 docker-compose build
 docker-compose up -d
 ```
+
+## AI Smart Replies Setup
+
+The web interface includes AI-powered smart reply suggestions powered by Ollama. This feature generates intelligent reply suggestions based on conversation context, matching the Android app's implementation for consistency.
+
+### Prerequisites
+
+1. **Ollama Server**: You need a running Ollama server with at least one AI model installed
+   - Install Ollama: https://ollama.ai
+   - Pull a model: `ollama pull llama3.2` or `ollama pull dolphin3:latest`
+   - The server can run locally or on a remote machine
+
+### Configuration Steps
+
+1. **Access Settings**:
+   - Log into the web interface
+   - Navigate to **Settings** (gear icon in the header)
+
+2. **Configure Ollama Server**:
+   - Scroll to the **AI Auto-Reply** section
+   - Enter your Ollama server URL (e.g., `http://localhost:11434` or `http://your-server-ip:11434`)
+   - Click **Test Connection** to verify connectivity and fetch available models
+
+3. **Select AI Model**:
+   - After a successful connection test, a dropdown will appear with available models
+   - Select your preferred model (e.g., `dolphin3:latest`, `llama3.2:latest`)
+   - The selected model will be saved and displayed on future visits
+
+4. **Optional: Set Persona**:
+   - Enter a persona description to guide AI responses (e.g., "You are a friendly and professional assistant")
+   - This is optional but helps customize the AI's response style
+
+5. **Enable AI Replies**:
+   - Toggle the **Enable AI Replies** switch to activate the feature
+   - Click **Save Settings** to persist your configuration
+
+### Using Smart Replies
+
+1. **In a Conversation**:
+   - Open any conversation in the web interface
+   - Click the **AI button** (sparkle/lightbulb icon) in the message compose area
+   - The AI will analyze the conversation context and generate 3-5 reply suggestions
+
+2. **Select a Suggestion**:
+   - Click on any suggestion to populate the message input field
+   - Edit the suggestion if needed, then send as normal
+
+### How It Works
+
+- **Context Analysis**: The AI analyzes the last 4 messages in the conversation
+- **Smart Generation**: Uses the same prompt structure and parameters as the Android app for consistency
+- **Persona Integration**: If a persona is set, it's included in the system prompt to guide responses
+- **Model Selection**: Uses your selected Ollama model (e.g., dolphin3, llama3.2)
+
+### Troubleshooting
+
+**Connection Issues**:
+- Verify Ollama server is running: `ollama serve`
+- Check the server URL is accessible from the web server container
+- For remote servers, ensure firewall allows connections on port 11434
+- Check server logs: `docker-compose logs server`
+
+**No Models Available**:
+- Ensure at least one model is installed: `ollama list`
+- Pull a model if needed: `ollama pull llama3.2`
+- Test the connection again in settings
+
+**Suggestions Not Generating**:
+- Verify AI replies are enabled in settings
+- Ensure a model is selected
+- Check that the conversation has recent messages
+- Review server logs for errors
 
 ## Configuration
 
@@ -297,6 +377,7 @@ docker-compose exec postgres psql -U textpilot -d textpilot_web -c "\dt"
 - [x] Message confirmation system
 - [x] Thread ID sanitization for system messages
 - [x] Auto-register initial user (optional)
+- [x] AI smart reply suggestions (Ollama integration)
 - [ ] Message search
 - [ ] Contact photos
 - [ ] Backup/restore automation

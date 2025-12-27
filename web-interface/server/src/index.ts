@@ -10,12 +10,14 @@ import { errorHandler } from './middleware/error.middleware';
 import { apiLimiter } from './middleware/ratelimit.middleware';
 import { sanitizeBody } from './middleware/validation.middleware';
 import { autoRegisterInitialUser } from "./utils/auto-register";
+import { ensureUserSettingsTable } from './utils/ensure-user-settings-table';
 import authRoutes from './routes/auth.routes';
 import syncRoutes from './routes/sync.routes';
 import conversationsRoutes from './routes/conversations.routes';
 import messagesRoutes from './routes/messages.routes';
 import attachmentsRoutes from './routes/attachments.routes';
 import settingsRoutes from './routes/settings.routes';
+import aiRoutes from './routes/ai.routes';
 
 const app: Application = express();
 const httpServer = createServer(app);
@@ -25,6 +27,9 @@ async function startServer(): Promise<void> {
   try {
     // Initialize database
     await initializeDatabase();
+
+    // Ensure user_settings table exists (for production where synchronize is disabled)
+    await ensureUserSettingsTable();
 
     // Auto-register initial user if configured
     await autoRegisterInitialUser();
@@ -63,6 +68,7 @@ async function startServer(): Promise<void> {
     app.use('/api/messages', messagesRoutes);
     app.use('/api/attachments', attachmentsRoutes);
     app.use('/api/settings', settingsRoutes);
+    app.use('/api/ai', aiRoutes);
 
     // 404 handler
     app.use((req, res) => {
