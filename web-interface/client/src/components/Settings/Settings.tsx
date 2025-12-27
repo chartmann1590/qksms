@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../store';
 import { logout } from '../../store/slices/authSlice';
+import { apiClient } from '../../services/api';
+import type { SyncStatus } from '../../types';
 import './Settings.css';
 
 export const Settings: React.FC = () => {
@@ -9,6 +11,33 @@ export const Settings: React.FC = () => {
   const navigate = useNavigate();
   const [isWiping, setIsWiping] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
+  const [isLoadingSync, setIsLoadingSync] = useState(true);
+
+  useEffect(() => {
+    fetchSyncStatus();
+  }, []);
+
+  const fetchSyncStatus = async () => {
+    try {
+      const data = await apiClient.getSyncStatus();
+      setSyncStatus(data);
+    } catch (error) {
+      console.error('Error fetching sync status:', error);
+    } finally {
+      setIsLoadingSync(false);
+    }
+  };
+
+  const formatDate = (dateString: string | null): string => {
+    if (!dateString) return 'Never';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString();
+    } catch (error) {
+      return 'Invalid date';
+    }
+  };
 
   const handleLogout = async () => {
     await dispatch(logout());
@@ -20,7 +49,7 @@ export const Settings: React.FC = () => {
     setIsWiping(true);
 
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem('accessToken');
       const response = await fetch('/api/settings/wipe-database', {
         method: 'POST',
         headers: {
@@ -31,6 +60,8 @@ export const Settings: React.FC = () => {
 
       if (response.ok) {
         alert('Database wiped successfully! You can now perform a full sync from your phone.');
+        // Refresh sync status to show reset state
+        await fetchSyncStatus();
       } else {
         const error = await response.json();
         alert(`Failed to wipe database: ${error.error || 'Unknown error'}`);
@@ -55,6 +86,50 @@ export const Settings: React.FC = () => {
       </div>
 
       <div className="settings-content">
+        <section className="settings-section">
+          <h2>Sync Log</h2>
+          {isLoadingSync ? (
+            <div className="settings-item">
+              <p>Loading sync information...</p>
+            </div>
+          ) : (
+            <>
+              <div className="settings-item">
+                <div className="settings-item-content">
+                  <h3>Last Full Sync</h3>
+                  <p>{formatDate(syncStatus?.lastFullSync || null)}</p>
+                </div>
+              </div>
+              <div className="settings-item">
+                <div className="settings-item-content">
+                  <h3>Last Incremental Sync</h3>
+                  <p>{formatDate(syncStatus?.lastIncrementalSync || null)}</p>
+                </div>
+              </div>
+              <div className="settings-item">
+                <div className="settings-item-content">
+                  <h3>Sync Status</h3>
+                  <p>
+                    {syncStatus?.syncInProgress ? (
+                      <span className="sync-status-active">Sync in progress...</span>
+                    ) : (
+                      <span className="sync-status-idle">Idle</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+              <div className="settings-item">
+                <div className="settings-item-content">
+                  <h3>Synced Data</h3>
+                  <p>
+                    {syncStatus?.conversationCount || 0} conversations, {syncStatus?.messageCount || 0} messages
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
+        </section>
+
         <section className="settings-section">
           <h2>Database Management</h2>
           <div className="settings-item">

@@ -91,6 +91,8 @@ export interface SendMessageResponse {
 // Sync types
 export interface SyncStatus {
   lastSyncTime: string | null;
+  lastFullSync: string | null;
+  lastIncrementalSync: string | null;
   messageCount: number;
   conversationCount: number;
   syncInProgress: boolean;

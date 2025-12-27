@@ -176,6 +176,8 @@ export class SyncService {
     if (!syncState) {
       return {
         lastSyncTime: null,
+        lastFullSync: null,
+        lastIncrementalSync: null,
         messageCount: 0,
         conversationCount: 0,
         syncInProgress: false,
@@ -183,7 +185,9 @@ export class SyncService {
     }
 
     return {
-      lastSyncTime: syncState.lastFullSync || syncState.lastIncrementalSync,
+      lastSyncTime: syncState.lastFullSync?.toISOString() || syncState.lastIncrementalSync?.toISOString() || null,
+      lastFullSync: syncState.lastFullSync?.toISOString() || null,
+      lastIncrementalSync: syncState.lastIncrementalSync?.toISOString() || null,
       messageCount: syncState.totalMessages,
       conversationCount: syncState.totalConversations,
       syncInProgress: syncState.syncInProgress,

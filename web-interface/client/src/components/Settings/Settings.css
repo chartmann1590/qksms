@@ -197,3 +197,13 @@
   flex: 0 0 auto;
   min-width: 100px;
 }
+
+/* Sync status styles */
+.sync-status-active {
+  color: #667eea;
+  font-weight: 500;
+}
+
+.sync-status-idle {
+  color: #666;
+}
