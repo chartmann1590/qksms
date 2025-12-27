@@ -172,3 +172,4 @@ E/ActivityManager: Permission denial: starting Intent { ... } from ... requires 
 The `FOREGROUND_SERVICE_DATA_SYNC` permission is essential for the backup restore feature on Android 14+. It allows the `RestoreBackupService` to run as a foreground service, ensuring restore operations complete reliably even when the app is backgrounded. The permission is automatically granted and doesn't require user approval, but it must be declared in the manifest for the service to function on Android 14+.
 
 
+
