@@ -25,8 +25,10 @@ export const fetchConversations = createAsyncThunk(
   'conversations/fetchConversations',
   async (params: { page?: number; search?: string } = {}, { rejectWithValue }) => {
     try {
-      const { page = 1, search = '' } = params;
-      const response = await apiClient.getConversations(page, 1000, search); // Increased to 1000
+      const { page = 1, search } = params;
+      // Pass search as-is (can be undefined, empty string, or a value)
+      const searchParam = search !== undefined ? (search.trim() || '') : '';
+      const response = await apiClient.getConversations(page, 1000, searchParam);
       return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.error || 'Failed to fetch conversations');

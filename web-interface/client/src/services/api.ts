@@ -127,8 +127,9 @@ class ApiClient {
   // Conversation endpoints
   async getConversations(page = 1, limit = 1000, search = ''): Promise<ConversationListResponse> {
     const params: any = { page, limit };
-    if (search && search.trim()) {
-      params.search = search.trim();
+    const searchTrimmed = search && search.trim() ? search.trim() : '';
+    if (searchTrimmed) {
+      params.search = searchTrimmed;
     }
     const { data } = await this.client.get<ConversationListResponse>('/conversations', {
       params,

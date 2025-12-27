@@ -25,16 +25,16 @@ export const ConversationList: React.FC = () => {
   };
 
   useEffect(() => {
-    dispatch(fetchConversations({ page: 1 }));
-  }, [dispatch]);
-
-  useEffect(() => {
     const timeoutId = setTimeout(() => {
-      dispatch(fetchConversations({ page: 1, search: searchQuery }));
+      dispatch(fetchConversations({ 
+        page: 1, 
+        search: searchQuery 
+      }));
     }, 300); // Debounce search
 
     return () => clearTimeout(timeoutId);
-  }, [searchQuery, dispatch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]); // dispatch is stable from Redux Toolkit
 
   const handleSelectConversation = (conversationId: string) => {
     dispatch(selectConversation(conversationId));

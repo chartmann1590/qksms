@@ -19,7 +19,18 @@ class WebSocketClient {
 
     this.isConnecting = true;
 
-    const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
+    // Use same origin when in production/Docker (nginx proxies /socket.io/ to server)
+    // Only use explicit URL in development
+    let serverUrl: string | undefined;
+    if (import.meta.env.VITE_SERVER_URL) {
+      serverUrl = import.meta.env.VITE_SERVER_URL;
+    } else if (typeof window !== 'undefined' && window.location) {
+      // In browser, use same origin (nginx will proxy /socket.io/ to server)
+      serverUrl = window.location.origin;
+    } else {
+      // Fallback for development
+      serverUrl = 'http://localhost:3000';
+    }
 
     this.socket = io(serverUrl, {
       auth: {

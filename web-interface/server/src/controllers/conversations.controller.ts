@@ -27,7 +27,7 @@ export class ConversationsController {
       // Add search filter if provided
       if (search && search.trim()) {
         queryBuilder = queryBuilder.andWhere(
-          '(conversation.name ILIKE :search OR EXISTS (SELECT 1 FROM recipients r WHERE r.conversationId = conversation.id AND (r.address ILIKE :search OR r.contact_name ILIKE :search)) OR EXISTS (SELECT 1 FROM messages m WHERE m.conversationId = conversation.id AND m.userId = :userId AND m.body ILIKE :search))',
+          '(conversation.name ILIKE :search OR EXISTS (SELECT 1 FROM recipients r WHERE r.conversation_id = conversation.id AND (r.address ILIKE :search OR r.contact_name ILIKE :search)) OR EXISTS (SELECT 1 FROM messages m WHERE m.conversation_id = conversation.id AND m.user_id = :userId AND m.body ILIKE :search))',
           { search: `%${search.trim()}%`, userId: req.userId! }
         );
       }
