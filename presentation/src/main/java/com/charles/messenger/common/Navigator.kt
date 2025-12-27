@@ -154,17 +154,17 @@ class Navigator @Inject constructor(
     }
 
     fun showSourceCode() {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/chartmann1590/qksms"))
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/chartmann1590/textpilot"))
         startActivityExternal(intent)
     }
 
     fun showChangelog() {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/chartmann1590/qksms/releases"))
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/chartmann1590/textpilot/releases"))
         startActivityExternal(intent)
     }
 
     fun showLicense() {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/chartmann1590/qksms/blob/master/LICENSE"))
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/chartmann1590/textpilot/blob/master/LICENSE"))
         startActivityExternal(intent)
     }
 

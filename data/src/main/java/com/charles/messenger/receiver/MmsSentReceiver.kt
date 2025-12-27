@@ -30,6 +30,8 @@ import com.google.android.mms.MmsException
 import com.google.android.mms.util_alt.SqliteWrapper
 import com.klinker.android.send_message.Transaction
 import com.charles.messenger.interactor.SyncMessage
+import com.charles.messenger.service.WebSyncService
+import com.charles.messenger.util.Preferences
 import dagger.android.AndroidInjection
 import timber.log.Timber
 import java.io.File
@@ -38,6 +40,7 @@ import javax.inject.Inject
 class MmsSentReceiver : BroadcastReceiver() {
 
     @Inject lateinit var syncMessage: SyncMessage
+    @Inject lateinit var preferences: Preferences
 
     override fun onReceive(context: Context, intent: Intent) {
         AndroidInjection.inject(this, context)
@@ -86,7 +89,14 @@ class MmsSentReceiver : BroadcastReceiver() {
 
         Uri.parse(intent.getStringExtra("content_uri"))?.let { uri ->
             val pendingResult = goAsync()
-            syncMessage.execute(uri) { pendingResult.finish() }
+            syncMessage.execute(uri) {
+                // Trigger instant web sync if enabled
+                if (preferences.webSyncEnabled.get()) {
+                    Timber.i("MMS sent, triggering instant web sync")
+                    WebSyncService.triggerInstantSync(context)
+                }
+                pendingResult.finish()
+            }
         }
     }
 

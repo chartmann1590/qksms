@@ -269,7 +269,7 @@ The Web SMS feature is part of the TextPilot project. Contributions are welcome!
 ## Support
 
 For issues or questions about the Web SMS feature:
-- File an issue on [GitHub](https://github.com/chartmann1590/qksms/issues)
+- File an issue on [GitHub](https://github.com/chartmann1590/textpilot/issues)
 - Check the [main README](../README.md) for general information
 - Review the [web-interface README](../web-interface/README.md) for detailed setup instructions
 

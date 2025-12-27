@@ -52,7 +52,7 @@ This release focuses on improving permissions handling, notification management,
 
 ## Installation
 
-Download the APK from the [Releases page](https://github.com/chartmann1590/qksms/releases) or install from Google Play Store.
+Download the APK from the [Releases page](https://github.com/chartmann1590/textpilot/releases) or install from Google Play Store.
 
 ## Upgrade Notes
 

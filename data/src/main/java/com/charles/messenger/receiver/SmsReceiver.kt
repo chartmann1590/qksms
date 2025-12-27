@@ -23,6 +23,8 @@ import android.content.Context
 import android.content.Intent
 import android.provider.Telephony.Sms
 import com.charles.messenger.interactor.ReceiveSms
+import com.charles.messenger.service.WebSyncService
+import com.charles.messenger.util.Preferences
 import dagger.android.AndroidInjection
 import timber.log.Timber
 import javax.inject.Inject
@@ -30,6 +32,7 @@ import javax.inject.Inject
 class SmsReceiver : BroadcastReceiver() {
 
     @Inject lateinit var receiveMessage: ReceiveSms
+    @Inject lateinit var preferences: Preferences
 
     override fun onReceive(context: Context, intent: Intent) {
         AndroidInjection.inject(this, context)
@@ -39,7 +42,14 @@ class SmsReceiver : BroadcastReceiver() {
             val subId = intent.extras?.getInt("subscription", -1) ?: -1
 
             val pendingResult = goAsync()
-            receiveMessage.execute(ReceiveSms.Params(subId, messages)) { pendingResult.finish() }
+            receiveMessage.execute(ReceiveSms.Params(subId, messages)) {
+                // Trigger instant web sync if enabled
+                if (preferences.webSyncEnabled.get()) {
+                    Timber.i("SMS received, triggering instant web sync")
+                    WebSyncService.triggerInstantSync(context)
+                }
+                pendingResult.finish()
+            }
         }
     }
 

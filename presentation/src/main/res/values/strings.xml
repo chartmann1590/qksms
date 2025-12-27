@@ -426,8 +426,8 @@
     <string name="theme_apply">Apply</string>
 
     <string name="about_developer" translatable="false">Charles Hartmann</string>
-    <string name="about_source" translatable="false">https://github.com/chartmann1590/qksms</string>
-    <string name="about_changelog" translatable="false">https://github.com/chartmann1590/qksms/releases</string>
+    <string name="about_source" translatable="false">https://github.com/chartmann1590/textpilot</string>
+    <string name="about_changelog" translatable="false">https://github.com/chartmann1590/textpilot/releases</string>
     <string name="about_contact" translatable="false">tickets@portfolio-8ul8id.p.tawk.email</string>
     <string name="about_license" translatable="false">GNU General Public License v3.0</string>
     <string name="about_copyright" translatable="false">© 2021</string>

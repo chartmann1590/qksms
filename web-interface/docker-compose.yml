@@ -3,7 +3,7 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: qksms-postgres
+    container_name: textpilot-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-qksms}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
@@ -11,7 +11,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - qksms_network
+      - textpilot_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-qksms}"]
       interval: 10s
@@ -23,7 +23,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.server
-    container_name: qksms-server
+    container_name: textpilot-server
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       DATABASE_URL: postgresql://${POSTGRES_USER:-qksms}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-qksms_web}
@@ -42,7 +42,7 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - qksms_network
+      - textpilot_network
     volumes:
       - attachments_data:/app/uploads
     restart: unless-stopped
@@ -51,14 +51,14 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.client
-    container_name: qksms-client
+    container_name: textpilot-client
     networks:
-      - qksms_network
+      - textpilot_network
     restart: unless-stopped
 
   nginx:
     image: nginx:alpine
-    container_name: qksms-nginx
+    container_name: textpilot-nginx
     ports:
       - "${HTTP_PORT:-8080}:80"
       # Uncomment for HTTPS:
@@ -71,11 +71,11 @@ services:
       - server
       - client
     networks:
-      - qksms_network
+      - textpilot_network
     restart: unless-stopped
 
 networks:
-  qksms_network:
+  textpilot_network:
     driver: bridge
 
 volumes:

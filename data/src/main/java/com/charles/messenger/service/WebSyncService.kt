@@ -36,22 +36,23 @@ import javax.inject.Inject
 
 /**
  * Background service that performs periodic incremental syncs to the web server
- * when web sync is enabled. Runs every 30 minutes.
+ * when web sync is enabled. Runs every 1 minute for near-instant sync.
  */
 class WebSyncService : JobService() {
 
     companion object {
         private const val JobId = 8120236
+        private const val InstantJobId = 8120237
 
         /**
-         * Schedule periodic incremental sync job (every 30 minutes)
+         * Schedule periodic incremental sync job (every 1 minute for near-instant sync)
          */
         @SuppressLint("MissingPermission") // Added in [presentation]'s AndroidManifest.xml
         fun scheduleJob(context: Context) {
-            Timber.i("Scheduling web sync job")
+            Timber.i("Scheduling web sync job (every 1 minute)")
             val serviceComponent = ComponentName(context, WebSyncService::class.java)
             val periodicJob = JobInfo.Builder(JobId, serviceComponent)
-                .setPeriodic(TimeUnit.MINUTES.toMillis(30))
+                .setPeriodic(TimeUnit.MINUTES.toMillis(1)) // Changed from 30 to 1 minute
                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY) // Requires network connection
                 .setPersisted(true) // Persist across device reboots
                 .build()
@@ -60,11 +61,27 @@ class WebSyncService : JobService() {
         }
 
         /**
+         * Trigger instant sync immediately (for when messages are sent/received)
+         */
+        @SuppressLint("MissingPermission")
+        fun triggerInstantSync(context: Context) {
+            Timber.i("Triggering instant web sync")
+            val serviceComponent = ComponentName(context, WebSyncService::class.java)
+            val instantJob = JobInfo.Builder(InstantJobId, serviceComponent)
+                .setOverrideDeadline(0) // Run immediately
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .build()
+
+            context.jobScheduler.schedule(instantJob)
+        }
+
+        /**
          * Cancel the periodic sync job
          */
         fun cancelJob(context: Context) {
             Timber.i("Canceling web sync job")
             context.jobScheduler.cancel(JobId)
+            context.jobScheduler.cancel(InstantJobId)
         }
     }
 

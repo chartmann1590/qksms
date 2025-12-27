@@ -3,7 +3,7 @@
 # TextPilot AI Messaging - The Beautiful Open Source SMS App with AI
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Download](https://img.shields.io/github/v/release/chartmann1590/qksms)](https://github.com/chartmann1590/qksms/releases/latest)
+[![Download](https://img.shields.io/github/v/release/chartmann1590/textpilot)](https://github.com/chartmann1590/textpilot/releases/latest)
 
 **TextPilot AI Messaging** is a powerful, feature-rich open source SMS and MMS messaging application for Android. Originally forked from [QKSMS](https://github.com/moezbhatti/qksms), this enhanced version adds cutting-edge AI capabilities and numerous improvements while maintaining the beautiful, customizable experience of the original.
 
@@ -13,7 +13,7 @@ Get TextPilot AI Messaging on your Android device:
 
 **[📱 Download from Google Play Store](https://play.google.com/store/apps/details?id=com.charles.messenger.v2)**
 
-**[📦 Download APK from GitHub Releases](https://github.com/chartmann1590/qksms/releases/latest)**
+**[📦 Download APK from GitHub Releases](https://github.com/chartmann1590/textpilot/releases/latest)**
 
 ## What's New in TextPilot AI Messaging
 
@@ -296,8 +296,8 @@ The `noAnalytics` variant is still being updated to match the `withAnalytics` ve
 
 ```bash
 # Clone the repository
-git clone https://github.com/chartmann1590/qksms.git
-cd qksms
+git clone https://github.com/chartmann1590/textpilot.git
+cd textpilot
 
 # Build debug APK without analytics (F-Droid variant - recommended for development)
 ./gradlew :presentation:assembleNoAnalyticsDebug
@@ -351,14 +351,14 @@ https://crowdin.com/project/qksms
 
 ### Bug Reports
 
-Found a bug? Please ensure you're using the latest release and [open an issue](https://github.com/chartmann1590/qksms/issues) with details.
+Found a bug? Please ensure you're using the latest release and [open an issue](https://github.com/chartmann1590/textpilot/issues) with details.
 
 ## Contact & Support
 
 - **Developer:** Charles Hartmann
 - **Email:** tickets@portfolio-8ul8id.p.tawk.email
-- **Source Code:** https://github.com/chartmann1590/qksms
-- **Changelog:** https://github.com/chartmann1590/qksms/releases
+- **Source Code:** https://github.com/chartmann1590/textpilot
+- **Changelog:** https://github.com/chartmann1590/textpilot/releases
 - **Google Play Store:** https://play.google.com/store/apps/details?id=com.charles.messenger.v2
 
 ## License

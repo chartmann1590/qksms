@@ -87,7 +87,7 @@ class WebSyncSettingsPresenter @Inject constructor(
             .subscribe { enabled ->
                 newState { copy(enabled = enabled) }
                 if (enabled) {
-                    view.showToast("Web Sync enabled. Automatic sync scheduled every 30 minutes.")
+                    view.showToast("Web Sync enabled. Messages sync instantly when sent/received, with automatic backup every minute.")
                 } else {
                     view.showToast("Web Sync disabled. Background sync canceled.")
                 }

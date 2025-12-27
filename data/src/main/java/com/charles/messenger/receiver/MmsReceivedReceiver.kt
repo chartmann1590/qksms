@@ -23,22 +23,38 @@ import android.content.Intent
 import android.net.Uri
 import com.klinker.android.send_message.MmsReceivedReceiver
 import com.charles.messenger.interactor.ReceiveMms
+import com.charles.messenger.service.WebSyncService
+import com.charles.messenger.util.Preferences
 import dagger.android.AndroidInjection
+import timber.log.Timber
 import javax.inject.Inject
 
 class MmsReceivedReceiver : MmsReceivedReceiver() {
 
     @Inject lateinit var receiveMms: ReceiveMms
+    @Inject lateinit var preferences: Preferences
+
+    private var receivedContext: Context? = null
 
     override fun onReceive(context: Context?, intent: Intent?) {
         AndroidInjection.inject(this, context)
+        receivedContext = context
         super.onReceive(context, intent)
     }
 
     override fun onMessageReceived(messageUri: Uri?) {
         messageUri?.let { uri ->
             val pendingResult = goAsync()
-            receiveMms.execute(uri) { pendingResult.finish() }
+            receiveMms.execute(uri) {
+                // Trigger instant web sync if enabled
+                receivedContext?.let { ctx ->
+                    if (preferences.webSyncEnabled.get()) {
+                        Timber.i("MMS received, triggering instant web sync")
+                        WebSyncService.triggerInstantSync(ctx)
+                    }
+                }
+                pendingResult.finish()
+            }
         }
     }
 

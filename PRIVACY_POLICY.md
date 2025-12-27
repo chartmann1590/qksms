@@ -94,7 +94,7 @@ We may update this Privacy Policy from time to time. Changes will be posted in t
 ## Open Source
 
 QKSMS is open source software licensed under GPLv3. You can review the complete source code at:
-https://github.com/chartmann1590/qksms
+https://github.com/chartmann1590/textpilot
 
 ## Contact
 
@@ -102,7 +102,7 @@ If you have questions about this Privacy Policy, please contact:
 
 - **Developer:** Charles Hartmann
 - **Email:** tickets@portfolio-8ul8id.p.tawk.email
-- **Source Code:** https://github.com/chartmann1590/qksms
+- **Source Code:** https://github.com/chartmann1590/textpilot
 
 ## Summary
 

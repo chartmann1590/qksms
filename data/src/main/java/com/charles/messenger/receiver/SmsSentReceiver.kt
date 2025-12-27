@@ -24,13 +24,17 @@ import android.content.Context
 import android.content.Intent
 import com.charles.messenger.interactor.MarkFailed
 import com.charles.messenger.interactor.MarkSent
+import com.charles.messenger.service.WebSyncService
+import com.charles.messenger.util.Preferences
 import dagger.android.AndroidInjection
+import timber.log.Timber
 import javax.inject.Inject
 
 class SmsSentReceiver : BroadcastReceiver() {
 
     @Inject lateinit var markSent: MarkSent
     @Inject lateinit var markFailed: MarkFailed
+    @Inject lateinit var preferences: Preferences
 
     override fun onReceive(context: Context, intent: Intent) {
         AndroidInjection.inject(this, context)
@@ -40,7 +44,14 @@ class SmsSentReceiver : BroadcastReceiver() {
         when (resultCode) {
             Activity.RESULT_OK -> {
                 val pendingResult = goAsync()
-                markSent.execute(id) { pendingResult.finish() }
+                markSent.execute(id) {
+                    // Trigger instant web sync if enabled
+                    if (preferences.webSyncEnabled.get()) {
+                        Timber.i("SMS sent, triggering instant web sync")
+                        WebSyncService.triggerInstantSync(context)
+                    }
+                    pendingResult.finish()
+                }
             }
 
             else -> {

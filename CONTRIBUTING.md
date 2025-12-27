@@ -44,8 +44,8 @@ This project follows open source best practices. Please be respectful and constr
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/chartmann1590/qksms.git
-   cd qksms
+   git clone https://github.com/chartmann1590/textpilot.git
+   cd textpilot
    ```
 
 2. Open the project in Android Studio:
@@ -392,7 +392,7 @@ Translations are managed through **Crowdin**. To contribute translations:
 If you have questions about contributing:
 
 - **Email:** tickets@portfolio-8ul8id.p.tawk.email
-- **GitHub Issues:** https://github.com/chartmann1590/qksms/issues
+- **GitHub Issues:** https://github.com/chartmann1590/textpilot/issues
 
 ## License
 

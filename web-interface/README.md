@@ -142,13 +142,13 @@ npm run dev
 
 ```bash
 # Access PostgreSQL console
-docker-compose exec postgres psql -U qksms -d qksms_web
+docker-compose exec postgres psql -U textpilot -d textpilot_web
 
 # Backup database
-docker-compose exec postgres pg_dump -U qksms qksms_web > backup.sql
+docker-compose exec postgres pg_dump -U textpilot textpilot_web > backup.sql
 
 # Restore database
-docker-compose exec -T postgres psql -U qksms qksms_web < backup.sql
+docker-compose exec -T postgres psql -U textpilot textpilot_web < backup.sql
 
 # View logs
 docker-compose logs postgres
@@ -172,9 +172,9 @@ docker-compose up -d
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `POSTGRES_USER` | Database username | `qksms` |
+| `POSTGRES_USER` | Database username | `textpilot` |
 | `POSTGRES_PASSWORD` | Database password | `changeme` |
-| `POSTGRES_DB` | Database name | `qksms_web` |
+| `POSTGRES_DB` | Database name | `textpilot_web` |
 | `JWT_SECRET` | JWT access token secret | *Required* |
 | `JWT_REFRESH_SECRET` | JWT refresh token secret | *Required* |
 | `HTTP_PORT` | HTTP port for web interface | `8080` |
@@ -261,7 +261,7 @@ docker-compose down -v
 docker-compose up -d
 
 # Check database tables
-docker-compose exec postgres psql -U qksms -d qksms_web -c "\dt"
+docker-compose exec postgres psql -U textpilot -d textpilot_web -c "\dt"
 ```
 
 ## Implementation Status
@@ -290,4 +290,4 @@ GNU General Public License v3.0 - Same as TextPilot
 
 ## Support
 
-For issues, please file a bug report on the [TextPilot GitHub repository](https://github.com/chartmann1590/qksms).
+For issues, please file a bug report on the [TextPilot GitHub repository](https://github.com/chartmann1590/textpilot).
