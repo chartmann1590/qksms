@@ -40,6 +40,75 @@ This fork includes significant enhancements and new features beyond the original
 
 **Note:** Auto-Reply shows a persistent notification so you can quickly disable it. Use responsibly!
 
+### 🌐 Web SMS Sync (NEW! - In Development)
+
+**TextPilot Web Interface** - Access and manage your SMS/MMS messages from any web browser! This self-hosted solution provides a secure, real-time interface that syncs with your Android device.
+
+**Status:** The Web SMS feature is currently in active development. The backend infrastructure is complete and functional, with the web client interface being continuously improved. **Ready for users to try!**
+
+#### Key Features
+
+- 🔒 **Self-hosted** - Complete control over your messaging data
+- 🔐 **Secure** - End-to-end authentication with JWT tokens and encrypted credentials
+- ⚡ **Real-time** - WebSocket-based instant message updates
+- 📱 **Two-way sync** - Send and receive messages from both phone and web
+- 🖼️ **MMS Support** - View and send multimedia messages with attachments
+- 🐳 **Easy deployment** - One-command Docker setup
+- 📊 **Modern UI** - Clean, Material Design-inspired web interface
+- 🔄 **Automatic sync** - Messages sync automatically between phone and web
+
+#### How It Works
+
+1. **Server Setup**: Deploy the self-hosted web server using Docker Compose (one command!)
+2. **Initial Sync**: When you first enable Web Sync in TextPilot, all conversations and messages are uploaded to your server
+3. **Incremental Sync**: New messages are automatically synced to the server in real-time
+4. **Web Access**: Access your messages from any web browser with a modern, responsive interface
+5. **Two-Way Communication**: Send messages from the web interface, and they're automatically sent from your phone
+
+#### Quick Start
+
+1. **Set up the server** (see [Web SMS Documentation](docs/WEB_SMS_FEATURE.md) for detailed instructions):
+   ```bash
+   cd web-interface
+   cp .env.example .env
+   # Edit .env with your configuration
+   docker-compose up -d
+   ```
+
+2. **Configure in TextPilot**:
+   - Open TextPilot app
+   - Go to **Settings → Web Sync**
+   - Enable **Web Sync**
+   - Enter your server URL (e.g., `http://192.168.1.100:8081`)
+   - Create a username and password
+   - Tap **Test Connection**
+   - Once connected, tap **Perform Initial Sync**
+
+3. **Access the web interface**:
+   - Open your browser
+   - Navigate to your server URL
+   - Log in with your credentials
+   - Start managing your messages from the web!
+
+#### Current Implementation Status
+
+- ✅ Backend Server - Fully functional REST API with authentication
+- ✅ Database - PostgreSQL for message storage
+- ✅ Real-time Sync - WebSocket support for instant updates
+- ✅ Android Integration - Full sync support from TextPilot app
+- ✅ Web Client - React-based interface (in development, functional)
+- ✅ Docker Deployment - One-command setup
+- ✅ Security - JWT authentication, encryption, rate limiting
+- 🔄 Message search (coming soon)
+- 🔄 Contact photos (coming soon)
+- 🔄 Enhanced UI improvements (ongoing)
+
+#### Documentation
+
+For complete setup instructions, architecture details, troubleshooting, and more, see the **[Web SMS Feature Documentation](docs/WEB_SMS_FEATURE.md)**.
+
+**Note:** This is an in-development feature. While fully functional, some features may be enhanced in future releases. We welcome feedback and bug reports!
+
 ### Enhanced Features & Improvements
 
 - **Enhanced Permission Management** - Improved handling for Android 13+ (Tiramisu) and Android 14+ (API 34+)
@@ -76,9 +145,10 @@ This fork includes significant enhancements and new features beyond the original
 
 - **100% Free and Open Source** - Released under GPLv3, fully transparent and community-driven
 - **🤖 AI-Powered** - Smart reply suggestions and auto-reply using your own local Ollama server for complete privacy
+- **🌐 Web SMS Sync** - Access your messages from any web browser with self-hosted web interface (in development, ready to try!)
 - **Beautiful Material Design** - Modern, clean interface that follows Material Design principles
 - **Highly Customizable** - Make it truly yours with extensive theming and customization options
-- **Privacy Focused** - Your messages stay on your device, with optional local backups
+- **Privacy Focused** - Your messages stay on your device, with optional local backups and self-hosted web sync
 - **Feature Rich** - Everything you'd expect from a messaging app, plus powerful extras
 - **No Ads or Tracking** - Clean experience without intrusive advertisements (NoAnalytics variant available)
 - **Based on QKSMS** - Built on the solid foundation of the original QKSMS with significant enhancements
@@ -163,6 +233,7 @@ This fork includes significant enhancements and new features beyond the original
 - **Message Sync** - Re-sync with Android's native SMS database
 - **Home Screen Widget** - View conversations directly from your home screen
 - **Automatic Emoji** - Convert text shortcuts to emoji automatically
+- **Web SMS Sync** - Self-hosted web interface to access messages from any browser (see [Web SMS Documentation](docs/WEB_SMS_FEATURE.md))
 
 ## Messenger+ (Optional Premium Features)
 
@@ -192,6 +263,7 @@ TextPilot AI Messaging is built with modern Android development practices:
 - **Kotlin** - Primary language with Java interop for legacy code
 - **Material Design Components** - Modern UI components following Material Design guidelines
 - **Ollama Integration** - Local AI processing with Ollama API
+- **Web Sync Architecture** - Node.js/Express backend, React/TypeScript frontend, PostgreSQL database, WebSocket real-time communication
 
 ### Module Structure
 
@@ -200,6 +272,7 @@ TextPilot AI Messaging is built with modern Android development practices:
 - **data/** - Data access layer (repositories, database, networking)
 - **common/** - Shared utilities, extensions, and debugging tools
 - **android-smsmms/** - SMS/MMS handling library
+- **web-interface/** - Self-hosted web interface for SMS/MMS management (server, client, Docker setup)
 
 ### Build Variants
 
@@ -304,6 +377,6 @@ See the [LICENSE](LICENSE) file for the full license text.
 
 **Made with ❤️ by the open source community**
 
-*TextPilot AI Messaging is a fork of [QKSMS](https://github.com/moezbhatti/qksms) with significant enhancements including AI-powered features, improved permissions handling, enhanced notifications, and numerous UI/UX improvements.*
+*TextPilot AI Messaging is a fork of [QKSMS](https://github.com/moezbhatti/qksms) with significant enhancements including AI-powered features, Web SMS sync capability, improved permissions handling, enhanced notifications, and numerous UI/UX improvements.*
 
 *Love the app? Consider supporting development by unlocking Messenger+ features or sharing TextPilot AI Messaging with your friends!*
