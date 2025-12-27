@@ -36,7 +36,7 @@ class QkRealmMigration @Inject constructor(
 ) : RealmMigration {
 
     companion object {
-        const val SchemaVersion: Long = 11
+        const val SchemaVersion: Long = 12
     }
 
     @SuppressLint("ApplySharedPref")
@@ -230,6 +230,18 @@ class QkRealmMigration @Inject constructor(
                         val messageId = part.linkingObjects("Message", "parts").firstOrNull()?.getLong("contentId") ?: 0
                         part.setLong("messageId", messageId)
                     }
+
+            version++
+        }
+
+        if (version == 11L) {
+            realm.schema.create("WebSyncStatus")
+                    .addField("id", Int::class.java, FieldAttribute.PRIMARY_KEY, FieldAttribute.REQUIRED)
+                    .addField("syncToken", String::class.java, FieldAttribute.REQUIRED)
+                    .addField("lastFullSyncTimestamp", Long::class.java, FieldAttribute.REQUIRED)
+                    .addField("lastIncrementalSyncTimestamp", Long::class.java, FieldAttribute.REQUIRED)
+                    .addField("syncInProgress", Boolean::class.java, FieldAttribute.REQUIRED)
+                    .addField("totalMessagesSynced", Int::class.java, FieldAttribute.REQUIRED)
 
             version++
         }

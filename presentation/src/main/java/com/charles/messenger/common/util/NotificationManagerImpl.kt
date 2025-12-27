@@ -468,8 +468,9 @@ class NotificationManagerImpl @Inject constructor(
 
     private fun getReplyAction(threadId: Long): NotificationCompat.Action {
         val replyIntent = Intent(context, RemoteMessagingReceiver::class.java).putExtra("threadId", threadId)
+        // PendingIntents with RemoteInput MUST be mutable on API 31+ (Android 12+)
         val replyPI = PendingIntent.getBroadcast(context, threadId.toInt(), replyIntent,
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (Build.VERSION.SDK_INT >= 31) {
                     // Android 12+ (API 31+) requires FLAG_MUTABLE for PendingIntents with RemoteInput
                     PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
                 } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

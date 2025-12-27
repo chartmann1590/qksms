@@ -49,4 +49,5 @@ interface SettingsView : QkViewContract<SettingsState> {
     fun showThemePicker()
     fun showAbout()
     fun showAiSettings()
+    fun showWebSyncSettings()
 }

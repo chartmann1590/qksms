@@ -270,7 +270,13 @@ class ThemePickerController(
         // #endregion
         
         hex = view.findViewById(R.id.hex)
-        applyGroup = view.findViewById(R.id.applyGroup)
+        // applyGroup is in the included hsvPicker layout, find it from there to avoid ClassCastException
+        val hsvPickerView = view.findViewById<View>(R.id.hsvPicker)
+        val foundApplyGroup = hsvPickerView?.findViewById<Group>(R.id.applyGroup) ?: view.findViewById<Group>(R.id.applyGroup)
+        if (foundApplyGroup !is Group) {
+            throw ClassCastException("View with id applyGroup is not a Group: ${foundApplyGroup?.javaClass?.name}")
+        }
+        applyGroup = foundApplyGroup
         contentView = view.findViewById(R.id.contentView)
         
         // #region agent log

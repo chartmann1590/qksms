@@ -272,6 +272,14 @@ class BillingManagerImpl @Inject constructor(
                         hypothesisId = "H5"
                     )
                     // #endregion
+                    // Check for errors that might cause ProxyBillingActivity crash
+                    if (result.responseCode != BillingClient.BillingResponseCode.OK) {
+                        Timber.w("Billing flow launch returned error: ${result.responseCode}, ${result.debugMessage}")
+                    }
+                } catch (e: NullPointerException) {
+                    // Handle ProxyBillingActivity crash - PendingIntent is null
+                    Timber.e(e, "ProxyBillingActivity crash: PendingIntent is null. This may be due to billing service issues.")
+                    throw com.charles.messenger.common.util.BillingUnavailableException("Billing service error: ${e.message ?: "Unknown error"}")
                 } catch (e: Exception) {
                     // #region agent log
                     com.charles.messenger.util.DebugLogger.log(

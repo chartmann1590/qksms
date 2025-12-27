@@ -39,6 +39,7 @@ import com.charles.messenger.feature.settings.SettingsController
 import com.charles.messenger.feature.settings.about.AboutController
 import com.charles.messenger.feature.settings.ai.AiSettingsController
 import com.charles.messenger.feature.settings.swipe.SwipeActionsController
+import com.charles.messenger.feature.settings.websync.WebSyncSettingsController
 import com.charles.messenger.feature.themepicker.injection.ThemePickerComponent
 import com.charles.messenger.feature.widget.WidgetAdapter
 import com.charles.messenger.injection.android.ActivityBuilderModule
@@ -71,6 +72,7 @@ interface AppComponent {
     fun inject(controller: SettingsController)
     fun inject(controller: AiSettingsController)
     fun inject(controller: SwipeActionsController)
+    fun inject(controller: WebSyncSettingsController)
 
     fun inject(dialog: QkDialog)
 

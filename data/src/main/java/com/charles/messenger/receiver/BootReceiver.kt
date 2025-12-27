@@ -22,17 +22,28 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.charles.messenger.interactor.UpdateScheduledMessageAlarms
+import com.charles.messenger.service.WebSyncService
+import com.charles.messenger.util.Preferences
 import dagger.android.AndroidInjection
+import timber.log.Timber
 import javax.inject.Inject
 
 class BootReceiver : BroadcastReceiver() {
 
     @Inject lateinit var updateScheduledMessageAlarms: UpdateScheduledMessageAlarms
+    @Inject lateinit var prefs: Preferences
 
     override fun onReceive(context: Context, intent: Intent?) {
         AndroidInjection.inject(this, context)
 
         val result = goAsync()
+
+        // Reschedule web sync job if enabled
+        if (prefs.webSyncEnabled.get()) {
+            WebSyncService.scheduleJob(context)
+            Timber.i("Web Sync job rescheduled on boot")
+        }
+
         updateScheduledMessageAlarms.execute(Unit) { result.finish() }
     }
 

@@ -232,28 +232,18 @@ class PlusActivity : QkThemedActivity(), PlusView {
                     hypothesisId = "H1"
                 )
                 // #endregion
-            } catch (e: com.charles.messenger.common.util.BillingUnavailableException) {
+            } catch (e: IllegalStateException) {
+                // Billing unavailable or timeout
                 // #region agent log
                 com.charles.messenger.util.DebugLogger.log(
                     location = "PlusActivity.kt:214",
-                    message = "Billing unavailable exception",
+                    message = "Billing exception",
                     data = mapOf("error" to e.message, "errorType" to e.javaClass.simpleName),
                     hypothesisId = "H1"
                 )
                 // #endregion
-                Timber.w(e)
+                Timber.w("Billing error: ${e.message}")
                 makeToast(R.string.qksms_plus_error_billing_unavailable)
-            } catch (e: com.charles.messenger.common.util.BillingTimeoutException) {
-                // #region agent log
-                com.charles.messenger.util.DebugLogger.log(
-                    location = "PlusActivity.kt:214",
-                    message = "Billing timeout exception",
-                    data = mapOf("error" to e.message, "errorType" to e.javaClass.simpleName),
-                    hypothesisId = "H1"
-                )
-                // #endregion
-                Timber.w(e)
-                makeToast(R.string.qksms_plus_error_billing_timeout)
             } catch (e: Exception) {
                 // #region agent log
                 com.charles.messenger.util.DebugLogger.log(

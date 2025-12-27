@@ -280,6 +280,8 @@ class SettingsPresenter @Inject constructor(
                                 Timber.e("View is null when trying to show AI Settings")
                             }
                         }
+
+                        R.id.webSyncSettings -> view.showWebSyncSettings()
                             }
                             // #region agent log
                             com.charles.messenger.util.DebugLogger.log(

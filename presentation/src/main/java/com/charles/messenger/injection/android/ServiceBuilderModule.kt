@@ -23,6 +23,7 @@ import com.charles.messenger.injection.scope.ActivityScope
 import com.charles.messenger.service.HeadlessSmsSendService
 import com.charles.messenger.receiver.SendSmsReceiver
 import com.charles.messenger.service.AutoDeleteService
+import com.charles.messenger.service.WebSyncService
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 
@@ -44,5 +45,9 @@ abstract class ServiceBuilderModule {
     @ActivityScope
     @ContributesAndroidInjector()
     abstract fun bindSendSmsReceiver(): SendSmsReceiver
+
+    @ActivityScope
+    @ContributesAndroidInjector()
+    abstract fun bindWebSyncService(): WebSyncService
 
 }

@@ -573,4 +573,31 @@
     <string name="ai_auto_reply_notification_text_with_count">%d replies sent • Tap to open settings</string>
     <string name="ai_auto_reply_notification_action">Disable</string>
 
+    <!-- Web Sync Settings -->
+    <string name="settings_web_sync_title">Web Sync</string>
+    <string name="settings_web_sync_summary">Access messages from web browser</string>
+    <string name="web_sync_title">Web Sync</string>
+    <string name="web_sync_enable">Enable Web Sync</string>
+    <string name="web_sync_enable_summary">Access messages from web browser</string>
+    <string name="web_sync_server_config">Server Configuration</string>
+    <string name="web_sync_server_url">Server URL</string>
+    <string name="web_sync_server_url_not_configured">Not configured</string>
+    <string name="web_sync_username">Username</string>
+    <string name="web_sync_username_not_configured">Not configured</string>
+    <string name="web_sync_username_hint">Enter username</string>
+    <string name="web_sync_password">Password</string>
+    <string name="web_sync_password_not_configured">Not configured</string>
+    <string name="web_sync_password_hint">Enter password (min 12 characters)</string>
+    <string name="web_sync_password_warning">Password must be at least 12 characters</string>
+    <string name="web_sync_password_too_short">Password must be at least 12 characters</string>
+    <string name="web_sync_test_connection">Test Connection</string>
+    <string name="web_sync_testing_connection">Testing connection...</string>
+    <string name="web_sync_connected">Connected ✓</string>
+    <string name="web_sync_connection_failed">Connection failed</string>
+    <string name="web_sync_sync_section">Sync</string>
+    <string name="web_sync_perform_full_sync">Perform Full Sync</string>
+    <string name="web_sync_not_synced">Not synced yet</string>
+    <string name="web_sync_last_synced">Last synced: %s</string>
+    <string name="web_sync_help_text">To use Web Sync, deploy the web interface using Docker and configure the server URL above. See documentation for instructions.</string>
+
 </resources>

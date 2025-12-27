@@ -253,6 +253,10 @@
             android:permission="android.permission.BIND_JOB_SERVICE"
             android:exported="false" />
         <service
+            android:name="com.charles.messenger.service.WebSyncService"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:exported="false" />
+        <service
             android:name="com.charles.messenger.service.HeadlessSmsSendService"
             android:exported="true"
             android:permission="android.permission.SEND_RESPOND_VIA_MESSAGE">

@@ -385,4 +385,10 @@ class SettingsController : QkController<SettingsView, SettingsState, SettingsPre
         }
     }
 
+    override fun showWebSyncSettings() {
+        router?.pushController(RouterTransaction.with(com.charles.messenger.feature.settings.websync.WebSyncSettingsController())
+                .pushChangeHandler(QkChangeHandler())
+                .popChangeHandler(QkChangeHandler()))
+    }
+
 }

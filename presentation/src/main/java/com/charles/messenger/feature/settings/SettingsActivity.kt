@@ -26,6 +26,7 @@ import com.bluelinelabs.conductor.RouterTransaction
 import com.charles.messenger.R
 import com.charles.messenger.common.base.QkThemedActivity
 import com.charles.messenger.feature.settings.ai.AiSettingsController
+import com.charles.messenger.feature.settings.websync.WebSyncSettingsController
 import dagger.android.AndroidInjection
 
 class SettingsActivity : QkThemedActivity() {
@@ -41,10 +42,10 @@ class SettingsActivity : QkThemedActivity() {
         router = Conductor.attachRouter(this, container, savedInstanceState)
         if (!router.hasRootController()) {
             val screen = intent.getStringExtra("screen")
-            val controller = if (screen == "ai_settings") {
-                AiSettingsController()
-            } else {
-                SettingsController()
+            val controller = when (screen) {
+                "ai_settings" -> AiSettingsController()
+                "web_sync" -> WebSyncSettingsController()
+                else -> SettingsController()
             }
             router.setRoot(RouterTransaction.with(controller))
         }

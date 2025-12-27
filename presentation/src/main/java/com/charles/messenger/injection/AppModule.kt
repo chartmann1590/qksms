@@ -84,6 +84,8 @@ import com.charles.messenger.repository.ScheduledMessageRepository
 import com.charles.messenger.repository.ScheduledMessageRepositoryImpl
 import com.charles.messenger.repository.SyncRepository
 import com.charles.messenger.repository.SyncRepositoryImpl
+import com.charles.messenger.repository.WebSyncRepository
+import com.charles.messenger.repository.WebSyncRepositoryImpl
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
@@ -216,6 +218,9 @@ class AppModule(private var application: Application) {
 
     @Provides
     fun provideSyncRepository(repository: SyncRepositoryImpl): SyncRepository = repository
+
+    @Provides
+    fun provideWebSyncRepository(repository: WebSyncRepositoryImpl): WebSyncRepository = repository
 
     @Provides
     @Singleton
