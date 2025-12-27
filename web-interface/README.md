@@ -5,11 +5,13 @@ Self-hosted web interface for TextPilot Android SMS app with real-time message s
 ## Features
 
 - 🔒 **Self-hosted**: Complete control over your messaging data
-- 🔐 **Secure**: End-to-end authentication with JWT tokens and encrypted credentials
-- ⚡ **Real-time**: WebSocket-based instant message updates
+- 🔐 **Secure**: JWT authentication with bcrypt password hashing, rate limiting, and CORS protection
+- ⚡ **Real-time**: WebSocket-based instant message updates (Socket.io)
 - 📱 **Two-way sync**: Send and receive messages from both phone and web
 - 🖼️ **MMS Support**: View and send multimedia messages with attachments
-- 🐳 **Easy deployment**: One-command Docker setup
+- 🐳 **Easy deployment**: One-command Docker Compose setup
+- 🔄 **Automatic sync**: Android app syncs instantly on send/receive, plus periodic backup every minute
+- 📊 **Modern UI**: React/TypeScript client with Redux state management
 
 ## Prerequisites
 
@@ -82,12 +84,25 @@ The services will be available at:
 ### Data Flow
 
 ```
-Android App ←→ Server API ←→ PostgreSQL
-                ↓
-         WebSocket Server
-                ↓
-           Web Client
+┌─────────────────┐         ┌──────────────────┐         ┌──────────────┐
+│  TextPilot      │◄──────►│  Web Server      │◄──────►│  PostgreSQL  │
+│  Android App    │  HTTPS │  (Node.js/Express)│         │  Database    │
+│                 │         │  + Socket.io      │         │              │
+│  - WebSyncService│         └──────────────────┘         └──────────────┘
+│  - Instant Sync │                  │
+│  - Queue Poll   │                  │ WebSocket
+└─────────────────┘                  ▼
+                             ┌──────────────────┐
+                             │  Web Client      │
+                             │  (React/TS)     │
+                             └──────────────────┘
 ```
+
+**Sync Flow:**
+1. **Phone → Server**: Messages sent/received trigger instant sync, plus periodic backup every 1 minute
+2. **Server → Web**: WebSocket pushes new messages to web client in real-time
+3. **Web → Server**: Messages sent from web are queued in database
+4. **Server → Phone**: Android app polls queue during sync and sends messages via SMS/MMS
 
 ## API Endpoints
 
@@ -100,11 +115,11 @@ Android App ←→ Server API ←→ PostgreSQL
 
 ### Sync
 
-- `POST /api/sync/initial` - Initial full sync from phone
-- `POST /api/sync/incremental` - Incremental updates
-- `GET /api/sync/status` - Get sync state
-- `GET /api/sync/queue` - Poll for web-sent messages
-- `POST /api/sync/confirm` - Confirm message sent
+- `POST /api/sync/initial` - Initial full sync from phone (batched, 100 messages per batch)
+- `POST /api/sync/incremental` - Incremental updates (new messages since last sync)
+- `GET /api/sync/status` - Get sync state and statistics
+- `GET /api/sync/queue` - Poll for web-sent messages (returns and marks as picked up)
+- `POST /api/sync/confirm` - Confirm message was sent by Android app
 
 ### Messages
 
@@ -266,16 +281,22 @@ docker-compose exec postgres psql -U textpilot -d textpilot_web -c "\dt"
 
 ## Implementation Status
 
-- [x] Backend server with authentication
-- [x] PostgreSQL database schema
-- [x] Docker Compose setup
-- [x] Android app settings screen
-- [x] Sync endpoints (initial + incremental)
-- [x] React web client
-- [x] WebSocket real-time updates
-- [x] MMS attachment handling
+- [x] Backend server with authentication (Node.js/Express/TypeScript)
+- [x] PostgreSQL database schema with TypeORM
+- [x] Docker Compose setup with Nginx reverse proxy
+- [x] Android app settings screen and integration
+- [x] Sync endpoints (initial + incremental with batch processing)
+- [x] React/TypeScript web client with Redux
+- [x] WebSocket real-time updates (Socket.io)
+- [x] MMS attachment handling (upload, download, thumbnails)
 - [x] Input validation and error handling
-- [x] Security hardening (CORS, rate limiting, XSS prevention)
+- [x] Security hardening (CORS, rate limiting, XSS prevention, helmet)
+- [x] Background sync service (runs every 1 minute)
+- [x] Instant sync on message send/receive
+- [x] Message queue system for web-sent messages
+- [x] Message confirmation system
+- [x] Thread ID sanitization for system messages
+- [x] Auto-register initial user (optional)
 - [ ] Message search
 - [ ] Contact photos
 - [ ] Backup/restore automation

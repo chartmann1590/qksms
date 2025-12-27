@@ -5,11 +5,13 @@ React-based web interface for viewing and sending SMS/MMS messages synced from y
 ## Features
 
 - 📱 View all conversations and messages
-- 💬 Send messages from your browser
-- 🔄 Real-time sync with Android app
-- 🔐 Secure authentication with JWT tokens
-- 📊 Clean, modern Material-inspired UI
+- 💬 Send messages from your browser (queued and sent by Android app)
+- 🔄 Real-time sync with Android app via WebSocket
+- 🔐 Secure authentication with JWT tokens (access + refresh)
+- 📊 Clean, modern Material Design-inspired UI
 - 📱 Responsive design (desktop & mobile)
+- 🖼️ MMS attachment viewing
+- 📨 Mark messages as read
 
 ## Tech Stack
 
@@ -105,10 +107,12 @@ The app uses JWT-based authentication:
 
 ## Future Enhancements
 
-- [ ] WebSocket integration for real-time updates
-- [ ] MMS attachment viewing
+- [x] WebSocket integration for real-time updates
+- [x] MMS attachment viewing
 - [ ] Search functionality
 - [ ] Dark mode
 - [ ] Push notifications
 - [ ] Message drafts
 - [ ] Emoji picker
+- [ ] Contact photos
+- [ ] Message scheduling

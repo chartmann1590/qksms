@@ -49,21 +49,28 @@ This fork includes significant enhancements and new features beyond the original
 #### Key Features
 
 - 🔒 **Self-hosted** - Complete control over your messaging data
-- 🔐 **Secure** - End-to-end authentication with JWT tokens and encrypted credentials
-- ⚡ **Real-time** - WebSocket-based instant message updates
+- 🔐 **Secure** - JWT authentication with encrypted credentials and rate limiting
+- ⚡ **Real-time Sync** - Instant sync when messages are sent/received, plus automatic backup every minute
 - 📱 **Two-way sync** - Send and receive messages from both phone and web
 - 🖼️ **MMS Support** - View and send multimedia messages with attachments
-- 🐳 **Easy deployment** - One-command Docker setup
-- 📊 **Modern UI** - Clean, Material Design-inspired web interface
-- 🔄 **Automatic sync** - Messages sync automatically between phone and web
+- 🐳 **Easy deployment** - One-command Docker Compose setup
+- 📊 **Modern UI** - Clean, Material Design-inspired React web interface
+- 🔄 **Automatic sync** - Background service syncs messages every minute, with instant sync on send/receive
 
 #### How It Works
 
 1. **Server Setup**: Deploy the self-hosted web server using Docker Compose (one command!)
-2. **Initial Sync**: When you first enable Web Sync in TextPilot, all conversations and messages are uploaded to your server
-3. **Incremental Sync**: New messages are automatically synced to the server in real-time
+2. **Initial Sync**: When you first enable Web Sync in TextPilot, all conversations and messages are uploaded to your server in batches
+3. **Incremental Sync**: New messages are automatically synced instantly when sent/received, plus periodic backup every minute
 4. **Web Access**: Access your messages from any web browser with a modern, responsive interface
-5. **Two-Way Communication**: Send messages from the web interface, and they're automatically sent from your phone
+5. **Two-Way Communication**: Send messages from the web interface, and they're automatically queued and sent by your phone
+
+#### Sync Mechanism
+
+- **Instant Sync**: Automatically triggered when messages are sent or received on your phone
+- **Periodic Sync**: Background service runs every 1 minute to ensure all messages are synced
+- **Queue System**: Messages sent from the web are queued on the server and picked up by the Android app during sync
+- **Batch Processing**: Large message histories are synced in batches of 100 messages for efficiency
 
 #### Quick Start
 
@@ -71,7 +78,7 @@ This fork includes significant enhancements and new features beyond the original
    ```bash
    cd web-interface
    cp .env.example .env
-   # Edit .env with your configuration
+   # Edit .env with your configuration (generate JWT secrets)
    docker-compose up -d
    ```
 
@@ -81,7 +88,7 @@ This fork includes significant enhancements and new features beyond the original
    - Enable **Web Sync**
    - Enter your server URL (e.g., `http://192.168.1.100:8081`)
    - Create a username and password
-   - Tap **Test Connection**
+   - Tap **Test Connection** to verify connectivity
    - Once connected, tap **Perform Initial Sync**
 
 3. **Access the web interface**:
@@ -92,22 +99,24 @@ This fork includes significant enhancements and new features beyond the original
 
 #### Current Implementation Status
 
-- ✅ Backend Server - Fully functional REST API with authentication
-- ✅ Database - PostgreSQL for message storage
-- ✅ Real-time Sync - WebSocket support for instant updates
-- ✅ Android Integration - Full sync support from TextPilot app
-- ✅ Web Client - React-based interface (in development, functional)
-- ✅ Docker Deployment - One-command setup
-- ✅ Security - JWT authentication, encryption, rate limiting
+- ✅ **Backend Server** - Fully functional REST API with authentication (Node.js/Express)
+- ✅ **Database** - PostgreSQL with TypeORM for message storage
+- ✅ **Real-time Sync** - WebSocket support (Socket.io) for instant updates
+- ✅ **Android Integration** - Complete sync support with background service
+- ✅ **Web Client** - React/TypeScript interface with Redux state management
+- ✅ **Docker Deployment** - One-command setup with Docker Compose
+- ✅ **Security** - JWT authentication, bcrypt password hashing, rate limiting, CORS protection
+- ✅ **MMS Support** - Full attachment handling and media support
+- ✅ **Queue System** - Web-sent messages queued and sent by Android app
+- ✅ **Background Service** - Automatic periodic sync every minute
+- ✅ **Instant Sync** - Triggers immediately on message send/receive
 - 🔄 Message search (coming soon)
 - 🔄 Contact photos (coming soon)
 - 🔄 Enhanced UI improvements (ongoing)
 
 #### Documentation
 
-For complete setup instructions, architecture details, troubleshooting, and more, see the **[Web SMS Feature Documentation](docs/WEB_SMS_FEATURE.md)**.
-
-**Note:** This is an in-development feature. While fully functional, some features may be enhanced in future releases. We welcome feedback and bug reports!
+For complete setup instructions, architecture details, API documentation, troubleshooting, and more, see the **[Web SMS Feature Documentation](docs/WEB_SMS_FEATURE.md)**.
 
 ### Enhanced Features & Improvements
 
