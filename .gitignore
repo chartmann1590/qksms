@@ -90,3 +90,9 @@ CLAUDE.md
 AGENTS.md
 *claude*
 *agent*
+
+# Environment files (keep .env.example files)
+.env
+**/.env
+!.env.example
+**/.env.example
