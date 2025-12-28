@@ -24,6 +24,7 @@ data class WebSyncSettingsState(
     val username: String = "",
     val password: String = "",
     val connectionStatus: ConnectionStatus = ConnectionStatus.Unknown,
+    val registrationStatus: RegistrationStatus = RegistrationStatus.NotRegistered,
     val syncInProgress: Boolean = false,
     val syncProgress: String = "",
     val lastSyncTimestamp: Long = 0
@@ -33,5 +34,12 @@ enum class ConnectionStatus {
     Unknown,
     Testing,
     Connected,
+    Failed
+}
+
+enum class RegistrationStatus {
+    NotRegistered,
+    Registering,
+    Registered,
     Failed
 }

@@ -14,6 +14,12 @@ export const Settings: React.FC = () => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [isLoadingSync, setIsLoadingSync] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(
+    localStorage.getItem('notificationsEnabled') !== 'false'
+  );
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>(
+    'Notification' in window ? Notification.permission : 'denied'
+  );
 
   useEffect(() => {
     fetchSyncStatus();
@@ -75,6 +81,30 @@ export const Settings: React.FC = () => {
     }
   };
 
+  const handleToggleNotifications = () => {
+    const newValue = !notificationsEnabled;
+    setNotificationsEnabled(newValue);
+    localStorage.setItem('notificationsEnabled', String(newValue));
+  };
+
+  const handleRequestNotificationPermission = async () => {
+    if ('Notification' in window) {
+      const permission = await Notification.requestPermission();
+      setNotificationPermission(permission);
+    }
+  };
+
+  const getPermissionStatusText = (): string => {
+    switch (notificationPermission) {
+      case 'granted':
+        return 'Granted';
+      case 'denied':
+        return 'Denied';
+      default:
+        return 'Not requested';
+    }
+  };
+
   return (
     <div className="settings-container">
       <div className="settings-header">
@@ -129,6 +159,54 @@ export const Settings: React.FC = () => {
               </div>
             </>
           )}
+        </section>
+
+        <section className="settings-section">
+          <h2>Browser Notifications</h2>
+          <div className="settings-item">
+            <div className="settings-item-content">
+              <h3>Permission Status</h3>
+              <p>{getPermissionStatusText()}</p>
+            </div>
+          </div>
+          {notificationPermission !== 'granted' && (
+            <div className="settings-item">
+              <div className="settings-item-content">
+                <h3>Request Permission</h3>
+                <p>
+                  {notificationPermission === 'denied'
+                    ? 'You have denied notification permissions. Please enable them in your browser settings.'
+                    : 'Click to request notification permission for new message alerts.'}
+                </p>
+              </div>
+              <button
+                className="secondary-button"
+                onClick={handleRequestNotificationPermission}
+                disabled={notificationPermission === 'denied'}
+              >
+                Request Permission
+              </button>
+            </div>
+          )}
+          <div className="settings-item">
+            <div className="settings-item-content">
+              <h3>Enable Notifications</h3>
+              <p>
+                {notificationPermission === 'granted'
+                  ? 'Show desktop notifications when you receive new messages'
+                  : 'Permission must be granted to enable notifications'}
+              </p>
+            </div>
+            <label className="toggle-switch">
+              <input
+                type="checkbox"
+                checked={notificationsEnabled}
+                onChange={handleToggleNotifications}
+                disabled={notificationPermission !== 'granted'}
+              />
+              <span className="toggle-slider"></span>
+            </label>
+          </div>
         </section>
 
         <section className="settings-section">

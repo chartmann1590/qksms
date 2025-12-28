@@ -34,7 +34,9 @@ export function useWebSocket() {
             dispatch(incrementUnreadCount(message.conversationId));
 
             // Show notification if message is not from current conversation
+            const notificationsEnabled = localStorage.getItem('notificationsEnabled') !== 'false';
             if (
+              notificationsEnabled &&
               message.conversationId !== selectedConversationId &&
               'Notification' in window &&
               Notification.permission === 'granted'
@@ -84,5 +86,5 @@ export function useWebSocket() {
       // Disconnect if not authenticated
       websocketClient.disconnect();
     }
-  }, [isAuthenticated, accessToken, dispatch]);
+  }, [isAuthenticated, accessToken, dispatch, selectedConversationId]);
 }

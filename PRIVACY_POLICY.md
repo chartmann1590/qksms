@@ -1,16 +1,16 @@
-# Privacy Policy for QKSMS
+# Privacy Policy for TextPilot AI Messaging
 
 **Last Updated:** January 2025
 
 ## Introduction
 
-QKSMS ("we", "our", or "the app") is an open source SMS and MMS messaging application for Android. We are committed to protecting your privacy. This Privacy Policy explains how QKSMS handles your data.
+TextPilot AI Messaging ("we", "our", or "the app") is an open source SMS and MMS messaging application for Android. We are committed to protecting your privacy. This Privacy Policy explains how TextPilot AI Messaging handles your data.
 
 ## Data Collection
 
 ### What We Do NOT Collect
 
-QKSMS does **not** collect, transmit, or share any of the following:
+TextPilot AI Messaging does **not** collect, transmit, or share any of the following:
 - Your text messages (SMS/MMS)
 - Your contacts
 - Your phone number
@@ -29,7 +29,7 @@ All your data remains on your device:
 
 ### Analytics Variants
 
-QKSMS is available in two variants:
+TextPilot AI Messaging is available in two variants:
 
 1. **NoAnalytics Variant (F-Droid):** No analytics, tracking, or third-party services. Complete privacy.
 
@@ -46,7 +46,7 @@ If you use the WithAnalytics variant, Google's privacy policies apply to the dat
 
 ## Permissions
 
-QKSMS requires the following permissions to function:
+TextPilot AI Messaging requires the following permissions to function:
 
 - **SMS/MMS:** To send, receive, and read your messages
 - **Contacts:** To display contact names and photos in conversations
@@ -68,7 +68,7 @@ If you enable the AI Smart Reply or Auto-Reply features:
 
 ## Third-Party Services
 
-QKSMS may integrate with:
+TextPilot AI Messaging may integrate with:
 - **Your mobile carrier:** For sending SMS/MMS (standard carrier policies apply)
 - **Optional blocking apps:** Call Blocker, Call Control, Should I Answer (their privacy policies apply)
 - **Your Ollama server:** If you enable AI Smart Reply (self-hosted, you control the data)
@@ -85,7 +85,7 @@ QKSMS may integrate with:
 
 ## Children's Privacy
 
-QKSMS does not knowingly collect any personal information from children under 13.
+TextPilot AI Messaging does not knowingly collect any personal information from children under 13.
 
 ## Changes to This Policy
 
@@ -93,7 +93,7 @@ We may update this Privacy Policy from time to time. Changes will be posted in t
 
 ## Open Source
 
-QKSMS is open source software licensed under GPLv3. You can review the complete source code at:
+TextPilot AI Messaging is open source software licensed under GPLv3. You can review the complete source code at:
 https://github.com/chartmann1590/textpilot
 
 ## Contact
@@ -106,7 +106,7 @@ If you have questions about this Privacy Policy, please contact:
 
 ## Summary
 
-**Your privacy is protected.** QKSMS stores all your data locally on your device. We do not collect, transmit, or sell your personal information. The NoAnalytics variant contains zero tracking or analytics. You are in complete control of your data.
+**Your privacy is protected.** TextPilot AI Messaging stores all your data locally on your device. We do not collect, transmit, or sell your personal information. The NoAnalytics variant contains zero tracking or analytics. You are in complete control of your data.
 
 **Key Privacy Points:**
 - All messages stored locally on your device

@@ -89,8 +89,12 @@ export class WebSocketService {
    * Broadcast new message to user's connected clients
    */
   public broadcastNewMessage(userId: string, message: Message) {
-    console.log(`Broadcasting new message to user ${userId}: messageId=${message.id}`);
-    this.io.to(`user:${userId}`).emit('new_message', {
+    const roomName = `user:${userId}`;
+    const socketsInRoom = this.io.sockets.adapter.rooms.get(roomName);
+    const socketCount = socketsInRoom ? socketsInRoom.size : 0;
+    console.log(`Broadcasting new message to user ${userId}: messageId=${message.id}, sockets in room: ${socketCount}`);
+
+    this.io.to(roomName).emit('new_message', {
       type: 'NEW_MESSAGE',
       payload: {
         id: message.id,

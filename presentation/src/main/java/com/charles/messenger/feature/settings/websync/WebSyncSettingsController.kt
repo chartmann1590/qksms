@@ -54,6 +54,7 @@ class WebSyncSettingsController : QkController<WebSyncSettingsView, WebSyncSetti
     private lateinit var serverUrl: PreferenceView
     private lateinit var username: PreferenceView
     private lateinit var password: PreferenceView
+    private lateinit var registerAccount: Button
     private lateinit var testConnection: Button
     private lateinit var connectionStatus: TextView
     private lateinit var performFullSync: Button
@@ -72,6 +73,7 @@ class WebSyncSettingsController : QkController<WebSyncSettingsView, WebSyncSetti
         serverUrl = view.findViewById(R.id.serverUrl)
         username = view.findViewById(R.id.username)
         password = view.findViewById(R.id.password)
+        registerAccount = view.findViewById(R.id.registerAccount)
         testConnection = view.findViewById(R.id.testConnection)
         connectionStatus = view.findViewById(R.id.connectionStatus)
         performFullSync = view.findViewById(R.id.performFullSync)
@@ -107,6 +109,8 @@ class WebSyncSettingsController : QkController<WebSyncSettingsView, WebSyncSetti
     override fun usernameChanged(): Observable<String> = usernameChangedSubject
 
     override fun passwordChanged(): Observable<String> = passwordChangedSubject
+
+    override fun registerAccountClicks(): Observable<Unit> = registerAccount.clicks()
 
     override fun testConnectionClicks(): Observable<Unit> = testConnection.clicks()
 
@@ -238,6 +242,11 @@ class WebSyncSettingsController : QkController<WebSyncSettingsView, WebSyncSetti
         // Show/hide sync progress bar        syncProgressBar.visibility = if (state.syncInProgress) View.VISIBLE else View.GONE
 
         // Enable/disable buttons based on state
+        registerAccount.isEnabled = state.serverUrl.isNotEmpty() &&
+            state.username.isNotEmpty() &&
+            state.password.isNotEmpty() &&
+            !state.syncInProgress
+
         testConnection.isEnabled = state.serverUrl.isNotEmpty() &&
             state.username.isNotEmpty() &&
             state.password.isNotEmpty() &&

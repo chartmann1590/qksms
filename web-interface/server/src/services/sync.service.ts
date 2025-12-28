@@ -349,7 +349,7 @@ export class SyncService {
     }
 
     // Broadcast new message to connected web clients
-    if (isNewMessage && !msgDto.isMe) {
+    if (isNewMessage) {
       try {
         const wsService = getWebSocketService();
         wsService.broadcastNewMessage(userId, message);

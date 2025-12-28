@@ -590,6 +590,10 @@
     <string name="web_sync_password_hint">Enter password (min 12 characters)</string>
     <string name="web_sync_password_warning">Password must be at least 12 characters</string>
     <string name="web_sync_password_too_short">Password must be at least 12 characters</string>
+    <string name="web_sync_register_account">Register New Account</string>
+    <string name="web_sync_registering">Registering account...</string>
+    <string name="web_sync_registration_successful">Account registered successfully!</string>
+    <string name="web_sync_registration_failed">Registration failed</string>
     <string name="web_sync_test_connection">Test Connection</string>
     <string name="web_sync_testing_connection">Testing connection...</string>
     <string name="web_sync_connected">Connected ✓</string>

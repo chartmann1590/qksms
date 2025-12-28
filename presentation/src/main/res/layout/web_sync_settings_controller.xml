@@ -80,13 +80,24 @@
             app:title="@string/web_sync_password"
             app:summary="@string/web_sync_password_not_configured" />
 
+        <!-- Register Account Button -->
+        <Button
+            android:id="@+id/registerAccount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="4dp"
+            android:text="@string/web_sync_register_account"
+            style="?android:attr/borderlessButtonStyle" />
+
         <!-- Test Connection Button -->
         <Button
             android:id="@+id/testConnection"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="4dp"
             android:layout_marginBottom="8dp"
             android:text="@string/web_sync_test_connection"
             style="?android:attr/borderlessButtonStyle" />

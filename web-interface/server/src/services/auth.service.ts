@@ -155,6 +155,10 @@ export class AuthService {
   }
 
   private async generateTokenPair(userId: string): Promise<TokenPair> {
+    // Clean up old refresh tokens for this user to avoid duplicates
+    // This handles cases where multiple login requests happen simultaneously
+    await this.refreshTokenRepository.delete({ userId });
+
     // Generate access token
     const accessToken = jwt.sign(
       { userId, type: 'access' },

@@ -1,6 +1,6 @@
-# Contributing to QKSMS
+# Contributing to TextPilot AI Messaging
 
-Thank you for your interest in contributing to QKSMS! This document provides guidelines and instructions for contributing to the project.
+Thank you for your interest in contributing to TextPilot AI Messaging! This document provides guidelines and instructions for contributing to the project.
 
 ## Table of Contents
 
@@ -23,7 +23,7 @@ This project follows open source best practices. Please be respectful and constr
 ## Getting Started
 
 1. Fork the repository on GitHub
-2. Clone your fork locally: `git clone https://github.com/YOUR_USERNAME/qksms.git`
+2. Clone your fork locally: `git clone https://github.com/YOUR_USERNAME/textpilot.git`
 3. Create a new branch for your changes: `git checkout -b feature/your-feature-name`
 4. Make your changes and commit them with clear commit messages
 5. Push to your fork and submit a pull request
@@ -49,7 +49,7 @@ This project follows open source best practices. Please be respectful and constr
    ```
 
 2. Open the project in Android Studio:
-   - File → Open → Select the `qksms` directory
+   - File → Open → Select the `textpilot` directory
    - Wait for Gradle sync to complete
 
 3. Create `local.properties` file in the project root (if not exists):
@@ -78,7 +78,7 @@ To test AI Smart Reply features:
 
 ### Build Variants
 
-QKSMS has two product flavors:
+TextPilot AI Messaging has two product flavors:
 
 - **noAnalytics** - Clean build without tracking (recommended for development and F-Droid)
 - **withAnalytics** - Includes Firebase Analytics, Crashlytics, and Performance (for Google Play)
@@ -119,7 +119,7 @@ QKSMS has two product flavors:
 
 ## Project Architecture
 
-QKSMS follows **Clean Architecture** with clear separation of concerns:
+TextPilot AI Messaging follows **Clean Architecture** with clear separation of concerns:
 
 ### Module Structure
 
@@ -337,7 +337,7 @@ Before submitting a bug report:
 1. **Search existing issues** to avoid duplicates
 2. **Use the latest release** to verify the bug still exists
 3. **Gather information:**
-   - QKSMS version
+   - TextPilot AI Messaging version
    - Android version and device model
    - Build variant (WithAnalytics/NoAnalytics)
    - Steps to reproduce
@@ -353,13 +353,13 @@ Feature requests are welcome! When submitting a feature request:
 1. **Check existing issues** to see if it's already been suggested
 2. **Describe the use case** - why would this feature be useful?
 3. **Provide examples** or mockups if possible
-4. **Consider the scope** - does it fit within QKSMS's goals?
+4. **Consider the scope** - does it fit within TextPilot AI Messaging's goals?
 
 ## Translations
 
 Translations are managed through **Crowdin**. To contribute translations:
 
-1. Visit https://crowdin.com/project/qksms
+1. Visit https://crowdin.com/project/qksms (legacy project name, but still active)
 2. Select your language
 3. Start translating!
 
@@ -396,8 +396,8 @@ If you have questions about contributing:
 
 ## License
 
-By contributing to QKSMS, you agree that your contributions will be licensed under the GNU General Public License v3.0 (GPLv3).
+By contributing to TextPilot AI Messaging, you agree that your contributions will be licensed under the GNU General Public License v3.0 (GPLv3).
 
 ---
 
-**Thank you for contributing to QKSMS!**
+**Thank you for contributing to TextPilot AI Messaging!**

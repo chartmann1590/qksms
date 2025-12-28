@@ -24,6 +24,12 @@ import io.reactivex.Single
 interface WebSyncRepository {
 
     /**
+     * Register a new account on the web server
+     * @return Single<Boolean> true if registration successful
+     */
+    fun register(serverUrl: String, username: String, password: String): Single<Boolean>
+
+    /**
      * Test connection to web server with credentials
      * @return Single<Boolean> true if connection successful
      */

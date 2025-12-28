@@ -68,6 +68,42 @@ class WebSyncRepositoryImpl @Inject constructor(
     private var accessToken: String? = null
     private var refreshToken: String? = null
 
+    override fun register(serverUrl: String, username: String, password: String): Single<Boolean> {
+        return Single.fromCallable {
+            try {
+                val registerUrl = "${serverUrl.trimEnd('/')}/api/auth/register"
+                val deviceId = android.provider.Settings.Secure.getString(
+                    context.contentResolver,
+                    android.provider.Settings.Secure.ANDROID_ID
+                )
+
+                val requestBody = RegisterRequest(username, password, deviceId)
+                val json = moshi.adapter(RegisterRequest::class.java).toJson(requestBody)
+                Timber.d("Sending registration request to $registerUrl")
+
+                val request = Request.Builder()
+                    .url(registerUrl)
+                    .post(json.toRequestBody(JSON_MEDIA_TYPE))
+                    .build()
+
+                val response = okHttpClient.newCall(request).execute()
+                val responseBody = response.body?.string()
+
+                if (response.isSuccessful && responseBody != null) {
+                    val registerResponse = moshi.adapter(RegisterResponse::class.java).fromJson(responseBody)
+                    Timber.d("Registration successful: ${registerResponse?.message}")
+                    true
+                } else {
+                    Timber.w("Registration failed: ${response.code} - $responseBody")
+                    false
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Registration failed")
+                false
+            }
+        }.subscribeOn(Schedulers.io())
+    }
+
     override fun testConnection(serverUrl: String, username: String, password: String): Single<Boolean> {
         return Single.fromCallable {
             try {
@@ -218,6 +254,45 @@ class WebSyncRepositoryImpl @Inject constructor(
                 emitter.onComplete()
             } catch (e: Exception) {
                 Timber.e(e, "Incremental sync failed")
+
+                // Check if this is an invalid sync token error (500 or 400 status)
+                val errorMessage = e.message ?: ""
+                if (errorMessage.contains("500") ||
+                    errorMessage.contains("400") ||
+                    errorMessage.contains("Invalid sync token", ignoreCase = true) ||
+                    errorMessage.contains("Sync token required", ignoreCase = true)) {
+                    Timber.w("Invalid or missing sync token detected, clearing token and triggering full sync")
+
+                    // Clear the invalid sync token
+                    preferences.webSyncToken.set("")
+
+                    // Notify that we're recovering
+                    emitter.onNext(WebSyncRepository.SyncProgress(
+                        WebSyncRepository.SyncProgress.Stage.SYNCING_MESSAGES, 0, 1, "Recovering via full sync"
+                    ))
+
+                    // Trigger a full sync to recover - use blockingLast() to wait for completion
+                    try {
+                        performFullSync().blockingLast()
+                        Timber.i("Automatic full sync completed successfully after invalid token")
+
+                        // Complete successfully after recovery
+                        emitter.onNext(WebSyncRepository.SyncProgress(
+                            WebSyncRepository.SyncProgress.Stage.COMPLETE, 1, 1, "Recovered via full sync"
+                        ))
+                        emitter.onComplete()
+                        return@create
+                    } catch (fullSyncError: Exception) {
+                        Timber.e(fullSyncError, "Full sync recovery failed")
+                        emitter.onNext(WebSyncRepository.SyncProgress(
+                            WebSyncRepository.SyncProgress.Stage.ERROR, 0, 0, "Recovery failed: ${fullSyncError.message}"
+                        ))
+                        emitter.onError(fullSyncError)
+                        return@create
+                    }
+                }
+
+                // For other errors, emit the error normally
                 emitter.onNext(WebSyncRepository.SyncProgress(
                     WebSyncRepository.SyncProgress.Stage.ERROR, 0, 0, e.message ?: "Unknown error"
                 ))
@@ -533,6 +608,18 @@ class WebSyncRepositoryImpl @Inject constructor(
         val success: Boolean,
         val accessToken: String,
         val refreshToken: String
+    )
+
+    private data class RegisterRequest(
+        @Json(name = "username") val username: String,
+        @Json(name = "password") val password: String,
+        @Json(name = "deviceId") val deviceId: String
+    )
+
+    private data class RegisterResponse(
+        val success: Boolean,
+        val userId: String?,
+        val message: String
     )
 
     private data class RecipientDto(

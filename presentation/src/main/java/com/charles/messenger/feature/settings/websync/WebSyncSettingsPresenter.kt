@@ -20,6 +20,7 @@ package com.charles.messenger.feature.settings.websync
 
 import android.content.Context
 import com.charles.messenger.common.base.QkPresenter
+import com.charles.messenger.interactor.RegisterAccount
 import com.charles.messenger.interactor.SyncToWebServer
 import com.charles.messenger.interactor.TestWebConnection
 import com.charles.messenger.manager.CredentialManager
@@ -42,6 +43,7 @@ class WebSyncSettingsPresenter @Inject constructor(
     private val context: Context,
     private val prefs: Preferences,
     private val credentialManager: CredentialManager,
+    private val registerAccount: RegisterAccount,
     private val testWebConnection: TestWebConnection,
     private val syncToWebServer: SyncToWebServer
 ) : QkPresenter<WebSyncSettingsView, WebSyncSettingsState>(
@@ -128,6 +130,42 @@ class WebSyncSettingsPresenter @Inject constructor(
             .subscribe { password ->
                 newState { copy(password = password, connectionStatus = ConnectionStatus.Unknown) }
             }
+
+        // Handle register account
+        view.registerAccountClicks()
+            .withLatestFrom(state) { _, state -> state }
+            .doOnNext { state ->
+                Timber.d("Registering account at ${state.serverUrl}")
+                newState { copy(registrationStatus = RegistrationStatus.Registering) }
+            }
+            .switchMap { state ->
+                registerAccount.buildObservable(
+                    RegisterAccount.Params(
+                        serverUrl = state.serverUrl,
+                        username = state.username,
+                        password = state.password
+                    )
+                ).toObservable() as Observable<Boolean>
+            }
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDisposable(view.scope())
+            .subscribe(
+                { success ->
+                    Timber.i("Registration result: $success")
+                    newState {
+                        copy(registrationStatus = if (success) RegistrationStatus.Registered else RegistrationStatus.Failed)
+                    }
+                    view.showToast(
+                        if (success) "Account registered successfully! You can now test the connection."
+                        else "Registration failed. Username may already exist or server is unavailable."
+                    )
+                },
+                { error: Throwable ->
+                    Timber.e(error, "Registration error")
+                    newState { copy(registrationStatus = RegistrationStatus.Failed) }
+                    view.showToast("Registration error: ${error.message}")
+                }
+            )
 
         // Handle test connection
         view.testConnectionClicks()

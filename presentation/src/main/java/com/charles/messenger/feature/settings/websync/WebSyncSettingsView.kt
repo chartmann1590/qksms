@@ -26,6 +26,7 @@ interface WebSyncSettingsView : QkViewContract<WebSyncSettingsState> {
     fun serverUrlChanged(): Observable<String>
     fun usernameChanged(): Observable<String>
     fun passwordChanged(): Observable<String>
+    fun registerAccountClicks(): Observable<Unit>
     fun testConnectionClicks(): Observable<Unit>
     fun performFullSyncClicks(): Observable<Unit>
 

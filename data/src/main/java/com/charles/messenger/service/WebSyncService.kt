@@ -25,11 +25,18 @@ import android.app.job.JobService
 import android.content.ComponentName
 import android.content.Context
 import com.charles.messenger.common.util.extensions.jobScheduler
+import com.charles.messenger.compat.TelephonyCompat
+import com.charles.messenger.interactor.ConfirmMessageSent
+import com.charles.messenger.interactor.FetchQueuedWebMessages
+import com.charles.messenger.interactor.SendMessage
 import com.charles.messenger.interactor.SyncToWebServer
+import com.charles.messenger.repository.MessageRepository
 import com.charles.messenger.util.Preferences
 import dagger.android.AndroidInjection
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.plusAssign
+import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -86,6 +93,10 @@ class WebSyncService : JobService() {
     }
 
     @Inject lateinit var syncToWebServer: SyncToWebServer
+    @Inject lateinit var fetchQueuedWebMessages: FetchQueuedWebMessages
+    @Inject lateinit var sendMessage: SendMessage
+    @Inject lateinit var confirmMessageSent: ConfirmMessageSent
+    @Inject lateinit var messageRepository: MessageRepository
     @Inject lateinit var preferences: Preferences
 
     private val disposables = CompositeDisposable()
@@ -101,13 +112,111 @@ class WebSyncService : JobService() {
             return false
         }
 
-        // Perform incremental sync in background
-        syncToWebServer.execute(SyncToWebServer.Params(isFullSync = false)) {
-            Timber.i("WebSyncService: Incremental sync completed")
-            jobFinished(params, false)
-        }
+        // Perform incremental sync, then fetch and send queued messages
+        disposables += syncToWebServer.buildObservable(SyncToWebServer.Params(isFullSync = false))
+            .subscribeOn(Schedulers.io())
+            .observeOn(Schedulers.io())
+            .ignoreElements()
+            .doOnComplete {
+                Timber.i("WebSyncService: Incremental sync completed")
+            }
+            .andThen(fetchQueuedWebMessages.buildObservable(Unit).firstOrError())
+            .subscribeOn(Schedulers.io())
+            .observeOn(Schedulers.io())
+            .subscribe(
+                { queuedMessages: Any ->
+                    if (queuedMessages is List<*>) {
+                        @Suppress("UNCHECKED_CAST")
+                        val messages = queuedMessages as List<com.charles.messenger.repository.WebSyncRepository.QueuedMessage>
+
+                        if (messages.isEmpty()) {
+                            Timber.i("WebSyncService: No queued messages to send")
+                            jobFinished(params, false)
+                            return@subscribe
+                        }
+
+                        Timber.i("WebSyncService: Found ${messages.size} queued messages to send")
+
+                        // Send each queued message
+                        messages.forEach { queuedMsg ->
+                            sendQueuedMessage(queuedMsg, params)
+                        }
+
+                        // Job finished after processing all messages
+                        jobFinished(params, false)
+                    }
+                },
+                { error: Throwable ->
+                    Timber.e(error, "WebSyncService: Error fetching queued messages")
+                    jobFinished(params, false)
+                }
+            )
 
         return true // Job is running asynchronously
+    }
+
+    private fun sendQueuedMessage(
+        queuedMsg: com.charles.messenger.repository.WebSyncRepository.QueuedMessage,
+        params: JobParameters?
+    ) {
+        try {
+            Timber.i("WebSyncService: Sending queued message to ${queuedMsg.addresses}")
+
+            // Get or create threadId
+            val threadId = queuedMsg.conversationId
+                ?: TelephonyCompat.getOrCreateThreadId(this, queuedMsg.addresses.toSet())
+
+            // Get default subscription ID (subId -1 means default)
+            val subId = -1
+
+            // Send the message
+            disposables += sendMessage.buildObservable(
+                SendMessage.Params(
+                    subId = subId,
+                    threadId = threadId,
+                    addresses = queuedMsg.addresses,
+                    body = queuedMsg.body,
+                    attachments = emptyList()
+                )
+            )
+            .subscribeOn(Schedulers.io())
+            .observeOn(Schedulers.io())
+            .subscribe(
+                { result ->
+                    // Message sent successfully, find the message ID and confirm
+                    val messages = messageRepository.getMessages(threadId)
+                    val lastMessage = messages.maxByOrNull { it.date }
+
+                    if (lastMessage != null) {
+                        Timber.i("WebSyncService: Message sent successfully, confirming with server (messageId: ${lastMessage.id})")
+
+                        // Confirm with server
+                        disposables += confirmMessageSent.buildObservable(
+                            ConfirmMessageSent.Params(
+                                queueId = queuedMsg.queueId,
+                                androidMessageId = lastMessage.id
+                            )
+                        )
+                        .subscribeOn(Schedulers.io())
+                        .subscribe(
+                            { confirmed ->
+                                Timber.i("WebSyncService: Message confirmation sent: $confirmed")
+                            },
+                            { error ->
+                                Timber.e(error, "WebSyncService: Error confirming message sent")
+                            }
+                        )
+                    } else {
+                        Timber.w("WebSyncService: Could not find sent message to confirm")
+                    }
+                },
+                { error ->
+                    Timber.e(error, "WebSyncService: Error sending queued message")
+                }
+            )
+        } catch (e: Exception) {
+            Timber.e(e, "WebSyncService: Exception sending queued message")
+        }
     }
 
     override fun onStopJob(params: JobParameters?): Boolean {
