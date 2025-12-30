@@ -53,6 +53,10 @@ captures/
 # Google Services (e.g. APIs or Firebase)
 google-services.json
 
+# Firebase configuration
+firebase.json
+.firebase/
+
 # Freeline
 freeline.py
 freeline/

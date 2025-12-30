@@ -38,3 +38,5 @@ Thank you for using QKSMS! If you enjoy the app, please consider upgrading to Me
 *QKSMS is a beautiful, open-source SMS and MMS messaging app for Android. Built with Material Design principles, it offers a clean, customizable interface with powerful features like scheduled messages, message blocking, themes, and more.*
 
 
+
+
