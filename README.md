@@ -4,6 +4,7 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Download](https://img.shields.io/github/v/release/chartmann1590/textpilot)](https://github.com/chartmann1590/textpilot/releases/latest)
+[![Version](https://img.shields.io/badge/version-3.10.2-brightgreen.svg)](https://github.com/chartmann1590/textpilot/releases)
 
 **TextPilot AI Messaging** is a powerful, feature-rich open source SMS and MMS messaging application for Android. Originally forked from [QKSMS](https://github.com/moezbhatti/qksms), this enhanced version adds cutting-edge AI capabilities and numerous improvements while maintaining the beautiful, customizable experience of the original.
 

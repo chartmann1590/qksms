@@ -192,8 +192,8 @@ When modifying Realm models:
 - **Compile SDK**: 34
 - **Target SDK**: 35
 - **Min SDK**: 21 (Android 5.0+)
-- **Version Code**: 2222
-- **Version Name**: 3.9.6
+- **Version Code**: 2229
+- **Version Name**: 3.10.2
 - **Application ID**: `com.charles.messenger.v2`
 
 ### Adding New Features
